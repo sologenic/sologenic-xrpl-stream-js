@@ -1,0 +1,9 @@
+# this docker will run a local redis instance
+version: '3.5'
+
+services:
+  redis:
+    image: redis:5
+    restart: unless-stopped
+    ports:
+      - 127.0.0.1:6379:6379

@@ -1,0 +1,12 @@
+{
+  "extends": ["tslint:latest", "tslint-config-prettier"],
+  "rules": {
+    "ter-indent": [true, 2],
+    "object-literal-sort-keys": false,
+    "jsdoc-format": false,
+    "ordered-imports": false,
+    "no-submodule-imports": false,
+    "array-type": [false, "array"],
+    "no-bitwise": false
+  }
+}
