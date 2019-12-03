@@ -1,6 +1,7 @@
 {
   "extends": ["tslint:latest", "tslint-config-prettier"],
   "rules": {
+    "no-implicit-dependencies": [true, "dev"],
     "object-literal-sort-keys": false,
     "jsdoc-format": false,
     "ordered-imports": false,

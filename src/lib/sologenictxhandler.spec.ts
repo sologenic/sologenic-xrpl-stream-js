@@ -1,5 +1,5 @@
 import test from 'ava';
 
-test('fosologenictxhandlero', t => {
+test('sologenictxhandler', t => {
   t.pass();
 });
