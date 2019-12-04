@@ -198,7 +198,6 @@ export class SologenicTxHandler extends EventEmitter {
         events: this.txEvents![id],
         id,
 
-        // TODO fix the resolve
         promise: (() => {
           return this._resolve(id);
         })()
@@ -379,9 +378,9 @@ export class SologenicTxHandler extends EventEmitter {
   private async _dispatch(): Promise<void> {
     try {
       // Get raw transactions from the queue
-      const unsignedTXs: Array<
-        SologenicTypes.unsignedTX
-      > = await this.txmq.getAll('txmq:raw:' + this.account);
+      const unsignedTXs: Array<SologenicTypes.unsignedTX> = await this.txmq.getAll(
+        'txmq:raw:' + this.account
+      );
       // Loop through each, FIFO order, and dispatch the transaction
       for (const unsignedTX of unsignedTXs!) {
         await this._dispatchHandler(unsignedTX);
