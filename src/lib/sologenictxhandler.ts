@@ -197,7 +197,6 @@ export class SologenicTxHandler extends EventEmitter {
       return {
         events: this.txEvents![id],
         id,
-
         promise: (() => {
           return this._resolve(id);
         })()
@@ -378,9 +377,9 @@ export class SologenicTxHandler extends EventEmitter {
   private async _dispatch(): Promise<void> {
     try {
       // Get raw transactions from the queue
-      const unsignedTXs: Array<SologenicTypes.unsignedTX> = await this.txmq.getAll(
-        'txmq:raw:' + this.account
-      );
+      const unsignedTXs: Array<
+        SologenicTypes.unsignedTX
+      > = await this.txmq.getAll('txmq:raw:' + this.account);
       // Loop through each, FIFO order, and dispatch the transaction
       for (const unsignedTX of unsignedTXs!) {
         await this._dispatchHandler(unsignedTX);
@@ -431,15 +430,18 @@ export class SologenicTxHandler extends EventEmitter {
         throw new SologenicError('2000', new RippleError.ValidationError());
       }
 
-      // Transaction Specific Settings
-      switch (tx.TransactionType) {
-        case 'AccountSet':
-          tx.Flags |= this.rippleApi.txFlags.Universal.FullyCanonicalSig;
+      if (typeof tx.Flags === 'undefined') {
+        // Transaction Specific Settings
+        switch (tx.TransactionType) {
+          case 'AccountSet':
+            tx.Flags = 0;
+            tx.Flags |= this.rippleApi.txFlags.Universal.FullyCanonicalSig;
 
-          // JavaScript converts operands to 32-bit signed ints before doing bitwise
-          // operations. We need to convert it back to an unsigned int.
-          tx.Flags = tx.Flags >>> 0;
-          break;
+            // JavaScript converts operands to 32-bit signed ints before doing bitwise
+            // operations. We need to convert it back to an unsigned int.
+            tx.Flags = tx.Flags >>> 0;
+            break;
+        }
       }
 
       // multiply the fee by 1.2 to make sure the tx goes through
