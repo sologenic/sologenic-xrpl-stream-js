@@ -434,14 +434,14 @@ export class SologenicTxHandler extends EventEmitter {
         // Transaction Specific Settings
         switch (tx.TransactionType) {
           case 'AccountSet':
-            tx.Flags = 0;
-            tx.Flags |= this.rippleApi.txFlags.Universal.FullyCanonicalSig;
-
+            tx.Flags = this.rippleApi.txFlags.Universal.FullyCanonicalSig;
             // JavaScript converts operands to 32-bit signed ints before doing bitwise
             // operations. We need to convert it back to an unsigned int.
             tx.Flags = tx.Flags >>> 0;
             break;
         }
+      } else {
+        tx.Flags = tx.Flags >>> 0;
       }
 
       // multiply the fee by 1.2 to make sure the tx goes through
