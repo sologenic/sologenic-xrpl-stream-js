@@ -1,12 +1,152 @@
 import Redis from 'ioredis';
-import { v4 as uuid } from 'uuid';
-import { MQTX } from '../types';
+import Memcached from 'memcached';
 
-export class TXMQƨ {
-  private redis: any;
-  constructor(config: any) {
+import { v4 as uuid } from 'uuid';
+import { MQTX,
+  IQueue, 
+  QUEUE_TYPE_STXMQ_REDIS, 
+  QUEUE_TYPE_STXMQ_MEMCACHE, 
+  QUEUE_TYPE_STXMQ_HASH } from '../types';
+
+export class HashQueue implements IQueue {
+  private hash = {};
+
+  constructor(queueOptions: any) { 
+    throw new Error("Not Implemeneted");
+
+    // Satisfy editor warnings about objects not being read
+    queueOptions.queueType;
+
+    if (this.hash instanceof Object) {
+      this.hash = {};
+    }
+  }
+
+  /**
+   *
+   * @param queue
+   * @param data
+   * @param id
+   */
+  public async add(queue: string, data: object, id?: string): Promise<MQTX> {
+    throw new Error("Method not implemented.");
+  }
+
+  /**
+   *
+   * @param queue
+   * @param id
+   */
+  public async get(queue: string, id: string): Promise<MQTX | undefined> {  
+    throw new Error("Method not implemented.");
+  }
+
+  /**
+   *
+   * @param queue
+   */
+  public async getAll(queue: string): Promise<Array<MQTX>> {
+    throw new Error("Method not implemented.");
+  }
+
+  /**
+   *
+   * @param queue
+   */
+  public async pop(queue: string): Promise<boolean | Array<any>> {
+    throw new Error("Method not implemented.");
+  }
+
+  /**
+   *
+   * @param queue
+   * @param id
+   */
+  public async del(queue: string, id: string): Promise<boolean | any[]> {
+    throw new Error("Method not implemented.");
+  }
+
+  /**
+   *
+   * @param queue
+   */
+  public async delAll(queue: string): Promise<boolean> {
+    throw new Error("Method not implemented.");
+  }
+};
+
+export class MemcacheQueue implements IQueue {
+  private memcache: any;
+
+  constructor(queueOptions: any) {
+    throw new Error("Not Implemeneted");
+
     try {
-      this.redis = new Redis(config);
+      this.memcache = new Memcached(queueOptions);
+    } catch (error) {
+      throw new Error('Unable to initialize memcache');
+    }
+  }
+
+  /**
+   *
+   * @param queue
+   * @param data
+   * @param id
+   */
+  public async add(queue: string, data: object, id?: string): Promise<MQTX> {
+    throw new Error("Method not implemented.");
+  }  
+
+  /**
+   *
+   * @param queue
+   * @param id
+   */
+  public async get(queue: string, id: string): Promise<MQTX | undefined> {  
+    throw new Error("Method not implemented.");
+  }
+
+  /**
+   *
+   * @param queue
+   */
+  public async getAll(queue: string): Promise<Array<MQTX>> {
+    throw new Error("Method not implemented.");
+  }
+
+  /**
+   *
+   * @param queue
+   */
+  public async pop(queue: string): Promise<boolean | Array<any>> {
+    throw new Error("Method not implemented.");
+  }
+
+  /**
+   *
+   * @param queue
+   * @param id
+   */
+  public async del(queue: string, id: string): Promise<boolean | any[]> {
+    throw new Error("Method not implemented.");
+  }
+
+  /**
+   *
+   * @param queue
+   */
+  delAll(queue: string): Promise<boolean> {
+    throw new Error("Method not implemented.");
+  }
+}
+
+export class RedisQueue implements IQueue {
+  private redis: any;
+
+  constructor(queueOptions: any) {
+    try {
+      this.redis = new Redis(queueOptions);
     } catch (error) {
       throw new Error('Unable to initialize TXMQ');
     }
@@ -130,5 +270,82 @@ export class TXMQƨ {
     } catch (error) {
       throw new Error("Can't get TX from Redis");
     }
+  }
+}
+
+export class TXMQƨ {
+  private queue: IQueue;
+
+  constructor(sologenicOptions: any) {
+    try {
+      switch (sologenicOptions!.queueType) {
+        case QUEUE_TYPE_STXMQ_MEMCACHE:
+          this.queue = new MemcacheQueue(sologenicOptions!.options);
+          break;
+
+        case QUEUE_TYPE_STXMQ_REDIS:
+          this.queue = new RedisQueue(sologenicOptions!.options);
+          break;
+
+        case QUEUE_TYPE_STXMQ_HASH:
+        default:        
+          this.queue = new HashQueue(sologenicOptions!.options);
+          break;
+      }
+    }
+    catch (error) { 
+      throw new Error('Unable to initialize TXMQ');
+    }
+  }
+
+  /**
+   *
+   * @param queue
+   * @param data
+   * @param id
+   */
+  public async add(queue: string, data: object, id?: string): Promise<MQTX> {
+    return this.queue.add(queue, data, id);
+  }
+
+  /**
+   *
+   * @param queue
+   * @param id
+   */
+  public async get(queue: string, id: string): Promise<MQTX | undefined> {
+    return this.queue.get(queue, id);
+  }
+
+  /**
+   *
+   * @param queue
+   */
+  public async getAll(queue: string): Promise<Array<MQTX>> {
+    return this.queue.getAll(queue);
+  }
+  /**
+   *
+   * @param queue
+   */
+  public async pop(queue: string): Promise<boolean | Array<any>> {
+    return this.queue.pop(queue);
+  }
+
+  /**
+   *
+   * @param queue
+   * @param id
+   */
+  public async del(queue: string, id: string): Promise<boolean | any[]> {
+    return this.queue.del(queue, id);
+  }
+
+  /**
+   *
+   * @param queue
+   */
+  public async delAll(queue: string): Promise<boolean> { 
+    return this.queue.delAll(queue);
   }
 }

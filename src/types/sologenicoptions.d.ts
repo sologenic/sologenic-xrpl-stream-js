@@ -1,7 +1,20 @@
+import { MQTX } from '../types';
+
 import { EventEmitter } from 'events';
 
+export interface IQueue {
+  add(queue: string, data: object, id?: string): Promise<MQTX>;
+  get(queue: string, id: string): Promise<MQTX | undefined>;
+  getAll(queue: string): Promise<Array<MQTX>>;
+  pop(queue: string): Promise<boolean | Array<any>>
+  del(queue: string, id: string): Promise<boolean | Array<any>>
+  delAll(queue: string): Promise<boolean>;
+}
+
 export interface TransactionHandlerOptions {
-  redis?: {
+  queueType?: string;
+
+  options?: {
     port?: number;
     host?: string;
     family?: number;
@@ -9,9 +22,11 @@ export interface TransactionHandlerOptions {
     db?: number;
   };
 }
+
 export declare interface ISologenicTxHandler extends EventEmitter {
   on(event: string, listener: Function): this;
 }
+
 export interface RippleAPIOptions {
   trace?: boolean;
   proxy?: string;
