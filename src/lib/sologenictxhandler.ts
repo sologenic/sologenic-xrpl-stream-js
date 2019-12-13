@@ -20,17 +20,17 @@ export class SologenicTxHandler extends EventEmitter {
   protected math: any;
 
   /**
-   * Constructor 
-   * 
-   * @param rippleApiOptions This parameter is used to construct ripple-lib and takes in:     
+   * Constructor
+   *
+   * @param rippleApiOptions This parameter is used to construct ripple-lib and takes in:
           server?: string;
           feeCushion?: number; // This property is overridden by Sologenic to 1
           maxFeeXRP?: string;
           trace?: boolean;
           proxy?: string;
           timeout?: number; // This property is overridden by Sologenic to 1000000
-        
-   * @param sologenicOptions 
+
+   * @param sologenicOptions
         {
           redis?: {
             port?: Number;
@@ -49,7 +49,7 @@ export class SologenicTxHandler extends EventEmitter {
   ) {
     super();
     try {
-      /* Initialize RippleAPI driven from the ripple-lib. Sologenic uses the following methods from this library: 
+      /* Initialize RippleAPI driven from the ripple-lib. Sologenic uses the following methods from this library:
       connect()
       on()
       isValidAddress()
@@ -83,7 +83,7 @@ export class SologenicTxHandler extends EventEmitter {
         Initialize TXMQƨ (Sologenic Transaction Message Queue)
       */
       try {
-        this.txmq = new TXMQƨ(sologenicOptions!.redis); // Pass on the Redis connection details
+        this.txmq = new TXMQƨ(sologenicOptions[sologenicOptions.store]); // Pass on the connection details based on specified store
       } catch (error) {
         throw new SologenicError('1002');
       }
@@ -774,7 +774,7 @@ export class SologenicTxHandler extends EventEmitter {
         if (exists) {
           // only if the result from the closed ledger is tesSUCCESS, consider this transaction to be final
           if (validate.outcome.result === 'tesSUCCESS') {
-            /* 
+            /*
               add them to `validated` queue for archiving. This queue is not processed and is just for the records.
               Suggestion: add a TTL to these transactions in this queue to avoid overloading Redis and possibly move these
               transactions to a database

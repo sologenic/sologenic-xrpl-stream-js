@@ -1,13 +1,11 @@
 import { EventEmitter } from 'events';
+import { IRedisOptions, IMongoOptions, IMySQLOptions } from './storesoptions';
 
 export interface TransactionHandlerOptions {
-  redis?: {
-    port?: number;
-    host?: string;
-    family?: number;
-    password?: string;
-    db?: number;
-  };
+  store: "mysql" | "redis" | "mongo";
+  redis?: IRedisOptions;
+  mysql?: IMySQLOptions;
+  mongo?: IMongoOptions;
 }
 export declare interface ISologenicTxHandler extends EventEmitter {
   on(event: string, listener: Function): this;
