@@ -14,13 +14,19 @@ export interface IQueue {
 export interface TransactionHandlerOptions {
   queueType?: string;
 
-  options?: {
+  redis?: {
     port?: number;
     host?: string;
     family?: number;
     password?: string;
     db?: number;
   };
+
+  memcache?: {
+    locations?: Array<string>;
+  };
+
+  hash?: {};
 }
 
 export declare interface ISologenicTxHandler extends EventEmitter {
