@@ -41,13 +41,14 @@ export class SologenicTxHandler extends EventEmitter {
             password?: string;
             db?: number;
           };
-
-          memcache?: {
-            locations?: Array<string>;
-          };
         }
 
     @example sologenicOptions: {
+          // When using in-memory hashes
+          queueType: 'hash',
+          hash: {}
+
+          // When using redis
           queueType: 'redis',
           redis: {
             host: 'localhost',
@@ -55,14 +56,6 @@ export class SologenicTxHandler extends EventEmitter {
             family: 'redis5.0',
             password: 'password',
             db: '1',
-          }
-          
-          queueType: 'memcache',
-          memcache: {
-            locations: [ 
-              '192.168.0.102:11211', 
-              '192.168.0.103:11211', 
-              '192.168.0.104:11211' ]
           }
         }
    */

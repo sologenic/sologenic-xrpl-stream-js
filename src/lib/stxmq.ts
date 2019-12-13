@@ -2,10 +2,8 @@ import {
   MQTX,
   IQueue, 
   QUEUE_TYPE_STXMQ_REDIS, 
-  QUEUE_TYPE_STXMQ_MEMCACHE, 
   QUEUE_TYPE_STXMQ_HASH } from '../types';
 
-import MemcacheQueue from './queues/memcache';
 import RedisQueue from './queues/redis';
 import HashQueue from './queues/hash';
 
@@ -15,10 +13,6 @@ export class TXMQƨ {
   constructor(sologenicOptions: any) {
     try {
       switch (sologenicOptions!.queueType) {
-        case QUEUE_TYPE_STXMQ_MEMCACHE:
-          this.queue = new MemcacheQueue(sologenicOptions!.memcache);
-          break;
-
         case QUEUE_TYPE_STXMQ_REDIS:
           this.queue = new RedisQueue(sologenicOptions!.redis);
           break;

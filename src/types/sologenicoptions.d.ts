@@ -22,10 +22,6 @@ export interface TransactionHandlerOptions {
     db?: number;
   };
 
-  memcache?: {
-    locations?: Array<string>;
-  };
-
   hash?: {};
 }
 
