@@ -45,6 +45,9 @@ export class SologenicTxHandler extends EventEmitter {
             user?: string;
             password?: string;
             database?: string;
+          };
+          mongo?: {
+            uri: string
           }
         }
 
@@ -90,7 +93,7 @@ export class SologenicTxHandler extends EventEmitter {
         Initialize TXMQƨ (Sologenic Transaction Message Queue)
       */
       try {
-        this.txmq = new TXMQƨ(sologenicOptions.store, sologenicOptions[sologenicOptions.store]); // Pass on the connection details based on specified store
+        this.txmq = new TXMQƨ(sologenicOptions.store || "redis", sologenicOptions[sologenicOptions.store]); // Pass on the connection details based on specified store
       } catch (error) {
         throw new SologenicError('1002');
       }

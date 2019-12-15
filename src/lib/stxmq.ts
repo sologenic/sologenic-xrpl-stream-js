@@ -1,5 +1,6 @@
 import Redis from 'ioredis';
 import MySQL from 'mysql';
+import { MongoClient } from 'mongodb';
 import { v4 as uuid } from 'uuid';
 import { MQTX } from '../types';
 
@@ -9,7 +10,8 @@ export class TXMQƨ {
     try {
       const stores: any = {
         redis: store === "redis" ? new Redis(config) : null,
-        mysql: store === "mysql" ? MySQL.createConnection(config) : null
+        mysql: store === "mysql" ? MySQL.createConnection(config) : null,
+        mongo: store === "mongo" ? new MongoClient(config.uri, { useNewUrlParser: true }).db(config.database) : null
       };
       this.datastore = {
         type: store,
@@ -79,6 +81,16 @@ export class TXMQƨ {
           throw new Error("Can't add TX to MySQL");
         }
       }
+      if (this.datastore.type === "mongo") {
+        const result = await this.datastore.store.collection("sologenic_generated").insertOne({
+          element: JSON.stringify(element)
+        });
+        if (result) {
+          return element;
+        } else {
+          throw new Error("Can't add TX to MongoDB");
+        }
+      }
       return undefined;
     } catch (error) {
       throw new Error("Can't add TX to store");
@@ -120,9 +132,7 @@ export class TXMQƨ {
           );
           const element = elements.find((el: string) => {
             const parsed = JSON.parse(el);
-            if (parsed.id === id) {
-              return parsed;
-            }
+            return parsed.id === id;
           });
           if (element) {
             return JSON.parse(element);
@@ -130,6 +140,18 @@ export class TXMQƨ {
             return undefined;
           }
         });
+      }
+      if (this.datastore.type === "mongo") {
+        const elements: any = await this.datastore.store.collection("sologenic_generated").find({}).toArray();
+        const element = elements.map((el: any) => el.element).find((el: string) => {
+          const parsed = JSON.parse(el);
+          return parsed.id === id;
+        });
+        if (element) {
+          return JSON.parse(element);
+        } else {
+          return undefined;
+        }
       }
       return undefined;
     } catch (error) {
@@ -171,6 +193,16 @@ export class TXMQƨ {
           return [];
         }
       }
+      if (this.datastore.type === "mongo") {
+        const elements: any = await this.datastore.store.collection("sologenic_generated").find({}).toArray();
+        if (elements.length > 0) {
+          return elements.map(
+            (el: any) => JSON.parse(el.element)
+          );
+        } else {
+          return [];
+        }
+      }
       return [];
     } catch (error) {
       throw new Error("Can't get TX from store");
@@ -197,6 +229,13 @@ export class TXMQƨ {
           );
         });
         return (element && element > 0) ? [element] : false;
+      }
+      if (this.datastore.type === "mongo") {
+        const element: any = await this.datastore.store.collection("sologenic_generated").findOneAndDelete(
+          {},
+          { sort: { _id: -1 } }
+        );
+        return (element) ? [element] : false;
       }
       return false;
     } catch (error) {
@@ -250,6 +289,17 @@ export class TXMQƨ {
       });
       return r > 0;
     }
+    if (this.datastore.type === "mongo") {
+      const elements: any = await this.datastore.store.collection("sologenic_generated").find({}).toArray().map(
+        (el: any) => el.element
+      );
+      const element = elements.find((el: string) => {
+        const parsed = JSON.parse(el);
+        return parsed.id === id;
+      });
+      const result = await this.datastore.store.collection("sologenic_generated").findOneAndDelete({ element });
+      return (result) ? true : false;
+    }
     return false;
   } catch (error) {
       throw new Error("Can't get TX from Redis");
@@ -276,6 +326,10 @@ export class TXMQƨ {
           );
         });
         return elements > 0;
+      }
+      if (this.datastore.type === "mongo") {
+        const elements: any = await this.datastore.store.collection("sologenic_generated").deleteMany({});
+        return (elements) ? true : false;
       }
       return false;
     } catch (error) {

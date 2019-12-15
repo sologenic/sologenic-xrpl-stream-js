@@ -7,11 +7,8 @@ export interface IRedisOptions {
 }
 
 export interface IMongoOptions {
-  port?: number;
-  host?: string;
-  user?: string;
-  password?: string;
-  db?: string;
+  uri: string;
+  database?: string;
 }
 
 export interface IMySQLOptions {
