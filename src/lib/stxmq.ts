@@ -239,7 +239,7 @@ export class TXMQƨ {
       }
       return false;
     } catch (error) {
-      throw new Error("Can't get TX from Redis");
+      throw new Error("Can't get TX from store");
     }
   }
 
@@ -302,7 +302,7 @@ export class TXMQƨ {
     }
     return false;
   } catch (error) {
-      throw new Error("Can't get TX from Redis");
+      throw new Error("Can't get TX from store");
     }
   }
   /**
@@ -333,7 +333,7 @@ export class TXMQƨ {
       }
       return false;
     } catch (error) {
-      throw new Error("Can't get TX from Redis");
+      throw new Error("Can't get TX from store");
     }
   }
 }
