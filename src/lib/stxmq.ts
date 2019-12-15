@@ -113,7 +113,9 @@ export class TXMQƨ {
             `,
             (err: any, result: any) => {
               if (err) { reject(err); }
-              resolve(result);
+              resolve(
+                result.map((i: any) => i.element)
+              );
             }
           );
           const element = elements.find((el: string) => {
@@ -157,7 +159,9 @@ export class TXMQƨ {
             "SELECT * FROM sologenic_generated",
             (err: any, results: any) => {
               if (err) { reject(err); }
-              resolve(results);
+              resolve(
+                results.map((i: any) => i.element)
+              );
             }
           );
         });
@@ -224,7 +228,9 @@ export class TXMQƨ {
           "SELECT * FROM sologenic_generated",
           (err: any, results: any) => {
             if (err) { reject(err); }
-            resolve(results);
+            resolve(
+              results.map((i: any) => i.element)
+            );
           }
         );
       });
@@ -235,7 +241,7 @@ export class TXMQƨ {
       const r: any = await new Promise((resolve, reject) => {
         this.datastore.store.query(
           "DELETE FROM sologenic_generated WHERE element = ?",
-          element,
+          [element],
           (err: any, results: any) => {
             if (err) { reject(err); }
             resolve(results.affectedRows);

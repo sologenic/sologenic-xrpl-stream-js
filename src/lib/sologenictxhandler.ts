@@ -33,12 +33,19 @@ export class SologenicTxHandler extends EventEmitter {
    * @param sologenicOptions
         {
           redis?: {
-            port?: Number;
-            host?: String;
-            family?: Number;
-            password?: String;
-            db?: Number;
+            port?: number;
+            host?: string;
+            family?: number;
+            password?: string;
+            db?: number;
           };
+          mysql?: {
+            port?: number;
+            host?: string;
+            user?: string;
+            password?: string;
+            database?: string;
+          }
         }
 
    */
