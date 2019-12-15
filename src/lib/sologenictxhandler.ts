@@ -32,6 +32,7 @@ export class SologenicTxHandler extends EventEmitter {
 
    * @param sologenicOptions
         {
+          store: string;
           redis?: {
             port?: number;
             host?: string;

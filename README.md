@@ -21,6 +21,7 @@ const ƨ = require('sologenic-xrpl-stream-js');
       },
       // Sologenic Options
       {
+        store: "redis", // Specify store
         redis: {
           host: '127.0.0.1',
           port: 6379
