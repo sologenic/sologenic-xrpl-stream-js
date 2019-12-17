@@ -100,7 +100,7 @@ export class SologenicTxHandler extends EventEmitter {
         Initialize TXMQƨ (Sologenic Transaction Message Queue)
       */
       try {
-        this.txmq = new TXMQƨ(sologenicOptions); // Pass on the Redis connection details
+        this.txmq = new TXMQƨ(sologenicOptions); // Pass on the queue connection details
       } catch (error) {
         throw new SologenicError('1002');
       }
@@ -178,7 +178,7 @@ export class SologenicTxHandler extends EventEmitter {
   }
 
   /**
-   * Submit transaction to system. This transaction will then be move to persistent data storage(Redis) and will be handeled.
+   * Submit transaction to system. This transaction will then be move to persistent data storage(Redis) or hash store and will be handeled.
    * Each transaction is assigned an id (uuid) to be tracked in the system. Assigned IDs remain with the transaction until validated.
    * Since the transactions are not final until validated, the only way to track transactions in the system is to track them with
    * ids across different channels in the system (e.g. message queue). This ID is also submitted as a refference withing the transaction
@@ -793,7 +793,7 @@ export class SologenicTxHandler extends EventEmitter {
           if (validate.outcome.result === 'tesSUCCESS') {
             /* 
               add them to `validated` queue for archiving. This queue is not processed and is just for the records.
-              Suggestion: add a TTL to these transactions in this queue to avoid overloading Redis and possibly move these
+              Suggestion: add a TTL to these transactions in this queue to avoid overloading Redis or memory and possibly move these
               transactions to a database
             */
             await this.txmq.add(
