@@ -7,8 +7,9 @@ import util from 'util';
 import { TXMQƨ } from './stxmq';
 import { EventEmitter } from 'events';
 import { v4 as uuid } from 'uuid';
+const _ = require('underscore');
 
-export class SologenicTxHandler extends EventEmitter {
+export default class SologenicTxHandler extends EventEmitter {
   protected txmq: any;
   protected rippleApi!: RippleAPI;
   protected account: string = '';
@@ -259,6 +260,11 @@ export class SologenicTxHandler extends EventEmitter {
    */
   private async _fetchCurrentState(): Promise<void> {
     try {
+      // If the Ripple API is not connected, make sure we connect.
+      if (!this.rippleApi.isConnected()) {
+        await this.connect();
+      }
+
       // Use the ripple-lib built in REST functions to get the ledger version and fee. Please note that these
       // values are updated using the WS after the first initilization, until this method is called again
       this.ledger.ledgerVersion = await this.rippleApi.getLedgerVersion();
@@ -348,11 +354,12 @@ export class SologenicTxHandler extends EventEmitter {
       const item = await this.txmq.add('txmq:raw:' + this.account, tx, id);
 
       // emit on object specific listener
-      if (typeof this.txEvents![item.id] !== 'undefined') {
-        this.txEvents![item.id].emit('queued', item.txJSON);
+      if (!_.isUndefined(this.txEvents![item.id])) {
+        this.txEvents![item.id].emit('queued', item.data!.txJSON);
       }
+
       // emit globally
-      this.emit('queued', item.id, item.txJSON);
+      this.emit('queued', item.id, item.data!.txJSON);
     } catch (error) {
       throw new SologenicError('1000');
     }
