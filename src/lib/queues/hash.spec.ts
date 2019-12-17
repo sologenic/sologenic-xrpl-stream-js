@@ -2,98 +2,117 @@ import test from 'ava';
 
 import HashQueue from './hash';
 
+const _ = require('underscore');
+
+test.before(async t => { 
+  _.extend(t.context, {  
+    data: {
+      message: "Hello, World"
+    },
+    session: new HashQueue({})
+  });
+});
+
 test("add to the queue", async t => {
-  let session = new HashQueue({});
-  let q = "queue";
-  let data = {
-    message: "Hello, World"
-  };
+  var session = (<any>t.context).session;
+  var queue = "add_to_queue";
+  var data = (<any>t.context).data;
 
-  var p = await session.add(q, data);
+  var result = await session.add(queue, data);
 
-  if ('message' in data)
-    t.true(p.data['message'] === data['message']);
+  t.true(typeof(result.id) === 'string');
+  t.true(typeof(result.data) === 'object');
 
-  t.pass();
+  var response = await session.get(queue, result.id) || { 
+    id: undefined 
+  }; 
+
+  t.true(response.id === result.id);
+});
+
+test("add to the queue with custom id", async t => {
+  var session = (<any>t.context).session;
+  var queue = "add_to_queue_with_custom_id";
+  var data = (<any>t.context).data;
+  var custom_id = 'foobar';
+
+  var result = await session.add(queue, data, custom_id);
+
+  t.true(typeof(result.id) === 'string');
+  t.true(typeof(result.data) === 'object');
+
+  var response = await session.get(queue, custom_id) || { 
+    id: undefined 
+  }; 
+
+  t.true(response.id === custom_id);
 });
 
 test('validate retrieve with an invalid object identifier is undefined', async t => {
-  let session = new HashQueue({});
-  let q = "queue";
+  var session = (<any>t.context).session;
+  var queue = "invalid_object_identifier";
 
-  t.true(await session.get(q, "1") == undefined);
+  t.true(await session.get(queue, "barfoo") === undefined);
 });
 
-test('store and retrieve object', async t => {
-  let session = new HashQueue({});
-  let q = "queue"; 
+test('store and retrieve objects', async t => {
+  var session = (<any>t.context).session;
+  var queue = "store_and_retrieve";
 
-  let data = {
-    message: "Hello, World"
-  };
+  await session.delAll();
 
-  var store1 = await session.add(q, data);
-  await session.add(q, data);
-  await session.add(q, data);
-  await session.add(q, data);
-  await session.add(q, data);
+  var objects = [
+    { message: "Message 1" },
+    { message: "Message 2" },
+    { message: "Message 3" },
+    { message: "Message 4" }
+  ];
 
-  // Sleep for 500 milliseconds to make sure we can retrieve our value back
-  await new Promise(
-    resolve => setTimeout(resolve, 2500)).then(() => {       
-  });
+  for (var index in objects) {
+    let result = await session.add(queue, objects[index]);
+    let response = await session.get(queue, result.id);
 
-  t.log("Attempting to retrieve " + store1.id);
-  
-  var retrieve = await session.get(q, store1.id);
-  
-  if (retrieve) {
-    t.true(retrieve.data['message'] === data['message']);
-  } else {
-    t.fail();
+    t.true(typeof(result.id) === 'string');
+    t.true(typeof(response.id) === 'string');
+
+    t.is(result.id, response.id);    
+  }
+
+  let items = await session.getAll(queue);
+
+  if (items) {
+    t.true(items.length === objects.length);
   }
 });
 
-test('retrieve all objects from data store', async t => {
-  let session = new HashQueue({});
+test('delete objects from queue', async t => {
+  var session = (<any>t.context).session;
+  var queue = "delete_all_objects_from_queue";
 
-  let q = "queue";
+  var objects = [
+    { message: "Message 1" },
+    { message: "Message 2" },
+    { message: "Message 3" },
+    { message: "Message 4" }
+  ];
 
-  let data = {
-    message: "Hello, World"
-  };
+  for (var index in objects) {
+    await session.add(queue, objects[index]);
+  }
 
-  await session.add(q, data);
-  await session.add(q, data);
-  await session.add(q, data);
-  await session.add(q, data);
+  let items = [];
+  items = await session.getAll(queue); 
+  items && t.true(items.length === objects.length, "Checking that items.length === objects.length");
 
-  await new Promise(
-    resolve => setTimeout(resolve, 500)).then(() => {       
-  });
-  
-  var all_data = await session.getAll(q);
+  /* Pop an item off the queue */
+  t.true(await session.pop(queue));
 
-  t.true(all_data.length > 0);
-});
+  /* Delete an item */
+  t.true(await session.del(queue, items[0].id));
 
-test('delete all objects from data store', async t => {
-  let q = "queue";
-  let session = new HashQueue({});
+  /* Delete the remaining items */
+  t.true(await session.delAll(queue));
 
-  let data = {
-    message: "Hello, World"
-  };
-
-  await session.add(q, data);
-  await session.add(q, data);
-  await session.add(q, data);
-  await session.add(q, data);
-
-  // Sleep for 500 milliseconds to make sure we can retrieve our value back
-  await new Promise(
-    resolve => setTimeout(resolve, 5000)).then(() => {       
-  });
-
-  t.true(await session.delAll(q));
+  items = await session.getAll(queue);
+  items && t.true(items.length === 0, "Checking that items.length === 0");
 });
