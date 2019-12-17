@@ -32,15 +32,32 @@ export class SologenicTxHandler extends EventEmitter {
         
    * @param sologenicOptions 
         {
+          queueType?: QueueType;
+
           redis?: {
-            port?: Number;
-            host?: String;
-            family?: Number;
-            password?: String;
-            db?: Number;
+            port?: number;
+            host?: string;
+            family?: number;
+            password?: string;
+            db?: number;
           };
         }
 
+    @example sologenicOptions: {
+          // When using in-memory hashes
+          queueType: 'hash',
+          hash: {}
+
+          // When using redis
+          queueType: 'redis',
+          redis: {
+            host: 'localhost',
+            port: 6379,
+            family: 'redis5.0',
+            password: 'password',
+            db: '1',
+          }
+        }
    */
 
   constructor(
@@ -83,7 +100,7 @@ export class SologenicTxHandler extends EventEmitter {
         Initialize TXMQƨ (Sologenic Transaction Message Queue)
       */
       try {
-        this.txmq = new TXMQƨ(sologenicOptions!.redis); // Pass on the Redis connection details
+        this.txmq = new TXMQƨ(sologenicOptions); // Pass on the Redis connection details
       } catch (error) {
         throw new SologenicError('1002');
       }
