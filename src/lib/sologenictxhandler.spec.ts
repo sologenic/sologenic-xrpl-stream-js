@@ -1,3 +1,11 @@
+/* 
+If you have problems running these test cases due to a SSL certificate
+issue with the s.devnet.rippletest.net and the nodejs SSL CA bundle, run
+the test cases with the environment variable:
+
+$ NODE_TLS_REJECT_UNAUTHORIZED=0 npm run watch
+*/
+
 import test from 'ava';
 import util from 'util';
 
@@ -11,7 +19,8 @@ import { EventEmitter } from 'events';
 const axios = require('axios');
 const _ = require('underscore');
 
-test.before(async t => { 
+/* Use before each so we use a different address for each request */
+test.beforeEach(async t => { 
   _.extend(t.context, {  
     server: "wss://s.devnet.rippletest.net:51233",
     faucet: "https://faucet.devnet.rippletest.net/accounts",
@@ -23,9 +32,10 @@ test.before(async t => {
 
   let result = await axios.post((<any>t.context).faucet);
 
-  // Give the XRPL some (2.5s) time to settle before continuing since
-  // we want to make sure our address is recognized by the ledger
-  // otherwise we get an 'invalid_xrp_address' error.
+  // Give the XRPL some (2.5s) time to settle after generating
+  // a wallet through the XRPL faucet, we want to make sure our 
+  // address is recognized by the ledger otherwise we get 
+  // an 'invalid_xrp_address' error. (sad face)
 
   await util.promisify(setTimeout)(2500);
 
@@ -64,7 +74,8 @@ test('sologenic tx hash initialization', async t => {
 
 test('sologenic tx redis initialization', async t => {
   let rippleOptions: SologenicTypes.RippleAPIOptions = {
-    server: (<any>t.context).server
+    server: (<any>t.context).server,
+    trace: false
   };
 
   let thOptions: SologenicTypes.TransactionHandlerOptions = { 
@@ -82,55 +93,115 @@ test('sologenic tx redis initialization', async t => {
   await t.notThrowsAsync(handler.setAccount(valid_account));
 });
 
-test('submit transaction to xrp ledger', async t => {
-  let rippleOptions: SologenicTypes.RippleAPIOptions = {
-    server: (<any>t.context).server
-  };
+test('submit transaction to xrp ledger on hash queue', async t => {
+  try {
+    let rippleOptions: SologenicTypes.RippleAPIOptions = {
+      server: (<any>t.context).server,
+      trace: false
+    };
 
-  let thOptions: SologenicTypes.TransactionHandlerOptions = { 
-    queueType: SologenicTypes.QUEUE_TYPE_STXMQ_HASH
-  };
-    
-  let handler = new SologenicTxHandler(rippleOptions, thOptions);
+    let thOptions: SologenicTypes.TransactionHandlerOptions = { 
+      queueType: SologenicTypes.QUEUE_TYPE_STXMQ_HASH
+    };
 
-  await handler.connect();
-  await handler.setAccount(<any>(<any>t.context).valid_account);
+    let handler: SologenicTxHandler = new SologenicTxHandler(rippleOptions, thOptions);
+    await handler.connect();
 
-  let tx: SologenicTypes.TX = {
-    Account: <any>(<any>t.context).valid_account.address,
-    TransactionType: "AccountSet",
-  };
+    await handler.setAccount(<any>(<any>t.context).valid_account);
 
-  let transaction: SologenicTypes.TransactionObject = handler.submit(tx);
-  let events: EventEmitter = transaction!.events;
+    let tx: SologenicTypes.TX = {
+      Account: <any>(<any>t.context).valid_account.address,
+      TransactionType: "AccountSet",
+    };
 
-  t.true(events instanceof EventEmitter);
+    let transaction: SologenicTypes.TransactionObject = handler.submit(tx);
 
-  events.on('queued', function() {    
-    // console.debug("Queued event = " + e);
-    // console.debug(e);
-  }).on('dispatched', function() {
-    // console.debug("Dispatched event = " + e);
-    // console.debug(e);
-  }).on('requeued', function() {
-    // console.debug("Requeued event = " + e);
-    // console.debug(e);
-  }).on('warning', function() {
-    // console.debug("Warning event = " + e);
-    // console.debug(e);
-  }).on('validated', function() { 
-    // console.debug("Validated event = " + e);
-    // console.debug(e);
-  });
+    let events: EventEmitter = transaction!.events;
 
-  let rtx: SologenicTypes.ResolvedTX = await transaction.promise;
+    t.true(events instanceof EventEmitter);
 
-  t.log(rtx);
+    events.on('queued', function(/*e*/) {
+      // console.debug("Queued event = " + e);
+      // console.debug(e);
+    }).on('dispatched', function(/*e*/) {
+      // console.debug("Dispatched event = " + e);
+      // console.debug(e);
+    }).on('requeued', function(/*e*/) {
+      // console.debug("Requeued event = " + e);
+      // console.debug(e);
+    }).on('warning', function(/*e*/) {
+      // console.debug("Warning event = " + e);
+      // console.debug(e);
+    }).on('validated', function(/*e*/) {
+      // console.debug("Validated event = " + e);
+      // console.debug(e);
+    });
 
-  t.true(typeof(rtx.accountSequence) === 'number', 'Verify account sequence is a number');
-  t.true(typeof(rtx.fee) === 'string', 'Verify fee is a string (0.00012 currently)');
-  t.true(typeof(rtx.ledgerVersion) === 'number', 'Verify ledger version');
-  t.true(typeof(rtx.timestamp) === 'string', 'Verify timestamp');
+    let rtx: SologenicTypes.ResolvedTX = await transaction.promise;
 
-  t.true(rtx.hash.length === 64);
+    if (rtx) {
+      t.true(typeof(rtx.accountSequence) !== undefined, 'Verify account sequence is a number');
+      t.true(typeof(rtx.fee) === 'string', 'Verify fee is a string (0.00012 currently)');
+      t.true(typeof(rtx.ledgerVersion) === 'number', 'Verify ledger version');
+      t.true(typeof(rtx.timestamp) === 'string', 'Verify timestamp');
+      t.true(rtx.hash.length === 64);
+    } else {
+      t.fail("Resolved TX not resolved");
+    }
+  } catch (error) {
+    t.fail(`Caught an exception, failing test case = ${error}`);
+  }
+});
+
+test('submit transaction to xrp ledger on redis queue', async t => {
+  try {
+    let rippleOptions: SologenicTypes.RippleAPIOptions = {
+      server: (<any>t.context).server
+    };
+
+    let thOptions: SologenicTypes.TransactionHandlerOptions = { 
+      queueType: SologenicTypes.QUEUE_TYPE_STXMQ_REDIS
+    };
+
+    let handler: SologenicTxHandler = new SologenicTxHandler(rippleOptions, thOptions);
+    await handler.connect();
+
+    await handler.setAccount(<any>(<any>t.context).valid_account);
+
+    let tx: SologenicTypes.TX = {
+      Account: <any>(<any>t.context).valid_account.address,
+      TransactionType: "AccountSet",
+    };
+
+    let transaction: SologenicTypes.TransactionObject = handler.submit(tx);
+    let events: EventEmitter = transaction!.events;
+
+    t.true(events instanceof EventEmitter);
+
+    events.on('queued', function(e) {
+      t.log("Queued event = " + e);
+    }).on('dispatched', function(e) {
+      t.log("Dispatched event = " + e);
+    }).on('requeued', function(e) {
+      t.log("Requeued event = " + e);
+    }).on('warning', function(e) {
+      t.log("Warning event = " + e);
+    }).on('validated', function(e) {
+      t.log("Validated event = " + e);
+    });
+
+    let rtx: SologenicTypes.ResolvedTX = await transaction.promise;
+
+    if (rtx) {
+      t.true(typeof(rtx.accountSequence) !== undefined, 'Verify account sequence is a number');
+      t.true(typeof(rtx.fee) === 'string', 'Verify fee is a string (0.00012 currently)');
+      t.true(typeof(rtx.ledgerVersion) === 'number', 'Verify ledger version');
+      t.true(typeof(rtx.timestamp) === 'string', 'Verify timestamp');
+      t.true(rtx.hash.length === 64);
+    } else {
+      t.fail("Resolved TX not resolved");
+    }
+  } catch (error) {
+    t.fail(`Caught an exception, failing test case = ${error}`);
+  }
 });

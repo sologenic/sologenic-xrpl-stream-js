@@ -79,21 +79,20 @@ export default class HashQueue implements IQueue {
    * @description pop an element off the end of the queue
    */
 
-  public async pop(queue: string): Promise<boolean | any[]> {
+  public async pop(queue: string): Promise<MQTX | boolean> {
     return new Promise((resolve, reject) => {
       try {
         if (this._exist(queue)) {
           let data = this.hash.get(queue) || [];
 
           if (data.length > 0) {           
-            data.pop();
-            this.hash.set(queue, data);
+            let element = data.pop();
  
-            resolve(data.length === (this.hash.get(queue) || []).length ? true : false);
+            this.hash.set(queue, data);
+            resolve(element);
           }
+          resolve(false);
         }
-
-        reject(false);
       } catch (error) {
         reject(false);
       }
@@ -106,19 +105,19 @@ export default class HashQueue implements IQueue {
    * @param id
    * @description delete an object by id from the queue
    */
-  public async del(queue: string, id: string): Promise<boolean | any[]> {
+  public async del(queue: string, id: string): Promise<boolean> {
     return new Promise((resolve, reject) => {
       try {
         if (this._exist(queue)) {
-          let data = this.hash.get(queue) || [];
+          const data = this.hash.get(queue) || [];
 
-          let filtered = data.filter(function(e) {
+          const filtered = data.filter(function(e) {
             return e.id !== id;
           });
           
           this.hash.set(queue, filtered);
 
-          resolve(data.length-1 === (this.hash.get(queue) || []).length ? true : false);
+          resolve((data.length - 1) === (this.hash.get(queue) || []).length);
         } else {
           resolve(false);
         }
