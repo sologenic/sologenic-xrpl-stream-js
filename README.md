@@ -21,10 +21,14 @@ const ƨ = require('sologenic-xrpl-stream-js');
       },
       // Sologenic Options, hash or redis
       {
+<<<<<<< HEAD
         // queueType: "hash",
         // hash: {}
 
         queueType: 'redis',
+=======
+        store: "redis", // Specify store
+>>>>>>> 62f29e34a4b54637024522abeed3fbef41637191
         redis: {
           host: '127.0.0.1',
           port: 6379

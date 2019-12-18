@@ -20,17 +20,17 @@ export class SologenicTxHandler extends EventEmitter {
   protected math: any;
 
   /**
-   * Constructor 
-   * 
-   * @param rippleApiOptions This parameter is used to construct ripple-lib and takes in:     
+   * Constructor
+   *
+   * @param rippleApiOptions This parameter is used to construct ripple-lib and takes in:
           server?: string;
           feeCushion?: number; // This property is overridden by Sologenic to 1
           maxFeeXRP?: string;
           trace?: boolean;
           proxy?: string;
           timeout?: number; // This property is overridden by Sologenic to 1000000
-        
-   * @param sologenicOptions 
+
+   * @param sologenicOptions
         {
           queueType?: QueueType;
 
@@ -41,6 +41,16 @@ export class SologenicTxHandler extends EventEmitter {
             password?: string;
             db?: number;
           };
+          mysql?: {
+            port?: number;
+            host?: string;
+            user?: string;
+            password?: string;
+            database?: string;
+          };
+          mongo?: {
+            uri: string
+          }
         }
 
     @example sologenicOptions: {
@@ -66,7 +76,7 @@ export class SologenicTxHandler extends EventEmitter {
   ) {
     super();
     try {
-      /* Initialize RippleAPI driven from the ripple-lib. Sologenic uses the following methods from this library: 
+      /* Initialize RippleAPI driven from the ripple-lib. Sologenic uses the following methods from this library:
       connect()
       on()
       isValidAddress()
@@ -791,7 +801,7 @@ export class SologenicTxHandler extends EventEmitter {
         if (exists) {
           // only if the result from the closed ledger is tesSUCCESS, consider this transaction to be final
           if (validate.outcome.result === 'tesSUCCESS') {
-            /* 
+            /*
               add them to `validated` queue for archiving. This queue is not processed and is just for the records.
               Suggestion: add a TTL to these transactions in this queue to avoid overloading Redis or memory and possibly move these
               transactions to a database

@@ -1,6 +1,7 @@
 import { MQTX } from '../types';
 
 import { EventEmitter } from 'events';
+import { IRedisOptions, IMongoOptions, IMySQLOptions } from './storesoptions';
 
 export interface IQueue {
   add(queue: string, data: object, id?: string): Promise<MQTX>;

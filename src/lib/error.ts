@@ -9,7 +9,7 @@ export class SologenicError extends Error {
     return [
       { id: '1000', message: 'unspecified_error' },
       { id: '1001', message: 'sologenic_constructor_error' },
-      { id: '1002', message: 'redis_initialization_failed' },
+      { id: '1002', message: 'store_initialization_failed' },
       { id: '1003', message: 'connection_error' },
       { id: '1004', message: 'unspecified_ripple_error' },
       { id: '1005', message: 'ripple_ws_connection_error' },
