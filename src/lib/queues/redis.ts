@@ -82,25 +82,29 @@ export default class RedisQueue implements IQueue {
      *
      * @param queue
      */
-    public async pop(queue: string): Promise<boolean | Array<any>> {
+    public async pop(queue: string): Promise<MQTX | boolean> {
       try {
         const element = await this.redis.blpop(queue, 1);
-  
-        if (element && element.length > 0) {
-          return JSON.parse(element[1]);
-        } else {
-          return false;
-        }
-      } catch (error) {
+
+        /*
+        If the returned element not undefined
+        and its length is greater than 0, return the object
+        */
+
+        return (element && element.length > 0) ? JSON.parse(element[1]) : false;
+
+        } catch (error) {
         throw new Error("Can't get TX from Redis");
       }
     }
   
-    public async del(queue: string, id: string): Promise<boolean | Array<any>> {
+    public async del(queue: string, id: string): Promise<boolean> {
       try {
         const elements = await this.redis.lrange(queue, 0, -1);
+
         const element = elements.find((el: string) => {
           const parsed = JSON.parse(el);
+
           if (parsed.id === id) {
             return parsed;
           }

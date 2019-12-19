@@ -5,7 +5,8 @@ export class SologenicError extends Error {
     this.message = this._getError(status);
     Object.setPrototypeOf(this, SologenicError.prototype);
   }
-  public _getError(errorId: string): string {
+  
+  public static getErrorCodes(): Array<any> {
     return [
       { id: '1000', message: 'unspecified_error' },
       { id: '1001', message: 'sologenic_constructor_error' },
@@ -16,6 +17,20 @@ export class SologenicError extends Error {
       { id: '1006', message: 'unable_to_validate_missed_transactions' },
       { id: '2000', message: 'invalid_xrp_address' },
       { id: '2001', message: 'invalid_xrp_secret' }
-    ].find(e => e.id === errorId)!.message;
+    ]
+  }
+
+  public static getErrorCodeById(errorId: string): string {
+    return SologenicError.getErrorCodes().find(
+      e => e.id === errorId)!.message;
+  }
+
+  public static getErrorCodeByMessage(message: string): string {
+    return SologenicError.getErrorCodes().find(
+      e => e.message === message)!.id;
+  }
+
+  public _getError(errorId: string): string {
+    return SologenicError.getErrorCodeById(errorId);
   }
 }

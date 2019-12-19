@@ -6,8 +6,8 @@ export interface IQueue {
   add(queue: string, data: object, id?: string): Promise<MQTX>;
   get(queue: string, id: string): Promise<MQTX | undefined>;
   getAll(queue: string): Promise<Array<MQTX>>;
-  pop(queue: string): Promise<boolean | Array<any>>
-  del(queue: string, id: string): Promise<boolean | Array<any>>
+  pop(queue: string): Promise<MQTX | boolean>;
+  del(queue: string, id: string): Promise<boolean>;
   delAll(queue: string): Promise<boolean>;
 }
 

@@ -61,7 +61,7 @@ export class TXMQƨ {
    *
    * @param queue
    */
-  public async pop(queue: string): Promise<boolean | Array<any>> {
+  public async pop(queue: string): Promise<MQTX | boolean> {
     return this.queue.pop(queue);
   }
 
@@ -70,7 +70,7 @@ export class TXMQƨ {
    * @param queue
    * @param id
    */
-  public async del(queue: string, id: string): Promise<boolean | any[]> {
+  public async del(queue: string, id: string): Promise<boolean> {
     return this.queue.del(queue, id);
   }
 
