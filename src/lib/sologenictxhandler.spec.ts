@@ -1,4 +1,4 @@
-/* 
+/*
 If you have problems running these test cases due to a SSL certificate
 issue with the s.devnet.rippletest.net and the nodejs SSL CA bundle, run
 the test cases with the environment variable:
@@ -20,8 +20,8 @@ const axios = require('axios');
 const _ = require('underscore');
 
 /* Use before each so we use a different address for each request */
-test.beforeEach(async t => { 
-  _.extend(t.context, {  
+test.beforeEach(async t => {
+  _.extend(t.context, {
     server: "wss://s.devnet.rippletest.net:51233",
     faucet: "https://faucet.devnet.rippletest.net/accounts",
     invalid_account: {
@@ -33,16 +33,16 @@ test.beforeEach(async t => {
   let result = await axios.post((<any>t.context).faucet);
 
   // Give the XRPL some (2.5s) time to settle after generating
-  // a wallet through the XRPL faucet, we want to make sure our 
-  // address is recognized by the ledger otherwise we get 
+  // a wallet through the XRPL faucet, we want to make sure our
+  // address is recognized by the ledger otherwise we get
   // an 'invalid_xrp_address' error. (sad face)
 
   await util.promisify(setTimeout)(2500);
 
   t.is(typeof(result.data!.account), 'object');
-  
+
   _.extend(t.context, {
-    valid_account: { 
+    valid_account: {
       address: result.data.account.address,
       secret: result.data.account.secret
     }
@@ -57,7 +57,7 @@ test('sologenic tx hash initialization', async t => {
     server: (<any>t.context).server
   };
 
-  let thOptions: SologenicTypes.TransactionHandlerOptions = { 
+  let thOptions: SologenicTypes.TransactionHandlerOptions = {
     queueType: SologenicTypes.QUEUE_TYPE_STXMQ_HASH
   };
 
@@ -78,7 +78,7 @@ test('sologenic tx redis initialization', async t => {
     trace: false
   };
 
-  let thOptions: SologenicTypes.TransactionHandlerOptions = { 
+  let thOptions: SologenicTypes.TransactionHandlerOptions = {
     queueType: SologenicTypes.QUEUE_TYPE_STXMQ_REDIS
   };
 
@@ -100,7 +100,7 @@ test('submit transaction to xrp ledger on hash queue', async t => {
       trace: false
     };
 
-    let thOptions: SologenicTypes.TransactionHandlerOptions = { 
+    let thOptions: SologenicTypes.TransactionHandlerOptions = {
       queueType: SologenicTypes.QUEUE_TYPE_STXMQ_HASH
     };
 
@@ -159,7 +159,7 @@ test('submit transaction to xrp ledger on redis queue', async t => {
       server: (<any>t.context).server
     };
 
-    let thOptions: SologenicTypes.TransactionHandlerOptions = { 
+    let thOptions: SologenicTypes.TransactionHandlerOptions = {
       queueType: SologenicTypes.QUEUE_TYPE_STXMQ_REDIS
     };
 
@@ -190,6 +190,10 @@ test('submit transaction to xrp ledger on redis queue', async t => {
       t.log("Validated event = " + e);
     });
 
+    handler.on('failed', function(/*e*/) {
+      // Failed transaction
+    });
+
     let rtx: SologenicTypes.ResolvedTX = await transaction.promise;
 
     if (rtx) {
@@ -197,7 +201,59 @@ test('submit transaction to xrp ledger on redis queue', async t => {
       t.true(typeof(rtx.fee) === 'string', 'Verify fee is a string (0.00012 currently)');
       t.true(typeof(rtx.ledgerVersion) === 'number', 'Verify ledger version');
       t.true(typeof(rtx.timestamp) === 'string', 'Verify timestamp');
+
       t.true(rtx.hash.length === 64);
+
+      /*
+      sologenictxhandler › submit transaction to xrp ledger on redis queue
+      ℹ Queued event = [object Object]
+      ℹ Dispatched event = [object Object]
+      ℹ Validated event = [object Object]
+      ℹ {
+          accountSequence: 3278288,
+          dispatchedSequence: 3278288,
+          fee: '0.000012',
+          hash: 'FF222D4C1775332C654F71744693A9A2C84772477ACCA3368B62A5F685B97A40',
+          ledgerVersion: 3278289,
+          timestamp: '2019-12-18T23:53:12.000Z',
+        }
+      ℹ {
+          address: 'r2PXRXHHD3tXPzCh6pmy3PAGokFBmMaTo',
+          id: 'FF222D4C1775332C654F71744693A9A2C84772477ACCA3368B62A5F685B97A40',
+          outcome: {
+            balanceChanges: {
+              r2PXRXHHD3tXPzCh6pmy3PAGokFBmMaTo: Array [ … ],
+            },
+            fee: '0.000012',
+            indexInLedger: 1,
+            ledgerVersion: 3278289,
+            orderbookChanges: {},
+            result: 'tesSUCCESS',
+            timestamp: '2019-12-18T23:53:12.000Z',
+          },
+          sequence: 3278288,
+          specification: {},
+          type: 'settings',
+        }
+      */
+
+      const xrplTransaction = await handler.getRippleApi().getTransaction(rtx.hash);
+
+      t.is(xrplTransaction.outcome!.result, 'tesSUCCESS');
+
+      /*
+       * Uncomment if you want to see the result of the resolved transaction and
+       * XRPL transaction
+
+      t.log(rtx);
+      t.log(xrplTransaction);
+      */
+
+      t.true(rtx.hash === xrplTransaction.id);
+      t.true(rtx.accountSequence === xrplTransaction.sequence);
+      t.true(xrplTransaction.type === "settings");
+      t.true(xrplTransaction.address === <any>(<any>t.context).valid_account.address);
+
     } else {
       t.fail("Resolved TX not resolved");
     }

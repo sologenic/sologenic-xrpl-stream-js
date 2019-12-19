@@ -7,6 +7,7 @@ import util from 'util';
 import { TXMQƨ } from './stxmq';
 import { EventEmitter } from 'events';
 import { v4 as uuid } from 'uuid';
+
 const _ = require('underscore');
 
 export default class SologenicTxHandler extends EventEmitter {
@@ -21,17 +22,17 @@ export default class SologenicTxHandler extends EventEmitter {
   protected math: any;
 
   /**
-   * Constructor 
-   * 
-   * @param rippleApiOptions This parameter is used to construct ripple-lib and takes in:     
+   * Constructor
+   *
+   * @param rippleApiOptions This parameter is used to construct ripple-lib and takes in:
           server?: string;
           feeCushion?: number; // This property is overridden by Sologenic to 1
           maxFeeXRP?: string;
           trace?: boolean;
           proxy?: string;
           timeout?: number; // This property is overridden by Sologenic to 1000000
-        
-   * @param sologenicOptions 
+
+   * @param sologenicOptions
         {
           queueType?: QueueType;
 
@@ -67,7 +68,7 @@ export default class SologenicTxHandler extends EventEmitter {
   ) {
     super();
     try {
-      /* Initialize RippleAPI driven from the ripple-lib. Sologenic uses the following methods from this library: 
+      /* Initialize RippleAPI driven from the ripple-lib. Sologenic uses the following methods from this library:
       connect()
       on()
       isValidAddress()
@@ -120,11 +121,20 @@ export default class SologenicTxHandler extends EventEmitter {
   }
 
   /**
+   * Expose the ripple API so that our tests can use it to check
+   * transaction status and states.
+   */
+
+  public getRippleApi(): RippleAPI {
+    return this.rippleApi;
+  }
+
+  /**
    * Connect to various services: RippleAPI, fetch current ledger state.
    */
   public async connect(): Promise<this> {
     try {
-      await this.rippleApi.connect();
+      await this.getRippleApi().connect();
       await this._connected();
 
       // Start the dispatcher listener
@@ -152,7 +162,7 @@ export default class SologenicTxHandler extends EventEmitter {
       /*
         Is this a valid XRP address?
       */
-      if (this.rippleApi.isValidAddress(account.address)) {
+      if (this.getRippleApi().isValidAddress(account.address)) {
         this.account = account.address;
       } else {
         throw new SologenicError('2000', new RippleError.ValidationError());
@@ -160,7 +170,7 @@ export default class SologenicTxHandler extends EventEmitter {
       /*
         Is this a valid XRP secret?
       */
-      if (this.rippleApi.isValidSecret(account.secret)) {
+      if (this.getRippleApi().isValidSecret(account.secret)) {
         this.secret = account.secret;
       } else {
         throw new SologenicError('2001', new RippleError.ValidationError());
@@ -225,7 +235,7 @@ export default class SologenicTxHandler extends EventEmitter {
   }
 
   private async _connected(): Promise<boolean> {
-    if (this.rippleApi.isConnected()) {
+    if (this.getRippleApi().isConnected()) {
       return true;
     } else {
       await util.promisify(setTimeout)(100);
@@ -261,17 +271,17 @@ export default class SologenicTxHandler extends EventEmitter {
   private async _fetchCurrentState(): Promise<void> {
     try {
       // If the Ripple API is not connected, make sure we connect.
-      if (!this.rippleApi.isConnected()) {
+      if (!this.getRippleApi().isConnected()) {
         await this.connect();
       }
 
       // Use the ripple-lib built in REST functions to get the ledger version and fee. Please note that these
       // values are updated using the WS after the first initilization, until this method is called again
-      this.ledger.ledgerVersion = await this.rippleApi.getLedgerVersion();
-      this.ledger.baseFeeXRP = await this.rippleApi.getFee();
+      this.ledger.ledgerVersion = await this.getRippleApi().getLedgerVersion();
+      this.ledger.baseFeeXRP = await this.getRippleApi().getFee();
 
       // Get account info of the current XRP account and set the sequence to submit transactions
-      const account = await this.rippleApi.request('account_info', {
+      const account = await this.getRippleApi().request('account_info', {
         account: this.account
       });
       this.sequence = account.account_data.Sequence;
@@ -296,21 +306,21 @@ export default class SologenicTxHandler extends EventEmitter {
    */
   private _subscribeWS(): any {
     try {
-      this.rippleApi.on('connect', () => {
+      this.getRippleApi().on('connect', () => {
         // Reconnect
       });
 
-      this.rippleApi.on('disconnect', () => {
-        // Reconnect
-        this.connect();
-      });
-
-      this.rippleApi.on('error', () => {
+      this.getRippleApi().on('disconnect', () => {
         // Reconnect
         this.connect();
       });
 
-      this.rippleApi.on('ledger', ledger => {
+      this.getRippleApi().on('error', () => {
+        // Reconnect
+        this.connect();
+      });
+
+      this.getRippleApi().on('ledger', ledger => {
         // Update the ledger version
         this.ledger = ledger;
       });
@@ -450,7 +460,7 @@ export default class SologenicTxHandler extends EventEmitter {
       const tx = this._addMemo(unsignedTX);
 
       // Make sure the account is valid
-      if (!this.rippleApi.isValidAddress(tx.Account)) {
+      if (!this.getRippleApi().isValidAddress(tx.Account)) {
         throw new SologenicError('2000', new RippleError.ValidationError());
       }
 
@@ -458,7 +468,7 @@ export default class SologenicTxHandler extends EventEmitter {
         // Transaction Specific Settings
         switch (tx.TransactionType) {
           case 'AccountSet':
-            tx.Flags = this.rippleApi.txFlags.Universal.FullyCanonicalSig;
+            tx.Flags = this.getRippleApi().txFlags.Universal.FullyCanonicalSig;
             // JavaScript converts operands to 32-bit signed ints before doing bitwise
             // operations. We need to convert it back to an unsigned int.
             tx.Flags = tx.Flags >>> 0;
@@ -470,7 +480,7 @@ export default class SologenicTxHandler extends EventEmitter {
 
       // multiply the fee by 1.2 to make sure the tx goes through
       // Suggestion. In cases of surge in network fee, this value can be dynamically increased.
-      tx.Fee = this.rippleApi.xrpToDrops(
+      tx.Fee = this.getRippleApi().xrpToDrops(
         this.math.multiply(this.ledger.baseFeeXRP, this.feeCushion).toFixed(6)
       );
 
@@ -481,7 +491,7 @@ export default class SologenicTxHandler extends EventEmitter {
       tx.LastLedgerSequence = this.ledger.ledgerVersion + 3;
 
       // Sign the transaction using the secret provided on init
-      const signedTx: SologenicTypes.signedTX = this.rippleApi.sign(
+      const signedTx: SologenicTypes.signedTX = this.getRippleApi().sign(
         JSON.stringify(tx),
         this.secret
       );
@@ -490,7 +500,7 @@ export default class SologenicTxHandler extends EventEmitter {
       const firstLedgerSequence: number = this.ledger.ledgerVersion;
 
       // Submit the transaction to the ledger
-      const result: SologenicTypes.FormattedSubmitResponse = await this.rippleApi.submit(
+      const result: SologenicTypes.FormattedSubmitResponse = await this.getRippleApi().submit(
         signedTx.signedTransaction
       );
 
@@ -780,7 +790,7 @@ export default class SologenicTxHandler extends EventEmitter {
       // Check and see if the dispatched transaction's ledger is passed or we are in the current ledger
       if (dispatchedTX!.result!.lastLedger <= this.ledger.ledgerVersion) {
         // Get the transaction details from the ledger
-        const validate = await this.rippleApi.getTransaction(
+        const validate = await this.getRippleApi().getTransaction(
           dispatchedTX.result.hash,
           {
             includeRawTransaction: false,
@@ -798,7 +808,7 @@ export default class SologenicTxHandler extends EventEmitter {
         if (exists) {
           // only if the result from the closed ledger is tesSUCCESS, consider this transaction to be final
           if (validate.outcome.result === 'tesSUCCESS') {
-            /* 
+            /*
               add them to `validated` queue for archiving. This queue is not processed and is just for the records.
               Suggestion: add a TTL to these transactions in this queue to avoid overloading Redis and possibly move these
               transactions to a database
