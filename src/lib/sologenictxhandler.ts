@@ -43,15 +43,19 @@ export default class SologenicTxHandler extends EventEmitter {
             password?: string;
             db?: number;
           };
-          mysql?: {
-            port?: number;
-            host?: string;
-            user?: string;
-            password?: string;
-            database?: string;
-          };
-          mongo?: {
-            uri: string
+
+          hash?: {};
+
+          memcache?: {
+            servers: string;
+            clientOpts: {
+              expires?: number;
+              retries?: number;
+              logger?: Console;
+              failover?: boolean;
+              failoverTime?: number;
+              timeout?: number;
+            }
           }
         }
 
@@ -68,6 +72,15 @@ export default class SologenicTxHandler extends EventEmitter {
             family: 'redis5.0',
             password: 'password',
             db: '1',
+          }
+
+          // When using memcache/memcachier
+          queueType: 'memcache',
+          memcache: {
+            servers: 'username:password@localhost:11211',
+            clientOpts: {
+              expires: 0
+            }
           }
         }
    */

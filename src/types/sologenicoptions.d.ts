@@ -1,7 +1,7 @@
 import { MQTX } from '../types';
 
 import { EventEmitter } from 'events';
-import { IRedisOptions, IMongoOptions, IMySQLOptions } from './storesoptions';
+import { IRedisOptions, IMemcachedOptions } from './storesoptions';
 
 export interface IQueue {
   add(queue: string, data: object, id?: string): Promise<MQTX>;
@@ -13,15 +13,11 @@ export interface IQueue {
 }
 
 export interface TransactionHandlerOptions {
-  queueType?: string;
+  queueType?: "redis" | "memcache" | "hash";
 
-  redis?: {
-    port?: number;
-    host?: string;
-    family?: number;
-    password?: string;
-    db?: number;
-  };
+  redis?: IRedisOptions;
+
+  memcache?: IMemcachedOptions;
 
   hash?: {};
 }
