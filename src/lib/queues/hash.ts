@@ -3,10 +3,20 @@ import { MQTX, IQueue } from '../../types';
 import { v4 as uuid } from 'uuid';
 
 export default class HashQueue implements IQueue {
-  private hash = new Map<any, Array<MQTX>>(); 
+  private hash: Map<string, Array<MQTX>> = new Map<string, Array<MQTX>>(); 
 
   constructor(options: any) { 
     options;
+  }
+
+  private _exist(queue: string): Promise<boolean> {
+    return new Promise((resolve, reject) => {
+      try {
+        resolve(this.hash.has(queue));
+      } catch (error) {
+        reject(false);
+      }
+    });
   }
 
   /**
@@ -14,14 +24,15 @@ export default class HashQueue implements IQueue {
    * @param queue
    * @param data
    * @param id
+   * @description add an object to the queue
    */
-  public async add(queue: string, data: object, id?: string): Promise<MQTX> {
+  public async add(queue: string, data: object, id?: string): Promise<MQTX> {   
     const element = {
       id: typeof id !== 'undefined' ? id : uuid(),
       data
     };
 
-    var _queue = this.hash.has(queue) ? this.hash.get(queue) : new Array<MQTX>();
+    var _queue = await this._exist(queue) ? this.hash.get(queue) : new Array<MQTX>();
 
     if (_queue instanceof Array) {
       _queue.push(element);
@@ -36,15 +47,16 @@ export default class HashQueue implements IQueue {
    *
    * @param queue
    * @param id
+   * @description returns a specific object within the queue
    */
   public async get(queue: string, id: string): Promise<MQTX | undefined> {  
-    var _queue = this.hash.has(queue) ? this.hash.get(queue) : new Array<MQTX>();
+    var _queue = await this._exist(queue) ? this.hash.get(queue) : new Array<MQTX>();
 
     var found = undefined;
 
     if (_queue instanceof Array) { 
       _queue.forEach((obj) => {
-        if (obj.id == id)
+        if (obj.id === id)
           found = obj;
       });
     }
@@ -55,63 +67,80 @@ export default class HashQueue implements IQueue {
   /**
    *
    * @param queue
+   * @description returns all elements of the queue
    */
   public async getAll(queue: string): Promise<Array<MQTX>> {
-    return this.hash.has(queue) ? this.hash.get(queue) || [] : [];
+    return await this._exist(queue) ? this.hash.get(queue) || [] : [];
   }
 
   /**
    *
    * @param queue
+   * @description pop an element off the end of the queue
    */
-  public async pop(queue: string): Promise<boolean | Array<any>> {
-    if (this.hash.has(queue)) {
-      var _queue = this.hash.get(queue) || [];
 
-      if (_queue.length > 0 && _queue.pop()) {
-        this.hash.set(queue, _queue);
-      } else {
-        return false;
+  public async pop(queue: string): Promise<MQTX | boolean> {
+    return new Promise((resolve, reject) => {
+      try {
+        if (this._exist(queue)) {
+          let data = this.hash.get(queue) || [];
+
+          if (data.length > 0) {           
+            let element = data.pop();
+ 
+            this.hash.set(queue, data);
+            resolve(element);
+          }
+          resolve(false);
+        }
+      } catch (error) {
+        reject(false);
       }
-
-      return _queue;
-    }
-
-    return false;
+    });
   }
 
   /**
    *
    * @param queue
    * @param id
+   * @description delete an object by id from the queue
    */
-  public async del(queue: string, id: string): Promise<boolean | any[]> {
-    if (this.hash.has(queue)) {
-      var _queue = this.hash.get(queue) || [];
+  public async del(queue: string, id: string): Promise<boolean> {
+    return new Promise((resolve, reject) => {
+      try {
+        if (this._exist(queue)) {
+          const data = this.hash.get(queue) || [];
 
-      _queue.filter(function(value) {
-        return value.id != id;
-      });
+          const filtered = data.filter(function(e) {
+            return e.id !== id;
+          });
+          
+          this.hash.set(queue, filtered);
 
-      this.hash.set(queue, _queue);
-    }
-
-    return false;
+          resolve((data.length - 1) === (this.hash.get(queue) || []).length);
+        } else {
+          resolve(false);
+        }
+      } catch (error) {
+        reject(false);
+      }
+    });
   }
 
   /**
    *
    * @param queue
+   * @description delete all elements from the queue
    */
-  public async delAll(queue: string): Promise<boolean> {
-    if (this.hash.has(queue)) {     
-      var _queue = new Array<MQTX>();
-
-      this.hash.set(queue, _queue);
-
-      return true;
-    }
-
-    return false;
+  public delAll(queue: string): Promise<boolean> {
+    return new Promise((resolve, reject) => {
+      try {
+        if (this._exist(queue)) {         
+          resolve(this.hash.delete(queue));
+        }
+      } catch (error) {
+        reject(false);
+      }
+    });
   }
-};
+}
