@@ -19,16 +19,12 @@ const ƨ = require('sologenic-xrpl-stream-js');
       {
         server: 'wss://testnet.xrpl-labs.com' // Kudos to Wietse Wind
       },
-      // Sologenic Options, hash or redis
+      // Sologenic Options, hash or redis or memcache
       {
-<<<<<<< HEAD
         // queueType: "hash",
         // hash: {}
 
         queueType: 'redis',
-=======
-        store: "redis", // Specify store
->>>>>>> 62f29e34a4b54637024522abeed3fbef41637191
         redis: {
           host: '127.0.0.1',
           port: 6379

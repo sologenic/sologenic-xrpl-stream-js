@@ -3,9 +3,9 @@ import { MQTX, IQueue } from '../../types';
 import { v4 as uuid } from 'uuid';
 
 export default class HashQueue implements IQueue {
-  private hash = new Map<any, Array<MQTX>>(); 
+  private hash = new Map<any, Array<MQTX>>();
 
-  constructor(options: any) { 
+  constructor(options: any) {
     options;
   }
 
@@ -37,12 +37,12 @@ export default class HashQueue implements IQueue {
    * @param queue
    * @param id
    */
-  public async get(queue: string, id: string): Promise<MQTX | undefined> {  
+  public async get(queue: string, id: string): Promise<MQTX | undefined> {
     var _queue = this.hash.has(queue) ? this.hash.get(queue) : new Array<MQTX>();
 
     var found = undefined;
 
-    if (_queue instanceof Array) { 
+    if (_queue instanceof Array) {
       _queue.forEach((obj) => {
         if (obj.id == id)
           found = obj;
@@ -104,7 +104,7 @@ export default class HashQueue implements IQueue {
    * @param queue
    */
   public async delAll(queue: string): Promise<boolean> {
-    if (this.hash.has(queue)) {     
+    if (this.hash.has(queue)) {
       var _queue = new Array<MQTX>();
 
       this.hash.set(queue, _queue);

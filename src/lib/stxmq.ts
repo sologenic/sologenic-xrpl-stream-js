@@ -2,10 +2,15 @@ import {
   MQTX,
   IQueue,
   QUEUE_TYPE_STXMQ_REDIS,
-  QUEUE_TYPE_STXMQ_HASH } from '../types';
+  QUEUE_TYPE_STXMQ_HASH,
+  QUEUE_TYPE_STXMQ_MEMCACHE
+  // QUEUE_TYPE_STXMQ_AMQP
+} from '../types';
 
 import RedisQueue from './queues/redis';
 import HashQueue from './queues/hash';
+import MemcacheQueue from './queues/memcached';
+// import AmqpQueue from './queues/amqp';
 
 export class TXMQƨ {
   private queue: IQueue;
@@ -19,6 +24,10 @@ export class TXMQƨ {
 
         case QUEUE_TYPE_STXMQ_HASH:
           this.queue = new HashQueue(sologenicOptions!.hash);
+          break;
+
+        case QUEUE_TYPE_STXMQ_MEMCACHE:
+          this.queue = new MemcacheQueue(sologenicOptions!.memcache);
           break;
 
         default:
@@ -93,6 +102,8 @@ export class TXMQƨ {
   }
 
   /**
+   *
+   *
    *
    * @param queue
    */

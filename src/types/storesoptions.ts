@@ -6,15 +6,14 @@ export interface IRedisOptions {
   db?: number;
 }
 
-export interface IMongoOptions {
-  uri: string;
-  database?: string;
-}
-
-export interface IMySQLOptions {
-  port?: number;
-  host?: string;
-  user?: string;
-  password?: string;
-  database?: string;
+export interface IMemcachedOptions {
+  servers: string;
+  clientOpts: {
+    expires?: number;
+    retries?: number;
+    logger?: Console;
+    failover?: boolean;
+    failoverTime?: number;
+    timeout?: number;
+  };
 }

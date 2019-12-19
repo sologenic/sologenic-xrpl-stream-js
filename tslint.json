@@ -8,6 +8,7 @@
     "no-submodule-imports": false,
     "array-type": [false, "array"],
     "no-bitwise": false,
-    "no-console": false
+    "no-console": false,
+    "max-classes-per-file": false
   }
 }

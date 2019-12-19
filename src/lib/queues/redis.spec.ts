@@ -6,7 +6,7 @@ test("add to the queue", async t => {
   let session = new RedisQueue({
     host: 'localhost',
     port: 6379,
-    database: 1 
+    database: 1
   });
 
   let q = "queue";
@@ -26,7 +26,7 @@ test('validate retrieve with an invalid object identifier is undefined', async t
   let session = new RedisQueue({
     host: 'localhost',
     port: 6379,
-    database: 1 
+    database: 1
   });
 
   let q = "queue";
@@ -38,10 +38,10 @@ test('store and retrieve object', async t => {
   let session = new RedisQueue({
     host: 'localhost',
     port: 6379,
-    database: 1 
+    database: 1
   });
 
-  let q = "queue"; 
+  let q = "queue";
 
   let data = {
     message: "Hello, World"
@@ -55,13 +55,13 @@ test('store and retrieve object', async t => {
 
   // Sleep for 500 milliseconds to make sure we can retrieve our value back
   await new Promise(
-    resolve => setTimeout(resolve, 2500)).then(() => {       
+    resolve => setTimeout(resolve, 2500)).then(() => {
   });
 
   t.log("Attempting to retrieve " + store1.id);
-  
+
   var retrieve = await session.get(q, store1.id);
-  
+
   if (retrieve) {
     t.true(retrieve.data['message'] === data['message']);
   } else {
@@ -73,7 +73,7 @@ test('retrieve all objects from data store', async t => {
   let session = new RedisQueue({
     host: 'localhost',
     port: 6379,
-    database: 1 
+    database: 1
   });
 
   let q = "queue";
@@ -88,9 +88,9 @@ test('retrieve all objects from data store', async t => {
   await session.add(q, data);
 
   await new Promise(
-    resolve => setTimeout(resolve, 500)).then(() => {       
+    resolve => setTimeout(resolve, 500)).then(() => {
   });
-  
+
   var all_data = await session.getAll(q);
 
   t.true(all_data.length > 0);
@@ -101,7 +101,7 @@ test('delete all objects from data store', async t => {
   let session = new RedisQueue({
     host: 'localhost',
     port: 6379,
-    database: 1 
+    database: 1
   });
 
   let data = {
@@ -115,7 +115,7 @@ test('delete all objects from data store', async t => {
 
   // Sleep for 500 milliseconds to make sure we can retrieve our value back
   await new Promise(
-    resolve => setTimeout(resolve, 5000)).then(() => {       
+    resolve => setTimeout(resolve, 5000)).then(() => {
   });
 
   t.true(await session.delAll(q));
