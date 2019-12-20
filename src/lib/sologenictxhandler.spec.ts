@@ -64,14 +64,15 @@ test('sologenic tx hash initialization', async t => {
   let handler = new SologenicTxHandler(rippleOptions, thOptions);
   await handler.connect();
 
-  const valid_account: SologenicTypes.Account = (<any>(<any>t.context).valid_account);
-  const invalid_account: SologenicTypes.Account = (<any>(<any>t.context).invalid_account);
+  const valid_account: SologenicTypes.Account = (<SologenicTypes.Account>(<any>t.context).valid_account);
+  const invalid_account: SologenicTypes.Account = (<SologenicTypes.Account>(<any>t.context).invalid_account);
 
   await t.throwsAsync<SologenicError>(handler.setAccount(invalid_account));
 
   await t.notThrowsAsync(handler.setAccount(valid_account));
 });
 
+/*
 test('sologenic tx redis initialization', async t => {
   let rippleOptions: SologenicTypes.RippleAPIOptions = {
     server: (<any>t.context).server,
@@ -92,6 +93,7 @@ test('sologenic tx redis initialization', async t => {
 
   await t.notThrowsAsync(handler.setAccount(valid_account));
 });
+*/
 
 test('submit transaction to xrp ledger on hash queue', async t => {
   try {
@@ -107,7 +109,7 @@ test('submit transaction to xrp ledger on hash queue', async t => {
     let handler: SologenicTxHandler = new SologenicTxHandler(rippleOptions, thOptions);
     await handler.connect();
 
-    await handler.setAccount(<any>(<any>t.context).valid_account);
+    await handler.setAccount(<SologenicTypes.Account>(<any>t.context).valid_account);
 
     let tx: SologenicTypes.TX = {
       Account: <any>(<any>t.context).valid_account.address,
@@ -166,7 +168,7 @@ test('submit transaction to xrp ledger on redis queue', async t => {
     let handler: SologenicTxHandler = new SologenicTxHandler(rippleOptions, thOptions);
     await handler.connect();
 
-    await handler.setAccount(<any>(<any>t.context).valid_account);
+    await handler.setAccount(<SologenicTypes.Account>(<any>t.context).valid_account);
 
     let tx: SologenicTypes.TX = {
       Account: <any>(<any>t.context).valid_account.address,

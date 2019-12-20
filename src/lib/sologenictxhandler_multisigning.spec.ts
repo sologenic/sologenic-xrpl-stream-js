@@ -209,3 +209,42 @@ test('send a transaction and pass with quorum requirements being met', async t =
   t.is(result.resultCode, 'tesSUCCESS');
   t.is(result.resultMessage, 'The transaction was applied. Only final in a validated ledger.');
 });
+
+test('check account after assignment to determine if it requires multi-signing', async t => {
+  let handler: SologenicTxHandler = (<any>t.context).handler;
+
+  /* 1,000,000 drops equals 1 XRP (we're sending 0.5 XRP) */
+
+  /*
+  let totalDrops = "500000";
+  let feeInXrp = "0.00012";
+
+  const paymentTx = {
+      TransactionType: "Payment",
+      Account: (<any>t.context).accounts.master.account.address,
+      Amount: totalDrops,
+      Destination: (<any>t.context).accounts.alice.account.address
+    }
+  */
+
+  let xrpAccount: SologenicTypes.Account = {
+    address: (<any>t.context).accounts.master.account.address,
+    secret: (<any>t.context).accounts.master.account.secret
+  };
+
+  xrpAccount.address = (<any>t.context).accounts.master.account.address;
+  xrpAccount.secret = (<any>t.context).accounts.master.account.secret;
+
+  await handler.setAccount(xrpAccount);
+  // await handler.connect();
+
+  const account = handler.getAccount();
+
+  if (!account) {
+    throw new Error("Unable to load account");
+  }
+
+  t.is(account.signers!.length, 3);
+  t.is(account.signers!.length, account.signer_quorum);
+  t.is(account.signer_quorum, 3);
+});

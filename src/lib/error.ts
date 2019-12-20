@@ -5,7 +5,7 @@ export class SologenicError extends Error {
     this.message = this._getError(status);
     Object.setPrototypeOf(this, SologenicError.prototype);
   }
-  
+
   public static getErrorCodes(): Array<any> {
     return [
       { id: '1000', message: 'unspecified_error' },
@@ -16,7 +16,9 @@ export class SologenicError extends Error {
       { id: '1005', message: 'ripple_ws_connection_error' },
       { id: '1006', message: 'unable_to_validate_missed_transactions' },
       { id: '2000', message: 'invalid_xrp_address' },
-      { id: '2001', message: 'invalid_xrp_secret' }
+      { id: '2001', message: 'invalid_xrp_secret' },
+      { id: '2002', message: 'unable_to_get_account_current_state' },
+      { id: '2003', message: 'unable_to_get_account_objects' }
     ]
   }
 

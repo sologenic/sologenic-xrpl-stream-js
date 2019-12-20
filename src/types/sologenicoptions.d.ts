@@ -2,6 +2,8 @@ import { MQTX } from '../types';
 
 import { EventEmitter } from 'events';
 
+import { RippleAPI } from 'ripple-lib';
+
 export interface IQueue {
   add(queue: string, data: object, id?: string): Promise<MQTX>;
   get(queue: string, id: string): Promise<MQTX | undefined>;
@@ -47,6 +49,9 @@ export interface RippleAPIOptions {
 export interface Account {
   address: string;
   secret: string;
+  sequence?: any;
+  signer_quorum?: number;
+  signers?: Array<any>;
 }
 
 export interface Ledger {
@@ -64,6 +69,7 @@ export interface TX {
   Account: string;
   TransactionType: string;
   Memos?: { Memo: any }[];
+  SignedTransactions?: [];
   Flags?: any;
   [Field: string]: string | number | Array<any> | undefined;
 }
