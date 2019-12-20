@@ -297,6 +297,7 @@ export default class SologenicTxHandler extends EventEmitter {
       // Get account info of the current XRP account and set the sequence to submit transactions
       const account = await this.getRippleApi().getAccountInfo(this.account.address);
 
+      // Update the current account sequence (contains the next sequence that should be used)
       this.account.sequence = account.sequence;
 
     } catch (error) {
@@ -573,7 +574,7 @@ export default class SologenicTxHandler extends EventEmitter {
       );
 
       // increase the sequence for next transaction
-      this.sequence++;
+      this.account.sequence++;
       /*
         If the result code is NOT tesSUCCESS, emit to object listner and globally warning the error.
         Note transaction is not ignore as it could be still validated due to many reasons
@@ -618,7 +619,7 @@ export default class SologenicTxHandler extends EventEmitter {
 
       // 	The address sending the transaction is not funded in the ledger (yet).
       if (result.resultCode === 'terNOaccount') {
-        this.sequence--;
+        this.account.sequence--;
         return await this._txFailed(unsignedTX, 'terNOaccount');
       }
 
@@ -668,7 +669,7 @@ export default class SologenicTxHandler extends EventEmitter {
       // These codes indicate that the transaction failed and was not included in a ledger, but the transaction could have succeeded in some theoretical ledger. Typically this means that the transaction can no longer succeed in any future ledger. They have numerical values in the range -199 to -100. The exact code for any given error is subject to change, so don't rely on it.
       if (result.resultCode.startsWith('tef')) {
         if (result.resultCode === 'tefBAD_AUTH_MASTER') {
-          this.sequence--;
+          this.account.sequence--;
           return await this._txFailed(unsignedTX, result.resultCode);
         }
       }
@@ -715,7 +716,7 @@ export default class SologenicTxHandler extends EventEmitter {
 
       // These codes indicate that the transaction was malformed, and cannot succeed according to the XRP Ledger protocol.
       // if (error) {
-      //   this.sequence--;
+      //   this.account.sequence--;
       //   return await this._txFailed(unsignedTX, 'terNOaccount');
       // }
 
