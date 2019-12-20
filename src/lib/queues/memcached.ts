@@ -92,7 +92,7 @@ export default class MemcacheQueue implements IQueue {
    *
    * @param queue
    */
-  public async pop(queue: string): Promise<boolean | Array<any>> {
+  public async pop(queue: string): Promise<boolean | MQTX> {
     try {
       const q = await this.client.get(queue);
       if (!q || !q.value) {
@@ -115,7 +115,7 @@ export default class MemcacheQueue implements IQueue {
    * @param queue
    * @param id
    */
-  public async del(queue: string, id: string): Promise<boolean | Array<any>> {
+  public async del(queue: string, id: string): Promise<boolean> {
     try {
       const q = await this.client.get(queue);
       if (!q || !q.value) {
