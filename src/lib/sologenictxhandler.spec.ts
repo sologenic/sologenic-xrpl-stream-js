@@ -9,9 +9,9 @@ $ NODE_TLS_REJECT_UNAUTHORIZED=0 npm run watch
 import test from 'ava';
 import util from 'util';
 
-import *  as SologenicTypes from '../types';
+import * as SologenicTypes from '../types';
 
-import SologenicTxHandler from './sologenictxhandler';
+import { SologenicTxHandler } from './sologenictxhandler';
 
 import { SologenicError } from './error';
 import { EventEmitter } from 'events';
@@ -22,8 +22,8 @@ const _ = require('underscore');
 /* Use before each so we use a different address for each request */
 test.beforeEach(async t => {
   _.extend(t.context, {
-    server: "wss://s.devnet.rippletest.net:51233",
-    faucet: "https://faucet.devnet.rippletest.net/accounts",
+    server: 'wss://s.devnet.rippletest.net:51233',
+    faucet: 'https://faucet.devnet.rippletest.net/accounts',
     invalid_account: {
       address: 'foo',
       secret: 'bar'
@@ -39,7 +39,7 @@ test.beforeEach(async t => {
 
   await util.promisify(setTimeout)(2500);
 
-  t.is(typeof(result.data!.account), 'object');
+  t.is(typeof result.data!.account, 'object');
 
   _.extend(t.context, {
     valid_account: {
@@ -64,8 +64,12 @@ test('sologenic tx hash initialization', async t => {
   let handler = new SologenicTxHandler(rippleOptions, thOptions);
   await handler.connect();
 
-  const valid_account: SologenicTypes.Account = (<any>(<any>t.context).valid_account);
-  const invalid_account: SologenicTypes.Account = (<any>(<any>t.context).invalid_account);
+  const valid_account: SologenicTypes.Account = <any>(
+    (<any>t.context).valid_account
+  );
+  const invalid_account: SologenicTypes.Account = <any>(
+    (<any>t.context).invalid_account
+  );
 
   await t.throwsAsync<SologenicError>(handler.setAccount(invalid_account));
 
@@ -85,8 +89,12 @@ test('sologenic tx redis initialization', async t => {
   let handler = new SologenicTxHandler(rippleOptions, thOptions);
   await handler.connect();
 
-  const valid_account: SologenicTypes.Account = (<any>(<any>t.context).valid_account);
-  const invalid_account: SologenicTypes.Account = (<any>(<any>t.context).invalid_account);
+  const valid_account: SologenicTypes.Account = <any>(
+    (<any>t.context).valid_account
+  );
+  const invalid_account: SologenicTypes.Account = <any>(
+    (<any>t.context).invalid_account
+  );
 
   await t.throwsAsync<SologenicError>(handler.setAccount(invalid_account));
 
@@ -104,14 +112,17 @@ test('submit transaction to xrp ledger on hash queue', async t => {
       queueType: SologenicTypes.QUEUE_TYPE_STXMQ_HASH
     };
 
-    let handler: SologenicTxHandler = new SologenicTxHandler(rippleOptions, thOptions);
+    let handler: SologenicTxHandler = new SologenicTxHandler(
+      rippleOptions,
+      thOptions
+    );
     await handler.connect();
 
     await handler.setAccount(<any>(<any>t.context).valid_account);
 
     let tx: SologenicTypes.TX = {
       Account: <any>(<any>t.context).valid_account.address,
-      TransactionType: "AccountSet",
+      TransactionType: 'AccountSet'
     };
 
     let transaction: SologenicTypes.TransactionObject = handler.submit(tx);
@@ -120,33 +131,44 @@ test('submit transaction to xrp ledger on hash queue', async t => {
 
     t.true(events instanceof EventEmitter);
 
-    events.on('queued', function(/*e*/) {
-      // console.debug("Queued event = " + e);
-      // console.debug(e);
-    }).on('dispatched', function(/*e*/) {
-      // console.debug("Dispatched event = " + e);
-      // console.debug(e);
-    }).on('requeued', function(/*e*/) {
-      // console.debug("Requeued event = " + e);
-      // console.debug(e);
-    }).on('warning', function(/*e*/) {
-      // console.debug("Warning event = " + e);
-      // console.debug(e);
-    }).on('validated', function(/*e*/) {
-      // console.debug("Validated event = " + e);
-      // console.debug(e);
-    });
+    events
+      .on('queued', function(/*e*/) {
+        // console.debug("Queued event = " + e);
+        // console.debug(e);
+      })
+      .on('dispatched', function(/*e*/) {
+        // console.debug("Dispatched event = " + e);
+        // console.debug(e);
+      })
+      .on('requeued', function(/*e*/) {
+        // console.debug("Requeued event = " + e);
+        // console.debug(e);
+      })
+      .on('warning', function(/*e*/) {
+        // console.debug("Warning event = " + e);
+        // console.debug(e);
+      })
+      .on('validated', function(/*e*/) {
+        // console.debug("Validated event = " + e);
+        // console.debug(e);
+      });
 
     let rtx: SologenicTypes.ResolvedTX = await transaction.promise;
 
     if (rtx) {
-      t.true(typeof(rtx.accountSequence) !== undefined, 'Verify account sequence is a number');
-      t.true(typeof(rtx.fee) === 'string', 'Verify fee is a string (0.00012 currently)');
-      t.true(typeof(rtx.ledgerVersion) === 'number', 'Verify ledger version');
-      t.true(typeof(rtx.timestamp) === 'string', 'Verify timestamp');
+      t.true(
+        typeof rtx.accountSequence !== undefined,
+        'Verify account sequence is a number'
+      );
+      t.true(
+        typeof rtx.fee === 'string',
+        'Verify fee is a string (0.00012 currently)'
+      );
+      t.true(typeof rtx.ledgerVersion === 'number', 'Verify ledger version');
+      t.true(typeof rtx.timestamp === 'string', 'Verify timestamp');
       t.true(rtx.hash.length === 64);
     } else {
-      t.fail("Resolved TX not resolved");
+      t.fail('Resolved TX not resolved');
     }
   } catch (error) {
     t.fail(`Caught an exception, failing test case = ${error}`);
@@ -163,14 +185,17 @@ test('submit transaction to xrp ledger on redis queue', async t => {
       queueType: SologenicTypes.QUEUE_TYPE_STXMQ_REDIS
     };
 
-    let handler: SologenicTxHandler = new SologenicTxHandler(rippleOptions, thOptions);
+    let handler: SologenicTxHandler = new SologenicTxHandler(
+      rippleOptions,
+      thOptions
+    );
     await handler.connect();
 
     await handler.setAccount(<any>(<any>t.context).valid_account);
 
     let tx: SologenicTypes.TX = {
       Account: <any>(<any>t.context).valid_account.address,
-      TransactionType: "AccountSet",
+      TransactionType: 'AccountSet'
     };
 
     let transaction: SologenicTypes.TransactionObject = handler.submit(tx);
@@ -178,17 +203,22 @@ test('submit transaction to xrp ledger on redis queue', async t => {
 
     t.true(events instanceof EventEmitter);
 
-    events.on('queued', function(e) {
-      t.log("Queued event = " + e);
-    }).on('dispatched', function(e) {
-      t.log("Dispatched event = " + e);
-    }).on('requeued', function(e) {
-      t.log("Requeued event = " + e);
-    }).on('warning', function(e) {
-      t.log("Warning event = " + e);
-    }).on('validated', function(e) {
-      t.log("Validated event = " + e);
-    });
+    events
+      .on('queued', function(e) {
+        t.log('Queued event = ' + e);
+      })
+      .on('dispatched', function(e) {
+        t.log('Dispatched event = ' + e);
+      })
+      .on('requeued', function(e) {
+        t.log('Requeued event = ' + e);
+      })
+      .on('warning', function(e) {
+        t.log('Warning event = ' + e);
+      })
+      .on('validated', function(e) {
+        t.log('Validated event = ' + e);
+      });
 
     handler.on('failed', function(/*e*/) {
       // Failed transaction
@@ -197,10 +227,16 @@ test('submit transaction to xrp ledger on redis queue', async t => {
     let rtx: SologenicTypes.ResolvedTX = await transaction.promise;
 
     if (rtx) {
-      t.true(typeof(rtx.accountSequence) !== undefined, 'Verify account sequence is a number');
-      t.true(typeof(rtx.fee) === 'string', 'Verify fee is a string (0.00012 currently)');
-      t.true(typeof(rtx.ledgerVersion) === 'number', 'Verify ledger version');
-      t.true(typeof(rtx.timestamp) === 'string', 'Verify timestamp');
+      t.true(
+        typeof rtx.accountSequence !== undefined,
+        'Verify account sequence is a number'
+      );
+      t.true(
+        typeof rtx.fee === 'string',
+        'Verify fee is a string (0.00012 currently)'
+      );
+      t.true(typeof rtx.ledgerVersion === 'number', 'Verify ledger version');
+      t.true(typeof rtx.timestamp === 'string', 'Verify timestamp');
 
       t.true(rtx.hash.length === 64);
 
@@ -237,7 +273,9 @@ test('submit transaction to xrp ledger on redis queue', async t => {
         }
       */
 
-      const xrplTransaction = await handler.getRippleApi().getTransaction(rtx.hash);
+      const xrplTransaction = await handler
+        .getRippleApi()
+        .getTransaction(rtx.hash);
 
       t.is(xrplTransaction.outcome!.result, 'tesSUCCESS');
 
@@ -251,11 +289,12 @@ test('submit transaction to xrp ledger on redis queue', async t => {
 
       t.true(rtx.hash === xrplTransaction.id);
       t.true(rtx.accountSequence === xrplTransaction.sequence);
-      t.true(xrplTransaction.type === "settings");
-      t.true(xrplTransaction.address === <any>(<any>t.context).valid_account.address);
-
+      t.true(xrplTransaction.type === 'settings');
+      t.true(
+        xrplTransaction.address === <any>(<any>t.context).valid_account.address
+      );
     } else {
-      t.fail("Resolved TX not resolved");
+      t.fail('Resolved TX not resolved');
     }
   } catch (error) {
     t.fail(`Caught an exception, failing test case = ${error}`);

@@ -8,9 +8,7 @@ import { TXMQƨ } from './stxmq';
 import { EventEmitter } from 'events';
 import { v4 as uuid } from 'uuid';
 
-const _ = require('underscore');
-
-export default class SologenicTxHandler extends EventEmitter {
+export class SologenicTxHandler extends EventEmitter {
   protected txmq: any;
   protected rippleApi!: RippleAPI;
   protected account: string = '';
@@ -364,7 +362,7 @@ export default class SologenicTxHandler extends EventEmitter {
       const item = await this.txmq.add('txmq:raw:' + this.account, tx, id);
 
       // emit on object specific listener
-      if (!_.isUndefined(this.txEvents![item.id])) {
+      if (typeof this.txEvents![item.id] !== 'undefined') {
         this.txEvents![item.id].emit('queued', item.data!.txJSON);
       }
 
@@ -411,9 +409,9 @@ export default class SologenicTxHandler extends EventEmitter {
   private async _dispatch(): Promise<void> {
     try {
       // Get raw transactions from the queue
-      const unsignedTXs: Array<
-        SologenicTypes.unsignedTX
-      > = await this.txmq.getAll('txmq:raw:' + this.account);
+      const unsignedTXs: Array<SologenicTypes.unsignedTX> = await this.txmq.getAll(
+        'txmq:raw:' + this.account
+      );
       // Loop through each, FIFO order, and dispatch the transaction
       for (const unsignedTX of unsignedTXs!) {
         await this._dispatchHandler(unsignedTX);
