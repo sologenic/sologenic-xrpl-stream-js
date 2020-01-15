@@ -114,6 +114,7 @@ export class SologenicTxHandler extends EventEmitter {
         precision: 64
       });
     } catch (error) {
+      console.log(error);
       throw new SologenicError('1001');
     }
   }
