@@ -32,9 +32,11 @@ test("add to the queue", async t => {
 
 test("add to the queue with custom id", async t => {
   var session = (<any>t.context).session;
-  var queue = "add_to_queue_with_custom_id";
+  var queue = "add_to_queue_with_redis_custom_id";
   var data = (<any>t.context).data;
   var custom_id = 'foobar';
+
+  await session.del(queue, custom_id);
 
   var result = await session.add(queue, data, custom_id);
 
@@ -46,6 +48,16 @@ test("add to the queue with custom id", async t => {
   };
 
   t.true(response.id === custom_id);
+
+  await session.appendEvent(queue, custom_id, "foo");
+  await session.appendEvent(queue, custom_id, "bar");
+  await session.appendEvent(queue, custom_id, "baz");
+
+  let results = await session.get(queue, custom_id) || {
+    events: []
+  };
+
+  t.true(results.data.events.length == 3);
 });
 
 test('validate retrieve with an invalid object identifier is undefined', async t => {

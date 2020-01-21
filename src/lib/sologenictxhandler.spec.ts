@@ -13,6 +13,8 @@ import * as SologenicTypes from '../types';
 import { SologenicTxHandler } from './sologenictxhandler';
 import { SologenicError } from './error';
 
+const pEvent = require('p-event');
+
 const axios = require('axios');
 const _ = require('underscore');
 
@@ -242,5 +244,45 @@ test('transaction should fail with invalid_xrp_address', async t => {
     await transaction.promise;
   } catch (error) {
     t.log(error);
+  }
+});
+
+test('transaction should fail with insufficient fee', async t => {
+  try {
+    let handler: SologenicTxHandler = (<any>t.context)!.handler;
+
+    await handler.setAccount(<any>(<any>t.context).valid_account);
+
+    handler.setLedgerBaseFeeXRP('0');
+
+    // See flags at https://xrpl.org/accountset.html
+    let tx: SologenicTypes.TX = {
+      Account: <any>(<any>t.context).valid_account.address,
+      TransactionType: 'AccountSet',
+      SetFlag: 5
+    };
+
+    let transaction: SologenicTypes.TransactionObject = handler.submit(tx);
+    let [, code] = await pEvent(transaction.events, 'requeued', { multiArgs: true });
+
+    t.is(code.result.status, 'telINSUF_FEE_P');
+
+  } catch (error) {
+    t.fail(error);
+  }
+});
+
+test('transaction should return next sequence', async t => {
+  try {
+    let handler: SologenicTxHandler = (<any>t.context)!.handler;
+
+    await handler.setAccount(<any>(<any>t.context).valid_account);
+    handler.setAccountSequence(0);
+
+    let sequence = <Number> await handler.fetchCurrentState();
+    t.true(sequence != 0);
+
+  } catch (error) {
+    t.fail(error);
   }
 });

@@ -12,8 +12,6 @@ import util from 'util';
 import * as SologenicTypes from '../types';
 
 import { SologenicTxHandler } from './sologenictxhandler';
-
-import { SologenicError } from './error';
 import { EventEmitter } from 'events';
 
 const axios = require('axios');
@@ -94,7 +92,15 @@ test('sologenic tx redis initialization', async t => {
     (<any>t.context).invalid_account
   );
 
-  await t.throwsAsync<SologenicError>(handler.setAccount(invalid_account));
+  try {
+    await handler.setAccount(invalid_account);
+    t.pass();
+
+  } catch (error) {
+    t.log(error);
+    t.fail(error);
+  }
+
   await t.notThrowsAsync(handler.setAccount(valid_account));
 });
 
