@@ -114,7 +114,7 @@ export class SologenicTxHandler extends EventEmitter {
         precision: 64
       });
     } catch (error) {
-      throw new SologenicError('1001');
+      throw new SologenicError('1001', error);
     }
   }
 
@@ -182,7 +182,7 @@ export class SologenicTxHandler extends EventEmitter {
       // transactions left in the queue, if any.
       await this._validateMissedTransactions();
     } catch (error) {
-      throw new SologenicError('1001');
+      throw new SologenicError('1001', error);
     }
   }
 
@@ -292,9 +292,9 @@ export class SologenicTxHandler extends EventEmitter {
         await this._fetchCurrentState();
         // Unspecific RippleError
       } else if (error instanceof RippleError.RippledError) {
-        throw new SologenicError('1004');
+        throw new SologenicError('1004', error);
       } else {
-        throw new SologenicError('1000');
+        throw new SologenicError('1000', error);
       }
     }
   }
@@ -323,7 +323,7 @@ export class SologenicTxHandler extends EventEmitter {
         this.ledger = ledger;
       });
     } catch (error) {
-      throw new SologenicError('1005');
+      throw new SologenicError('1005', error);
     }
   }
 
@@ -336,7 +336,7 @@ export class SologenicTxHandler extends EventEmitter {
     try {
       await this._addRawTXtoQueue(this._constructRawTx(tx), id);
     } catch (error) {
-      throw new SologenicError('1000');
+      throw new SologenicError('1000', error);
     }
   }
 
@@ -369,7 +369,7 @@ export class SologenicTxHandler extends EventEmitter {
       // emit globally
       this.emit('queued', item.id, item.data!.txJSON);
     } catch (error) {
-      throw new SologenicError('1000');
+      throw new SologenicError('1000', error);
     }
   }
 
@@ -399,7 +399,7 @@ export class SologenicTxHandler extends EventEmitter {
       };
       return constructedTx;
     } catch (error) {
-      throw new SologenicError('1000');
+      throw new SologenicError('1000', error);
     }
   }
 
@@ -442,7 +442,7 @@ export class SologenicTxHandler extends EventEmitter {
         return await this._dispatchHandler(unsignedTX);
       }
     } catch (error) {
-      throw new SologenicError('1000');
+      throw new SologenicError('1000', error);
     }
   }
 
