@@ -3,9 +3,9 @@ import { MQTX, IQueue } from '../../types';
 import { v4 as uuid } from 'uuid';
 
 export default class HashQueue implements IQueue {
-  private hash: Map<string, Array<MQTX>> = new Map<string, Array<MQTX>>(); 
+  private hash: Map<string, Array<MQTX>> = new Map<string, Array<MQTX>>();
 
-  constructor(options: any) { 
+  constructor(options: any) {
     options;
   }
 
@@ -26,7 +26,7 @@ export default class HashQueue implements IQueue {
    * @param id
    * @description add an object to the queue
    */
-  public async add(queue: string, data: object, id?: string): Promise<MQTX> {   
+  public async add(queue: string, data: object, id?: string): Promise<MQTX> {
     const element = {
       id: typeof id !== 'undefined' ? id : uuid(),
       data
@@ -49,12 +49,12 @@ export default class HashQueue implements IQueue {
    * @param id
    * @description returns a specific object within the queue
    */
-  public async get(queue: string, id: string): Promise<MQTX | undefined> {  
+  public async get(queue: string, id: string): Promise<MQTX | undefined> {
     var _queue = await this._exist(queue) ? this.hash.get(queue) : new Array<MQTX>();
 
     var found = undefined;
 
-    if (_queue instanceof Array) { 
+    if (_queue instanceof Array) {
       _queue.forEach((obj) => {
         if (obj.id === id)
           found = obj;
@@ -85,9 +85,9 @@ export default class HashQueue implements IQueue {
         if (this._exist(queue)) {
           let data = this.hash.get(queue) || [];
 
-          if (data.length > 0) {           
+          if (data.length > 0) {
             let element = data.pop();
- 
+
             this.hash.set(queue, data);
             resolve(element);
           }
@@ -114,7 +114,7 @@ export default class HashQueue implements IQueue {
           const filtered = data.filter(function(e) {
             return e.id !== id;
           });
-          
+
           this.hash.set(queue, filtered);
 
           resolve((data.length - 1) === (this.hash.get(queue) || []).length);
@@ -135,7 +135,7 @@ export default class HashQueue implements IQueue {
   public delAll(queue: string): Promise<boolean> {
     return new Promise((resolve, reject) => {
       try {
-        if (this._exist(queue)) {         
+        if (this._exist(queue)) {
           resolve(this.hash.delete(queue));
         }
       } catch (error) {

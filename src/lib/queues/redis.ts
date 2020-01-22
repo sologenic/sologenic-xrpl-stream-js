@@ -5,7 +5,7 @@ import { v4 as uuid } from 'uuid';
 
 export default class RedisQueue implements IQueue {
     private redis: any;
-  
+
     constructor(options: any) {
       try {
         this.redis = new Redis(options);
@@ -13,7 +13,7 @@ export default class RedisQueue implements IQueue {
         throw new Error('Unable to initialize TXMQ');
       }
     }
-  
+
     /**
      *
      * @param queue
@@ -66,7 +66,7 @@ export default class RedisQueue implements IQueue {
     public async getAll(queue: string): Promise<Array<MQTX>> {
       try {
         const elements = await this.redis.lrange(queue, 0, -1);
-  
+
         if (elements.length > 0) {
           return elements.map((el: string) => {
             return JSON.parse(el);
@@ -97,7 +97,7 @@ export default class RedisQueue implements IQueue {
         throw new Error("Can't get TX from Redis");
       }
     }
-  
+
     public async del(queue: string, id: string): Promise<boolean> {
       try {
         const elements = await this.redis.lrange(queue, 0, -1);
@@ -109,9 +109,9 @@ export default class RedisQueue implements IQueue {
             return parsed;
           }
         });
-  
+
         const result = await this.redis.lrem(queue, 1, element);
-  
+
         if (result) {
           return true;
         } else {

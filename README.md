@@ -19,7 +19,7 @@ const ƨ = require('sologenic-xrpl-stream-js');
       {
         server: 'wss://testnet.xrpl-labs.com' // Kudos to Wietse Wind
       },
-      // Sologenic Options, hash or redis
+      // Sologenic Options, hash or redis or memcache
       {
         // queueType: "hash",
         // hash: {}
