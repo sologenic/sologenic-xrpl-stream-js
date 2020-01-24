@@ -94,8 +94,6 @@ test('store and retrieve objects', async t => {
     let items = await session.getAll(queue);
 
     if (items) {
-      t.log(items.length);
-      t.log(objects.length);
       t.true(items.length === objects.length);
     } else {
       t.fail("Failing because items.length !== objects.length - 1");
