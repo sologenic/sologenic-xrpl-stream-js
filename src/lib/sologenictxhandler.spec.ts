@@ -18,6 +18,10 @@ const pEvent = require('p-event');
 const axios = require('axios');
 const _ = require('underscore');
 
+const wait = (milliseconds: number) => {
+  return new Promise(resolve => setTimeout(resolve, milliseconds));
+};
+
 const NETWORK_LIST = {
   dev: {
     wss: 'wss://s.devnet.rippletest.net:51233',
@@ -33,34 +37,44 @@ const NETWORK_LIST = {
 const NETWORK = NETWORK_LIST.dev;
 
 /* Use before each so we use a different address for each request */
-test.beforeEach(async t => {
+test.before(async t => {
   _.extend(t.context, {
     server: NETWORK.wss,
     faucet: NETWORK.faucet
   });
 
-  let valid_account_result = await axios.post((<any>t.context).faucet);
-  let invalid_account_result = await axios.post((<any>t.context).faucet);
-  let empty_account_result = await axios.post((<any>t.context).faucet);
+  let accounts = await Promise.all([
+    axios.post((<any>t.context).faucet),
+    axios.post((<any>t.context).faucet),
+    axios.post((<any>t.context).faucet)
+  ]);
 
-  /*
-  t.log(valid_account_result);
-  t.log(invalid_account_result);
-  t.log(empty_account_result);
-  */
+  await wait(2500);
 
   _.extend(t.context, {
-    invalid_account: {
-      address: invalid_account_result.data.account.address,
-      secret: invalid_account_result.data.account.secret
+    invalid_account: <SologenicTypes.Account> {
+      address: accounts[0].data.account.address,
+      secret: accounts[0].data.account.secret,
+      keypair: {
+        publicKey: accounts[0].data.account.address,
+        privateKey: accounts[0].data.account.secret
+      }
     },
-    valid_account: {
-      address: valid_account_result.data.account.address,
-      secret: valid_account_result.data.account.secret
+    valid_account: <SologenicTypes.Account> {
+      address: accounts[1].data.account.address,
+      secret: accounts[1].data.account.secret,
+      keypair: {
+        publicKey: accounts[1].data.account.address,
+        privateKey: accounts[1].data.account.secret
+      }
     },
-    empty_account: {
-      address: empty_account_result.data.account.address,
-      secret: empty_account_result.data.account.secret
+    empty_account: <SologenicTypes.Account> {
+      address: accounts[2].data.account.address,
+      secret: accounts[2].data.account.secret,
+      keypair: {
+        publicKey: accounts[2].data.account.address,
+        privateKey: accounts[2].data.account.secret
+      }
     }
   });
 
@@ -78,14 +92,14 @@ test.beforeEach(async t => {
   });
 });
 
-test.afterEach(async t => {
+test.after(async t => {
   let handler: SologenicTxHandler = (<any>t.context)!.handler;
 
   if (handler.getRippleApi().isConnected())
     await handler.getRippleApi().disconnect();
 });
 
-test('sologenic stxmq initialization', t => {
+test.serial('sologenic stxmq initialization', t => {
   t.notThrows(() => {
     new TXMQƨ({
       queueType: SologenicTypes.QUEUE_TYPE_STXMQ_HASH
@@ -96,19 +110,35 @@ test('sologenic stxmq initialization', t => {
 test('sologenic tx hash initialization', async t => {
   let handler: SologenicTxHandler = (<any>t.context)!.handler;
 
-  let valid_account: SologenicTypes.Account = <any>(
-    (<any>t.context).valid_account
-  );
+  let valid_account: SologenicTypes.Account = {
+    ...(<any>t.context).valid_account
+  };
 
-  await t.throwsAsync<SologenicError>(handler.setAccount({
+  await t.throwsAsync<SologenicError>(handler.setAccount(<SologenicTypes.Account>{
+    address: 'foobar',
+    secret: 'barbaz',
+    keypair: {
+      publicKey: 'foobar',
+      privateKey: 'barbaz'
+    }
+  }));
+
+  await t.throwsAsync<SologenicError>(handler.setAccount(<SologenicTypes.Account>{
     address: 'foobar',
     secret: 'barbaz'
+  }));
+
+  await t.throwsAsync<SologenicError>(handler.setAccount(<SologenicTypes.Account>{
+    keypair: {
+      publicKey: 'foobar',
+      privateKey: 'barbaz'
+    }
   }));
 
   await t.notThrowsAsync(handler.setAccount(valid_account));
 });
 
-test('transaction to sologenic xrpl stream', async t => {
+test.serial('transaction to sologenic xrpl stream', async t => {
   try {
     let handler: SologenicTxHandler = (<any>t.context)!.handler;
 
@@ -183,7 +213,7 @@ test('transaction to sologenic xrpl stream', async t => {
 });
 
 // https://xrpl.org/transaction-results.html
-test('transaction should fail immediately (invalid flags)', async t => {
+test.serial('transaction should fail immediately (invalid flags)', async t => {
   try {
     let handler: SologenicTxHandler = (<any>t.context)!.handler;
     await handler.setAccount(<any>(<any>t.context).valid_account);
@@ -209,7 +239,7 @@ test('transaction should fail immediately (invalid flags)', async t => {
   }
 });
 
-test('transaction should be successful', async t => {
+test.serial('transaction should be successful', async t => {
   try {
     let handler: SologenicTxHandler = (<any>t.context)!.handler;
 
@@ -240,7 +270,7 @@ test('transaction should be successful', async t => {
   }
 });
 
-test('transaction should fail with invalid_xrp_address', async t => {
+test.serial('transaction should fail with invalid_xrp_address', async t => {
   try {
     let handler: SologenicTxHandler = (<any>t.context)!.handler;
 
@@ -267,7 +297,7 @@ test('transaction should fail with invalid_xrp_address', async t => {
   }
 });
 
-test('transaction should fail with insufficient fee', async t => {
+test.serial('transaction should fail with insufficient fee', async t => {
   try {
     let handler: SologenicTxHandler = (<any>t.context)!.handler;
 
@@ -296,7 +326,7 @@ test('transaction should fail with insufficient fee', async t => {
   }
 });
 
-test('transaction should fail because not enough funds are available', async t => {
+test.serial('transaction should fail because not enough funds are available', async t => {
   try {
     let handler: SologenicTxHandler = (<any>t.context)!.handler;
 
@@ -324,7 +354,7 @@ test('transaction should fail because not enough funds are available', async t =
   }
 });
 
-test('transaction should fail because account is not funded', async t => {
+test.serial('transaction should fail because account is not funded', async t => {
   try {
     let handler: SologenicTxHandler = (<any>t.context)!.handler;
 
@@ -344,7 +374,7 @@ test('transaction should fail because account is not funded', async t => {
     await pEvent(transaction1.events, 'validated');
 
     // With the newly activated account perform an underfunded transaction
-    await handler.setAccount({
+    await handler.setAccount(<SologenicTypes.Account>{
       'address': xrplAddress.address,
       'secret': xrplAddress.secret
     });
@@ -367,7 +397,7 @@ test('transaction should fail because account is not funded', async t => {
   }
 });
 
-test('transaction should return next sequence', async t => {
+test.serial('transaction should return next sequence', async t => {
   try {
     let handler: SologenicTxHandler = (<any>t.context)!.handler;
 

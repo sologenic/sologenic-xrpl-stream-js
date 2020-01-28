@@ -3,16 +3,20 @@ import * as SologenicTypes from '../types/';
 import * as RippleError from 'ripple-lib/dist/npm/common/errors';
 import { SologenicError } from './error';
 import { all as mathAll, create as mathCreate } from 'mathjs';
-import util from 'util';
 import { TXMQƨ } from './stxmq';
 import { EventEmitter } from 'events';
 import { v4 as uuid } from 'uuid';
+
+const wait = (milliseconds: number) => {
+  return new Promise(resolve => setTimeout(resolve, milliseconds));
+};
 
 export class SologenicTxHandler extends EventEmitter {
   protected txmq: any;
   protected rippleApi!: RippleAPI;
   protected account: string = '';
   protected secret: string = '';
+  protected keypair: SologenicTypes.KeyPair = { publicKey: '', privateKey: '' };
   protected txEvents: { [key: string]: EventEmitter } = {};
   protected ledger: SologenicTypes.Ledger;
   protected feeCushion: number = 1.2;
@@ -187,24 +191,28 @@ export class SologenicTxHandler extends EventEmitter {
     }
   }
 
+  private async validateAddress(address: string, secret: string): Promise<void> {
+    if (!this.getRippleApi().isValidAddress(address))
+      throw new SologenicError('2000', new RippleError.ValidationError());
+
+    if (!this.getRippleApi().isValidSecret(secret))
+      throw new SologenicError('2001', new RippleError.ValidationError());
+  }
+
   public async setAccount(account: SologenicTypes.Account): Promise<void> {
     try {
-      /*
-        Is this a valid XRP address?
-      */
-      if (this.getRippleApi().isValidAddress(account.address)) {
-        this.account = account.address;
-      } else {
-        throw new SologenicError('2000', new RippleError.ValidationError());
+      this.account = account.address;
+      this.secret = account.secret;
+
+      if (typeof account.keypair !== 'undefined') {
+        this.keypair = account.keypair;
+
+        this.account = this.keypair.publicKey;
+        this.secret = this.keypair.privateKey;
       }
-      /*
-        Is this a valid XRP secret?
-      */
-      if (this.getRippleApi().isValidSecret(account.secret)) {
-        this.secret = account.secret;
-      } else {
-        throw new SologenicError('2001', new RippleError.ValidationError());
-      }
+
+      // Validate the address and secret
+      await this.validateAddress(this.account, this.secret);
 
       // Fetch the current state of the ledger and account sequence
       await this._fetchCurrentState();
@@ -268,7 +276,7 @@ export class SologenicTxHandler extends EventEmitter {
     if (this.getRippleApi().isConnected()) {
       return true;
     } else {
-      await util.promisify(setTimeout)(100);
+      await wait(100);
       return this._connected();
     }
   }
@@ -290,7 +298,7 @@ export class SologenicTxHandler extends EventEmitter {
       }
 
       // retry in 100ms
-      await util.promisify(setTimeout)(100);
+      await wait(100);
       return this._resolve(id);
     }
   }
@@ -361,7 +369,7 @@ export class SologenicTxHandler extends EventEmitter {
         this.connect();
       });
 
-      this.getRippleApi().on('ledger', ledger => {
+      this.getRippleApi().on('ledger', (ledger: any) => {
         // Update the ledger version
         this.ledger = ledger;
       });
@@ -460,11 +468,11 @@ export class SologenicTxHandler extends EventEmitter {
         await this._dispatchHandler(unsignedTX);
       }
       // Once the queue is dispatched, wait 100ms and re-fetch the queue.
-      await util.promisify(setTimeout)(100);
+      await wait(100);
       return await this._dispatch();
     } catch (error) {
       // Ignore errors and re-try the queue, wait 100ms and re-fetch the queue.
-      await util.promisify(setTimeout)(100);
+      await wait(100);
       return this._dispatch();
     }
   }
@@ -534,7 +542,11 @@ export class SologenicTxHandler extends EventEmitter {
       // Sign the transaction using the secret provided on init
       const signedTx: SologenicTypes.signedTX = this.getRippleApi().sign(
         JSON.stringify(tx),
-        this.secret
+        this.secret === '' ? undefined : this.secret,
+        undefined,
+        this.keypair.publicKey !== '' && this.keypair.privateKey !== ''
+          ? this.keypair
+          : undefined
       );
 
       // store the `before` ledger this transaction is being submitted
@@ -572,24 +584,24 @@ export class SologenicTxHandler extends EventEmitter {
       // Specific actions based on different errors
       // 	The account sending the transaction does not have enough XRP to pay the Fee specified in the transaction.
       if (result.resultCode === 'terINSUF_FEE_B') {
-        await util.promisify(setTimeout)(100);
+        await wait(100);
       }
 
       // The network fee has increased due to load
       // The Fee from the transaction is not high enough to meet the server's current
       // transaction cost requirement, which is derived from its load level.
       if (result.resultCode === 'telINSUF_FEE_P') {
-        await util.promisify(setTimeout)(100);
+        await wait(100);
       }
 
       // The transaction did not meet the open ledger cost and also was not added to the transaction queue. This code occurs when a transaction with the same sender and sequence number already exists in the queue and the new one does not pay a large enough transaction cost to replace the existing transaction. To replace a transaction in the queue, the new transaction must have a Fee value that is at least 25% more, as measured in fee levels. You can increase the Fee and try again, send this with a higher Sequence number so it doesn't replace an existing transaction, or try sending to another server. New in: rippled 0.70.2
       if (result.resultCode === 'telCAN_NOT_QUEUE_FEE') {
-        await util.promisify(setTimeout)(100);
+        await wait(100);
       }
 
       // The transaction did not meet the open ledger cost and also was not added to the transaction queue because a transaction queued ahead of it from the same sender blocks it. (This includes all SetRegularKey and SignerListSet transactions, as well as AccountSet transactions that change the RequireAuth/OptionalAuth, DisableMaster, or AccountTxnID flags.) You can try again later, or try submitting to a different server.
       if (result.resultCode === 'telCAN_NOT_QUEUE_BLOCKED') {
-        await util.promisify(setTimeout)(100);
+        await wait(100);
       }
 
       // 	The address sending the transaction is not funded in the ledger (yet).
@@ -600,45 +612,45 @@ export class SologenicTxHandler extends EventEmitter {
 
       // 	The transaction would involve adding currency issued by an account with lsfRequireAuth enabled to a trust line that is not authorized. For example, you placed an offer to buy a currency you aren't authorized to hold.
       if (result.resultCode === 'terNO_AUTH') {
-        await util.promisify(setTimeout)(100);
+        await wait(100);
       }
 
       // 	The transaction requires that account sending it has a nonzero "owners count", so the transaction cannot succeed. For example, an account cannot enable the lsfRequireAuth flag if it has any trust lines or available offers.
       if (result.resultCode === 'terOWNERS') {
-        await util.promisify(setTimeout)(100);
+        await wait(100);
       }
 
       // The sequence number of the transaction is lower than the current sequence number of the account sending the transaction.
       // Wait 1000ms and get the current sequence so the next transaction has the correct sequence
       if (result.resultCode === 'tefPAST_SEQ') {
         await this._fetchCurrentState();
-        await util.promisify(setTimeout)(1000);
+        await wait(1000);
       }
       // 	The Sequence number of the current transaction is higher than the current sequence number of the account sending the transaction.
       // Wait 1000ms and get the current sequence so the next transaction has the correct sequence
       if (result.resultCode === 'terPRE_SEQ') {
         await this._fetchCurrentState();
-        await util.promisify(setTimeout)(1000);
+        await wait(1000);
       }
       // 	Unspecified retriable error.
       if (result.resultCode === 'terRETRY') {
-        await util.promisify(setTimeout)(100);
+        await wait(100);
       }
 
       // 	The transaction met the load-scaled transaction cost but did not meet the open ledger requirement, so the transaction has been queued for a future ledger.
       if (result.resultCode === 'terQUEUED') {
         // Wait 4000ms and continue, possibly too many transactions were submitted to the same rippled server
-        await util.promisify(setTimeout)(4000);
+        await wait(4000);
       }
 
       // These codes indicate that the transaction was malformed, and cannot succeed according to the XRP Ledger protocol.
       if (result.resultCode.startsWith('tem')) {
-        await util.promisify(setTimeout)(100);
+        await wait(100);
       }
 
       // These codes indicate an error in the local server processing the transaction; it is possible that another server with a different configuration or load level could process the transaction successfully. They have numerical values in the range -399 to -300. The exact code for any given error is subject to change, so don't rely on it.
       if (result.resultCode.startsWith('tel')) {
-        await util.promisify(setTimeout)(100);
+        await wait(100);
       }
 
       // These codes indicate that the transaction failed and was not included in a ledger, but the transaction could have succeeded in some theoretical ledger. Typically this means that the transaction can no longer succeed in any future ledger. They have numerical values in the range -199 to -100. The exact code for any given error is subject to change, so don't rely on it.
@@ -695,7 +707,7 @@ export class SologenicTxHandler extends EventEmitter {
       //   return await this._txFailed(unsignedTX, 'terNOaccount');
       // }
 
-      await util.promisify(setTimeout)(1000);
+      await wait(1000);
       return false;
     }
   }
@@ -913,7 +925,7 @@ export class SologenicTxHandler extends EventEmitter {
           Or in other words, this transaction is not in a final ledger
           Recursivley wait 1000ms and try again
         */
-        await util.promisify(setTimeout)(1000);
+        await wait(1000);
         return await this._ValidateTxOnLedger(id, dispatchedTX);
       }
       return;
@@ -942,7 +954,7 @@ export class SologenicTxHandler extends EventEmitter {
         this._addRawTXtoQueue(dispatchedTX.unsignedTX.data.txJSON, id);
       } else {
         // if unspecified error, wait 1000ms re-try validation
-        await util.promisify(setTimeout)(1000);
+        await wait(1000);
         return this._ValidateTxOnLedger(id, dispatchedTX);
       }
     }

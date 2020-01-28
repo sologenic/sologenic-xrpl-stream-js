@@ -2,7 +2,8 @@ import {
   MQTX,
   IQueue,
   QUEUE_TYPE_STXMQ_REDIS,
-  QUEUE_TYPE_STXMQ_HASH } from '../types';
+  QUEUE_TYPE_STXMQ_HASH
+} from '../types';
 
 import RedisQueue from './queues/redis';
 import HashQueue from './queues/hash';
@@ -24,8 +25,7 @@ export class TXMQƨ {
           this.queue = new HashQueue(sologenicOptions!.hash);
           break;
       }
-    }
-    catch (error) {
+    } catch (error) {
       throw new Error('Unable to initialize TXMQ');
     }
   }
