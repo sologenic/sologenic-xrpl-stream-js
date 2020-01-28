@@ -9,116 +9,138 @@ $ NODE_TLS_REJECT_UNAUTHORIZED=0 npm run watch
 import test from 'ava';
 
 import * as SologenicTypes from '../types';
-
 import { SologenicTxHandler } from './sologenictxhandler';
-
 import { SologenicError } from './error';
-import { EventEmitter } from 'events';
+import { TXMQƨ } from './stxmq';
+
+const pEvent = require('p-event');
 
 const axios = require('axios');
 const _ = require('underscore');
+
 const wait = (milliseconds: number) => {
   return new Promise(resolve => setTimeout(resolve, milliseconds));
 };
 
+const NETWORK_LIST = {
+  dev: {
+    wss: 'wss://s.devnet.rippletest.net:51233',
+    faucet: 'https://faucet.devnet.rippletest.net/accounts'
+  },
+
+  test: {
+    wss: 'wss://s.altnet.rippletest.net:51233',
+    faucet: 'https://faucet.altnet.rippletest.net/accounts'
+  }
+}
+
+const NETWORK = NETWORK_LIST.dev;
+
 /* Use before each so we use a different address for each request */
-test.beforeEach(async t => {
+test.before(async t => {
   _.extend(t.context, {
-    server: 'wss://s.devnet.rippletest.net:51233',
-    faucet: 'https://faucet.devnet.rippletest.net/accounts',
-    invalid_account: {
-      address: 'foo',
-      secret: 'bar'
-    }
+    server: NETWORK.wss,
+    faucet: NETWORK.faucet
   });
 
-  let result = await axios.post((<any>t.context).faucet);
-
-  // Give the XRPL some (2.5s) time to settle after generating
-  // a wallet through the XRPL faucet, we want to make sure our
-  // address is recognized by the ledger otherwise we get
-  // an 'invalid_xrp_address' error. (sad face)
+  let accounts = await Promise.all([
+    axios.post((<any>t.context).faucet),
+    axios.post((<any>t.context).faucet),
+    axios.post((<any>t.context).faucet)
+  ]);
 
   await wait(2500);
 
-  t.is(typeof result.data!.account, 'object');
-
   _.extend(t.context, {
-    valid_account: {
-      address: result.data.account.address,
-      secret: result.data.account.secret
+    invalid_account: <SologenicTypes.Account> {
+      address: accounts[0].data.account.address,
+      secret: accounts[0].data.account.secret,
+      keypair: {
+        publicKey: accounts[0].data.account.address,
+        privateKey: accounts[0].data.account.secret
+      }
+    },
+    valid_account: <SologenicTypes.Account> {
+      address: accounts[1].data.account.address,
+      secret: accounts[1].data.account.secret,
+      keypair: {
+        publicKey: accounts[1].data.account.address,
+        privateKey: accounts[1].data.account.secret
+      }
+    },
+    empty_account: <SologenicTypes.Account> {
+      address: accounts[2].data.account.address,
+      secret: accounts[2].data.account.secret,
+      keypair: {
+        publicKey: accounts[2].data.account.address,
+        privateKey: accounts[2].data.account.secret
+      }
     }
   });
 
-  t.true((<any>(<any>t.context).valid_account).address !== undefined);
-  t.true((<any>(<any>t.context).invalid_account).address !== undefined);
-});
-
-test('sologenic tx hash initialization', async t => {
-  let rippleOptions: SologenicTypes.RippleAPIOptions = {
-    server: (<any>t.context).server
-  };
-
-  let thOptions: SologenicTypes.TransactionHandlerOptions = {
-    queueType: SologenicTypes.QUEUE_TYPE_STXMQ_HASH
-  };
-
-  let handler = new SologenicTxHandler(rippleOptions, thOptions);
-  await handler.connect();
-
-  const valid_account: SologenicTypes.Account = <any>(
-    (<any>t.context).valid_account
-  );
-  const invalid_account: SologenicTypes.Account = <any>(
-    (<any>t.context).invalid_account
-  );
-
-  await t.throwsAsync<SologenicError>(handler.setAccount(invalid_account));
-
-  await t.notThrowsAsync(handler.setAccount(valid_account));
-});
-
-test('sologenic tx redis initialization', async t => {
   let rippleOptions: SologenicTypes.RippleAPIOptions = {
     server: (<any>t.context).server,
     trace: false
   };
 
   let thOptions: SologenicTypes.TransactionHandlerOptions = {
-    queueType: SologenicTypes.QUEUE_TYPE_STXMQ_REDIS
+    queueType: SologenicTypes.QUEUE_TYPE_STXMQ_HASH
   };
 
-  let handler = new SologenicTxHandler(rippleOptions, thOptions);
-  await handler.connect();
+  _.extend(t.context, {
+    handler: await (new SologenicTxHandler(rippleOptions, thOptions).connect())
+  });
+});
 
-  const valid_account: SologenicTypes.Account = <any>(
-    (<any>t.context).valid_account
-  );
-  const invalid_account: SologenicTypes.Account = <any>(
-    (<any>t.context).invalid_account
-  );
+test.after(async t => {
+  let handler: SologenicTxHandler = (<any>t.context)!.handler;
 
-  await t.throwsAsync<SologenicError>(handler.setAccount(invalid_account));
+  if (handler.getRippleApi().isConnected())
+    await handler.getRippleApi().disconnect();
+});
+
+test.serial('sologenic stxmq initialization', t => {
+  t.notThrows(() => {
+    new TXMQƨ({
+      queueType: SologenicTypes.QUEUE_TYPE_STXMQ_HASH
+    });
+  });
+});
+
+test('sologenic tx hash initialization', async t => {
+  let handler: SologenicTxHandler = (<any>t.context)!.handler;
+
+  let valid_account: SologenicTypes.Account = {
+    ...(<any>t.context).valid_account
+  };
+
+  await t.throwsAsync<SologenicError>(handler.setAccount(<SologenicTypes.Account>{
+    address: 'foobar',
+    secret: 'barbaz',
+    keypair: {
+      publicKey: 'foobar',
+      privateKey: 'barbaz'
+    }
+  }));
+
+  await t.throwsAsync<SologenicError>(handler.setAccount(<SologenicTypes.Account>{
+    address: 'foobar',
+    secret: 'barbaz'
+  }));
+
+  await t.throwsAsync<SologenicError>(handler.setAccount(<SologenicTypes.Account>{
+    keypair: {
+      publicKey: 'foobar',
+      privateKey: 'barbaz'
+    }
+  }));
 
   await t.notThrowsAsync(handler.setAccount(valid_account));
 });
 
-test('submit transaction to xrp ledger on hash queue', async t => {
+test.serial('transaction to sologenic xrpl stream', async t => {
   try {
-    let rippleOptions: SologenicTypes.RippleAPIOptions = {
-      server: (<any>t.context).server,
-      trace: false
-    };
-
-    let thOptions: SologenicTypes.TransactionHandlerOptions = {
-      queueType: SologenicTypes.QUEUE_TYPE_STXMQ_HASH
-    };
-
-    let handler: SologenicTxHandler = new SologenicTxHandler(
-      rippleOptions,
-      thOptions
-    );
-    await handler.connect();
+    let handler: SologenicTxHandler = (<any>t.context)!.handler;
 
     await handler.setAccount(<any>(<any>t.context).valid_account);
 
@@ -129,176 +151,263 @@ test('submit transaction to xrp ledger on hash queue', async t => {
 
     let transaction: SologenicTypes.TransactionObject = handler.submit(tx);
 
-    let events: EventEmitter = transaction!.events;
+    let eventsReceived: Array<string> = [];
 
-    t.true(events instanceof EventEmitter);
+    // noUnusedLocals is enabled in the tsconfig, so we access the object at least once
+    transaction.events
+      .on('queued', tx => {
+        tx;
 
-    events
-      .on('queued', function(/*e*/) {
-        // console.debug("Queued event = " + e);
-        // console.debug(e);
+        eventsReceived.push('queued');
       })
-      .on('dispatched', function(/*e*/) {
-        // console.debug("Dispatched event = " + e);
-        // console.debug(e);
+      .on('dispatched', (tx, dispatched) => {
+        tx; dispatched;
+
+        eventsReceived.push('dispatched');
       })
-      .on('requeued', function(/*e*/) {
-        // console.debug("Requeued event = " + e);
-        // console.debug(e);
+      .on('requeued', (tx, result) => {
+        tx; result;
+
+        eventsReceived.push('requeued');
       })
-      .on('warning', function(/*e*/) {
-        // console.debug("Warning event = " + e);
-        // console.debug(e);
+      .on('warning', (type, code) => {
+        type; code;
+
+        eventsReceived.push('warning');
       })
-      .on('validated', function(/*e*/) {
-        // console.debug("Validated event = " + e);
-        // console.debug(e);
+      .on('validated', (dispatched, result) => {
+        dispatched; result;
+
+        eventsReceived.push('validated');
+      })
+      .on('failed', (type, code) => {
+        type; code;
+
+        eventsReceived.push('failed');
       });
 
-    let rtx: SologenicTypes.ResolvedTX = await transaction.promise;
+    let resolvedTx: SologenicTypes.ResolvedTX = await transaction.promise;
 
-    if (rtx) {
-      t.true(
-        typeof rtx.accountSequence !== undefined,
-        'Verify account sequence is a number'
-      );
-      t.true(
-        typeof rtx.fee === 'string',
-        'Verify fee is a string (0.00012 currently)'
-      );
-      t.true(typeof rtx.ledgerVersion === 'number', 'Verify ledger version');
-      t.true(typeof rtx.timestamp === 'string', 'Verify timestamp');
-      t.true(rtx.hash.length === 64);
-    } else {
-      t.fail('Resolved TX not resolved');
-    }
+    t.true(
+      typeof resolvedTx.accountSequence !== undefined,
+      'Verify account sequence is a number'
+    );
+
+    t.true(
+      typeof resolvedTx.fee === 'string',
+      'Verify fee is a string (0.00012 currently)'
+    );
+
+    t.true(typeof resolvedTx.ledgerVersion === 'number', 'Verify ledger version');
+    t.true(typeof resolvedTx.timestamp === 'string', 'Verify timestamp');
+    t.true(resolvedTx.hash.length === 64);
+
+    t.false(eventsReceived.includes('failed'))
+    t.true(eventsReceived.includes('queued'));
+    t.true(eventsReceived.includes('dispatched'));
+    t.true(eventsReceived.includes('validated'));
+
   } catch (error) {
-    t.fail(`Caught an exception, failing test case = ${error}`);
+    t.fail(error);
   }
 });
 
-test('submit transaction to xrp ledger on redis queue', async t => {
+// https://xrpl.org/transaction-results.html
+test.serial('transaction should fail immediately (invalid flags)', async t => {
   try {
-    let rippleOptions: SologenicTypes.RippleAPIOptions = {
-      server: (<any>t.context).server
-    };
-
-    let thOptions: SologenicTypes.TransactionHandlerOptions = {
-      queueType: SologenicTypes.QUEUE_TYPE_STXMQ_REDIS
-    };
-
-    let handler: SologenicTxHandler = new SologenicTxHandler(
-      rippleOptions,
-      thOptions
-    );
-    await handler.connect();
-
+    let handler: SologenicTxHandler = (<any>t.context)!.handler;
     await handler.setAccount(<any>(<any>t.context).valid_account);
 
+    // See flags at https://xrpl.org/accountset.html
     let tx: SologenicTypes.TX = {
       Account: <any>(<any>t.context).valid_account.address,
-      TransactionType: 'AccountSet'
+      TransactionType: 'AccountSet',
+      SetFlag: -1
     };
 
     let transaction: SologenicTypes.TransactionObject = handler.submit(tx);
-    let events: EventEmitter = transaction!.events;
 
-    t.true(events instanceof EventEmitter);
-
-    events
-      .on('queued', function(e) {
-        t.log('Queued event = ' + e);
-      })
-      .on('dispatched', function(e) {
-        t.log('Dispatched event = ' + e);
-      })
-      .on('requeued', function(e) {
-        t.log('Requeued event = ' + e);
-      })
-      .on('warning', function(e) {
-        t.log('Warning event = ' + e);
-      })
-      .on('validated', function(e) {
-        t.log('Validated event = ' + e);
+    transaction.events
+      .on('failed', (type: any, code: any) => {
+        t.is(code, '-1 not in range 0 <= $val <= 4294967295');
+        t.is(type, 'dispatch');
       });
 
-    handler.on('failed', function(/*e*/) {
-      // Failed transaction
+    await transaction.promise;
+  } catch (error) {
+    t.fail();
+  }
+});
+
+test.serial('transaction should be successful', async t => {
+  try {
+    let handler: SologenicTxHandler = (<any>t.context)!.handler;
+
+    await handler.setAccount(<any>(<any>t.context).valid_account);
+
+    // See flags at https://xrpl.org/accountset.html
+    let tx: SologenicTypes.TX = {
+      Account: <any>(<any>t.context).valid_account.address,
+      TransactionType: 'AccountSet',
+      SetFlag: 5
+    };
+
+    let transaction: SologenicTypes.TransactionObject = handler.submit(tx);
+
+    transaction.events
+      .on('validated', (dispatched: SologenicTypes.dispatchedTX, result: SologenicTypes.txResult) => {
+        t.true(dispatched != null);
+        t.is(result.status, 'tesSUCCESS');
+      })
+      .on('failed', (type: any, code: any) => {
+        t.fail(type);
+        t.fail(code);
+      });
+
+    await transaction.promise;
+  } catch (error) {
+    t.fail(error);
+  }
+});
+
+test.serial('transaction should fail with invalid_xrp_address', async t => {
+  try {
+    let handler: SologenicTxHandler = (<any>t.context)!.handler;
+
+    await handler.setAccount(<any>(<any>t.context).invalid_account);
+
+    // See flags at https://xrpl.org/accountset.html
+    let tx: SologenicTypes.TX = {
+      Account: <any>(<any>t.context).valid_account.address,
+      TransactionType: 'AccountSet',
+      SetFlag: 5
+    };
+
+    let transaction: SologenicTypes.TransactionObject = handler.submit(tx);
+
+    transaction.events
+      .on('failed', (type: any, code: any) => {
+        t.is(code, 'invalid_xrp_address');
+        t.is(type, 'dispatch');
+      });
+
+    await transaction.promise;
+  } catch (error) {
+    t.log(error);
+  }
+});
+
+test.serial('transaction should fail with insufficient fee', async t => {
+  try {
+    let handler: SologenicTxHandler = (<any>t.context)!.handler;
+
+    await handler.setAccount(<any>(<any>t.context).valid_account);
+
+    handler.fetchCurrentState();
+    handler.setLedgerBaseFeeXRP('0');
+
+    // See flags at https://xrpl.org/accountset.html
+    let tx: SologenicTypes.TX = {
+      Account: <any>(<any>t.context).valid_account.address,
+      TransactionType: 'AccountSet',
+      SetFlag: 5
+    };
+
+    let transaction: SologenicTypes.TransactionObject = handler.submit(tx);
+
+    let [, code] = await pEvent(transaction.events, 'requeued', { multiArgs: true });
+    t.is(code.result.status, 'telINSUF_FEE_P');
+
+    let [, fcode] = await pEvent(transaction.events, 'failed', { multiArgs: true });
+    t.is(fcode, 'invalid_xrp_address');
+
+  } catch (error) {
+    t.fail(error);
+  }
+});
+
+test.serial('transaction should fail because not enough funds are available', async t => {
+  try {
+    let handler: SologenicTxHandler = (<any>t.context)!.handler;
+
+    await handler.setAccount(<any>(<any>t.context).empty_account);
+
+    // See flags at https://xrpl.org/accountset.html
+    let tx1: SologenicTypes.TX = {
+      Account: <any>(<any>t.context).empty_account.address,
+      TransactionType: 'Payment',
+      Amount: handler.getRippleApi().xrpToDrops('99999'),
+      Destination: <any>(<any>t.context).valid_account.address
+    };
+
+    // Send all funds out of this account to our valid_account, then
+    // we'll send another transaction which will not be successful
+    // because we'll be out of funds.
+
+    let transaction1: SologenicTypes.TransactionObject = handler.submit(tx1);
+    let [, code] = await pEvent(transaction1.events, 'failed', { multiArgs: true });
+
+    t.is(code, 'tecUNFUNDED_PAYMENT');
+
+  } catch (error) {
+    t.fail(error);
+  }
+});
+
+test.serial('transaction should fail because account is not funded', async t => {
+  try {
+    let handler: SologenicTxHandler = (<any>t.context)!.handler;
+
+    let xrplAddress = handler.getRippleApi().generateAddress();
+
+    await handler.setAccount(<any>(<any>t.context).valid_account);
+
+    // Activate the new account
+    let tx1: SologenicTypes.TX = {
+      Account: <any>(<any>t.context).valid_account.address,
+      TransactionType: 'Payment',
+      Amount: handler.getRippleApi().xrpToDrops('20'),
+      Destination: xrplAddress.address
+    };
+
+    let transaction1: SologenicTypes.TransactionObject = handler.submit(tx1);
+    await pEvent(transaction1.events, 'validated');
+
+    // With the newly activated account perform an underfunded transaction
+    await handler.setAccount(<SologenicTypes.Account>{
+      'address': xrplAddress.address,
+      'secret': xrplAddress.secret
     });
 
-    let rtx: SologenicTypes.ResolvedTX = await transaction.promise;
+    // See flags at https://xrpl.org/accountset.html
+    let tx2: SologenicTypes.TX = {
+      Account: xrplAddress.address,
+      TransactionType: 'Payment',
+      Amount: handler.getRippleApi().xrpToDrops('100'),
+      Destination: <any>(<any>t.context).valid_account.address
+    };
 
-    if (rtx) {
-      t.true(
-        typeof rtx.accountSequence !== undefined,
-        'Verify account sequence is a number'
-      );
-      t.true(
-        typeof rtx.fee === 'string',
-        'Verify fee is a string (0.00012 currently)'
-      );
-      t.true(typeof rtx.ledgerVersion === 'number', 'Verify ledger version');
-      t.true(typeof rtx.timestamp === 'string', 'Verify timestamp');
+    let transaction2: SologenicTypes.TransactionObject = handler.submit(tx2);
 
-      t.true(rtx.hash.length === 64);
+    let tx2Promise = <any> await transaction2.promise;
+    t.is(tx2Promise.result.reason, 'tecUNFUNDED_PAYMENT');
 
-      /*
-      sologenictxhandler › submit transaction to xrp ledger on redis queue
-      ℹ Queued event = [object Object]
-      ℹ Dispatched event = [object Object]
-      ℹ Validated event = [object Object]
-      ℹ {
-          accountSequence: 3278288,
-          dispatchedSequence: 3278288,
-          fee: '0.000012',
-          hash: 'FF222D4C1775332C654F71744693A9A2C84772477ACCA3368B62A5F685B97A40',
-          ledgerVersion: 3278289,
-          timestamp: '2019-12-18T23:53:12.000Z',
-        }
-      ℹ {
-          address: 'r2PXRXHHD3tXPzCh6pmy3PAGokFBmMaTo',
-          id: 'FF222D4C1775332C654F71744693A9A2C84772477ACCA3368B62A5F685B97A40',
-          outcome: {
-            balanceChanges: {
-              r2PXRXHHD3tXPzCh6pmy3PAGokFBmMaTo: Array [ … ],
-            },
-            fee: '0.000012',
-            indexInLedger: 1,
-            ledgerVersion: 3278289,
-            orderbookChanges: {},
-            result: 'tesSUCCESS',
-            timestamp: '2019-12-18T23:53:12.000Z',
-          },
-          sequence: 3278288,
-          specification: {},
-          type: 'settings',
-        }
-      */
-
-      const xrplTransaction = await handler
-        .getRippleApi()
-        .getTransaction(rtx.hash);
-
-      t.is(xrplTransaction.outcome!.result, 'tesSUCCESS');
-
-      /*
-       * Uncomment if you want to see the result of the resolved transaction and
-       * XRPL transaction
-
-      t.log(rtx);
-      t.log(xrplTransaction);
-      */
-
-      t.true(rtx.hash === xrplTransaction.id);
-      t.true(rtx.accountSequence === xrplTransaction.sequence);
-      t.true(xrplTransaction.type === 'settings');
-      t.true(
-        xrplTransaction.address === <any>(<any>t.context).valid_account.address
-      );
-    } else {
-      t.fail('Resolved TX not resolved');
-    }
   } catch (error) {
-    t.fail(`Caught an exception, failing test case = ${error}`);
+    t.fail(error);
+  }
+});
+
+test.serial('transaction should return next sequence', async t => {
+  try {
+    let handler: SologenicTxHandler = (<any>t.context)!.handler;
+
+    await handler.setAccount(<any>(<any>t.context).valid_account);
+    handler.setAccountSequence(0);
+
+    let sequence = <Number> await handler.fetchCurrentState();
+    t.true(sequence != 0);
+
+  } catch (error) {
+    t.fail(error);
   }
 });

@@ -4,8 +4,8 @@ import HashQueue from './hash';
 
 const _ = require('underscore');
 
-test.before(async t => { 
-  _.extend(t.context, {  
+test.before(async t => {
+  _.extend(t.context, {
     data: {
       message: "Hello, World"
     },
@@ -32,7 +32,7 @@ test("add to the queue", async t => {
 
 test("add to the queue with custom id", async t => {
   var session = (<any>t.context).session;
-  var queue = "add_to_queue_with_custom_id";
+  var queue = "add_to_queue_with_hash_custom_id";
   var data = (<any>t.context).data;
   var custom_id = 'foobar';
 
@@ -46,6 +46,16 @@ test("add to the queue with custom id", async t => {
   };
 
   t.true(response.id === custom_id);
+
+  await session.appendEvent(queue, custom_id, "foo");
+  await session.appendEvent(queue, custom_id, "bar");
+  await session.appendEvent(queue, custom_id, "baz");
+
+  let results = await session.get(queue, custom_id) || {
+    events: []
+  };
+
+  t.true(results.data.events.length == 3);
 });
 
 test('validate retrieve with an invalid object identifier is undefined', async t => {

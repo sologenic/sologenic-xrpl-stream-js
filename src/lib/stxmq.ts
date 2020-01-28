@@ -21,7 +21,6 @@ export class TXMQƨ {
         case QUEUE_TYPE_STXMQ_HASH:
           this.queue = new HashQueue(sologenicOptions!.hash);
           break;
-
         default:
           this.queue = new HashQueue(sologenicOptions!.hash);
           break;
@@ -80,5 +79,15 @@ export class TXMQƨ {
    */
   public async delAll(queue: string): Promise<boolean> {
     return this.queue.delAll(queue);
+  }
+
+  /**
+   *
+   * @param queue
+   * @param id
+   * @param event_name
+   */
+  public async appendEvent(queue: string, id: string, event_name: string): Promise<boolean> {
+    return this.queue.appendEvent(queue, id, event_name);
   }
 }

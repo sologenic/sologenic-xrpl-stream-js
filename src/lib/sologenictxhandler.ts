@@ -118,8 +118,40 @@ export class SologenicTxHandler extends EventEmitter {
         precision: 64
       });
     } catch (error) {
-      throw new SologenicError('1001');
+      throw new SologenicError('1001', error);
     }
+  }
+
+  /* Added for testing support to be able to override base fee */
+  public setLedgerBaseFeeXRP(fee: string): this {
+    this.ledger.baseFeeXRP = fee;
+
+    return this;
+  }
+  public getLedgerBaseFeeXRP(): string {
+    return this.ledger.baseFeeXRP;
+  }
+
+  /* Added for testing support to set ledger version */
+  public setLedgerVersion(version: number): this {
+    this.ledger.ledgerVersion = version;
+
+    return this;
+  }
+
+  public getLedgerVersion(): number {
+    return this.ledger.ledgerVersion;
+  }
+
+  /* Added for testing support to set account sequence */
+  public setAccountSequence(sequence: number): this {
+    this.sequence = sequence;
+
+    return this;
+  }
+
+  public getAccountSequence(): number {
+    return this.sequence;
   }
 
   /**
@@ -159,28 +191,28 @@ export class SologenicTxHandler extends EventEmitter {
     }
   }
 
+  private async validateAddress(address: string, secret: string): Promise<void> {
+    if (!this.getRippleApi().isValidAddress(address))
+      throw new SologenicError('2000', new RippleError.ValidationError());
+
+    if (!this.getRippleApi().isValidSecret(secret))
+      throw new SologenicError('2001', new RippleError.ValidationError());
+  }
+
   public async setAccount(account: SologenicTypes.Account): Promise<void> {
     try {
-      /*
-        Is this a valid XRP address?
-      */
-      if (this.getRippleApi().isValidAddress(account.address)) {
-        this.account = account.address;
-      } else {
-        throw new SologenicError('2000', new RippleError.ValidationError());
-      }
-      /*
-        Is this a valid XRP secret? and if no keypair is set
-      */
-      if (typeof account.keypair === 'undefined') {
-        if (this.getRippleApi().isValidSecret(account.secret)) {
-          this.secret = account.secret;
-        } else {
-          throw new SologenicError('2001', new RippleError.ValidationError());
-        }
-      } else {
+      this.account = account.address;
+      this.secret = account.secret;
+
+      if (typeof account.keypair !== 'undefined') {
         this.keypair = account.keypair;
+
+        this.account = this.keypair.publicKey;
+        this.secret = this.keypair.privateKey;
       }
+
+      // Validate the address and secret
+      await this.validateAddress(this.account, this.secret);
 
       // Fetch the current state of the ledger and account sequence
       await this._fetchCurrentState();
@@ -190,7 +222,7 @@ export class SologenicTxHandler extends EventEmitter {
       // transactions left in the queue, if any.
       await this._validateMissedTransactions();
     } catch (error) {
-      throw new SologenicError('1001');
+      throw new SologenicError('1001', error);
     }
   }
 
@@ -283,14 +315,15 @@ export class SologenicTxHandler extends EventEmitter {
 
       // Use the ripple-lib built in REST functions to get the ledger version and fee. Please note that these
       // values are updated using the WS after the first initilization, until this method is called again
-      this.ledger.ledgerVersion = await this.getRippleApi().getLedgerVersion();
-      this.ledger.baseFeeXRP = await this.getRippleApi().getFee();
+      this.setLedgerVersion(await this.getRippleApi().getLedgerVersion());
+      this.setLedgerBaseFeeXRP(await this.getRippleApi().getFee());
 
       // Get account info of the current XRP account and set the sequence to submit transactions
       const account = await this.getRippleApi().request('account_info', {
         account: this.account
       });
-      this.sequence = account.account_data.Sequence;
+
+      this.setAccountSequence(account.account_data.Sequence);
     } catch (error) {
       // if there is a disconnection error, keep trying until connection is made. Retry in 1000ms
       if (error instanceof RippleError.DisconnectedError) {
@@ -300,11 +333,21 @@ export class SologenicTxHandler extends EventEmitter {
         await this._fetchCurrentState();
         // Unspecific RippleError
       } else if (error instanceof RippleError.RippledError) {
-        throw new SologenicError('1004');
+        throw new SologenicError('1004', error);
       } else {
-        throw new SologenicError('1000');
+        throw new SologenicError('1000', error);
       }
     }
+  }
+
+  /*
+  Testing helper to get the current state, so we can make sure we
+  actually got the next sequence */
+
+  public async fetchCurrentState(): Promise<Number> {
+    await this._fetchCurrentState();
+
+    return this.sequence;
   }
 
   /**
@@ -326,12 +369,12 @@ export class SologenicTxHandler extends EventEmitter {
         this.connect();
       });
 
-      this.getRippleApi().on('ledger', ledger => {
+      this.getRippleApi().on('ledger', (ledger: any) => {
         // Update the ledger version
         this.ledger = ledger;
       });
     } catch (error) {
-      throw new SologenicError('1005');
+      throw new SologenicError('1005', error);
     }
   }
 
@@ -344,7 +387,7 @@ export class SologenicTxHandler extends EventEmitter {
     try {
       await this._addRawTXtoQueue(this._constructRawTx(tx), id);
     } catch (error) {
-      throw new SologenicError('1000');
+      throw new SologenicError('1000', error);
     }
   }
 
@@ -377,7 +420,7 @@ export class SologenicTxHandler extends EventEmitter {
       // emit globally
       this.emit('queued', item.id, item.data!.txJSON);
     } catch (error) {
-      throw new SologenicError('1000');
+      throw new SologenicError('1000', error);
     }
   }
 
@@ -407,7 +450,7 @@ export class SologenicTxHandler extends EventEmitter {
       };
       return constructedTx;
     } catch (error) {
-      throw new SologenicError('1000');
+      throw new SologenicError('1000', error);
     }
   }
 
@@ -450,7 +493,7 @@ export class SologenicTxHandler extends EventEmitter {
         return await this._dispatchHandler(unsignedTX);
       }
     } catch (error) {
-      throw new SologenicError('1000');
+      throw new SologenicError('1000', error);
     }
   }
 
@@ -545,9 +588,12 @@ export class SologenicTxHandler extends EventEmitter {
       }
 
       // The network fee has increased due to load
+      // The Fee from the transaction is not high enough to meet the server's current
+      // transaction cost requirement, which is derived from its load level.
       if (result.resultCode === 'telINSUF_FEE_P') {
         await wait(100);
       }
+
       // The transaction did not meet the open ledger cost and also was not added to the transaction queue. This code occurs when a transaction with the same sender and sequence number already exists in the queue and the new one does not pay a large enough transaction cost to replace the existing transaction. To replace a transaction in the queue, the new transaction must have a Fee value that is at least 25% more, as measured in fee levels. You can increase the Fee and try again, send this with a higher Sequence number so it doesn't replace an existing transaction, or try sending to another server. New in: rippled 0.70.2
       if (result.resultCode === 'telCAN_NOT_QUEUE_FEE') {
         await wait(100);
