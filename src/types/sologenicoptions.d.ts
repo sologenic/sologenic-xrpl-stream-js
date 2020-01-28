@@ -47,6 +47,12 @@ export interface RippleAPIOptions {
 export interface Account {
   address: string;
   secret: string;
+  keypair: KeyPair;
+}
+
+export interface KeyPair {
+  publicKey: string;
+  privateKey: string;
 }
 
 export interface Ledger {

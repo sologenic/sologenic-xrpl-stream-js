@@ -16,6 +16,7 @@ export class SologenicTxHandler extends EventEmitter {
   protected rippleApi!: RippleAPI;
   protected account: string = '';
   protected secret: string = '';
+  protected keypair: SologenicTypes.KeyPair = { publicKey: '', privateKey: '' };
   protected txEvents: { [key: string]: EventEmitter } = {};
   protected ledger: SologenicTypes.Ledger;
   protected feeCushion: number = 1.2;
@@ -169,12 +170,16 @@ export class SologenicTxHandler extends EventEmitter {
         throw new SologenicError('2000', new RippleError.ValidationError());
       }
       /*
-        Is this a valid XRP secret?
+        Is this a valid XRP secret? and if no keypair is set
       */
-      if (this.getRippleApi().isValidSecret(account.secret)) {
-        this.secret = account.secret;
+      if (typeof account.keypair === 'undefined') {
+        if (this.getRippleApi().isValidSecret(account.secret)) {
+          this.secret = account.secret;
+        } else {
+          throw new SologenicError('2001', new RippleError.ValidationError());
+        }
       } else {
-        throw new SologenicError('2001', new RippleError.ValidationError());
+        this.keypair = account.keypair;
       }
 
       // Fetch the current state of the ledger and account sequence
@@ -494,7 +499,11 @@ export class SologenicTxHandler extends EventEmitter {
       // Sign the transaction using the secret provided on init
       const signedTx: SologenicTypes.signedTX = this.getRippleApi().sign(
         JSON.stringify(tx),
-        this.secret
+        this.secret === '' ? undefined : this.secret,
+        undefined,
+        this.keypair.publicKey !== '' && this.keypair.privateKey !== ''
+          ? this.keypair
+          : undefined
       );
 
       // store the `before` ledger this transaction is being submitted

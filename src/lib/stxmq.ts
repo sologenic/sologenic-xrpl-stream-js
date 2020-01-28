@@ -1,8 +1,9 @@
-import { 
+import {
   MQTX,
-  IQueue, 
-  QUEUE_TYPE_STXMQ_REDIS, 
-  QUEUE_TYPE_STXMQ_HASH } from '../types';
+  IQueue,
+  QUEUE_TYPE_STXMQ_REDIS,
+  QUEUE_TYPE_STXMQ_HASH
+} from '../types';
 
 import RedisQueue from './queues/redis';
 import HashQueue from './queues/hash';
@@ -20,13 +21,12 @@ export class TXMQƨ {
         case QUEUE_TYPE_STXMQ_HASH:
           this.queue = new HashQueue(sologenicOptions!.hash);
           break;
-  
-        default:        
+
+        default:
           this.queue = new HashQueue(sologenicOptions!.hash);
           break;
       }
-    }
-    catch (error) { 
+    } catch (error) {
       throw new Error('Unable to initialize TXMQ');
     }
   }
@@ -78,7 +78,7 @@ export class TXMQƨ {
    *
    * @param queue
    */
-  public async delAll(queue: string): Promise<boolean> { 
+  public async delAll(queue: string): Promise<boolean> {
     return this.queue.delAll(queue);
   }
 }
