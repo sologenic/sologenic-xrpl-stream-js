@@ -7,7 +7,6 @@ $ NODE_TLS_REJECT_UNAUTHORIZED=0 npm run watch
 */
 
 import test from 'ava';
-import util from 'util';
 
 import * as SologenicTypes from '../types';
 
@@ -18,6 +17,9 @@ import { EventEmitter } from 'events';
 
 const axios = require('axios');
 const _ = require('underscore');
+const wait = (milliseconds: number) => {
+  return new Promise(resolve => setTimeout(resolve, milliseconds));
+};
 
 /* Use before each so we use a different address for each request */
 test.beforeEach(async t => {
@@ -37,7 +39,7 @@ test.beforeEach(async t => {
   // address is recognized by the ledger otherwise we get
   // an 'invalid_xrp_address' error. (sad face)
 
-  await util.promisify(setTimeout)(2500);
+  await wait(2500);
 
   t.is(typeof result.data!.account, 'object');
 
