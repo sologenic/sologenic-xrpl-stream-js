@@ -1,5 +1,4 @@
-
-![sologenic-xrpl-stream-js](https://www.sologenic.com/images/solo_logo.png)
+![sologenic-xrpl-stream-js][https://www.sologenic.com/images/solo-plain.png]
 
 # [&#x1a8; Sologenic Ecosystem](https://www.sologenic.com)
 
