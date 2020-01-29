@@ -191,28 +191,28 @@ export class SologenicTxHandler extends EventEmitter {
     }
   }
 
-  private async validateAddress(address: string, secret: string): Promise<void> {
-    if (!this.getRippleApi().isValidAddress(address))
-      throw new SologenicError('2000', new RippleError.ValidationError());
-
-    if (!this.getRippleApi().isValidSecret(secret))
-      throw new SologenicError('2001', new RippleError.ValidationError());
-  }
-
   public async setAccount(account: SologenicTypes.Account): Promise<void> {
     try {
-      this.account = account.address;
-      this.secret = account.secret;
-
-      if (typeof account.keypair !== 'undefined') {
-        this.keypair = account.keypair;
-
-        this.account = this.keypair.publicKey;
-        this.secret = this.keypair.privateKey;
+      /*
+        Is this a valid XRP address?
+      */
+      if (this.getRippleApi().isValidAddress(account.address)) {
+        this.account = account.address;
+      } else {
+        throw new SologenicError('2000', new RippleError.ValidationError());
       }
-
-      // Validate the address and secret
-      await this.validateAddress(this.account, this.secret);
+      /*
+        Is this a valid XRP secret? and if no keypair is set
+      */
+      if (typeof account.keypair === 'undefined') {
+        if (this.getRippleApi().isValidSecret(account.secret)) {
+          this.secret = account.secret;
+        } else {
+          throw new SologenicError('2001', new RippleError.ValidationError());
+        }
+      } else {
+        this.keypair = account.keypair;
+      }
 
       // Fetch the current state of the ledger and account sequence
       await this._fetchCurrentState();
