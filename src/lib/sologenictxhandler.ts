@@ -1,7 +1,9 @@
 import { RippleAPI } from 'ripple-lib';
 import * as SologenicTypes from '../types/';
 import * as RippleError from 'ripple-lib/dist/npm/common/errors';
+
 import { SologenicError } from './error';
+
 import { all as mathAll, create as mathCreate } from 'mathjs';
 import { TXMQƨ } from './stxmq';
 import { EventEmitter } from 'events';
@@ -43,9 +45,10 @@ export class SologenicTxHandler extends EventEmitter {
   protected secret: string = '';
 
   /**
-   * XRPL Keypair.  See https://xrpl.org/cryptographic-keys.html#master-key-pair
-   * and https://xrpl.org/cryptographic-keys.html#regular-key-pair for more details
-   * on the difference between the account seed and key pairs
+   * XRPL Keypair.  Reference https://xrpl.org/cryptographic-keys.html#master-key-pair
+   * and https://xrpl.org/cryptographic-keys.html#regular-key-pair for more details on
+   * on the difference between the account seed and key pairs and how to disable the
+   * master key on your account
    */
   protected keypair: SologenicTypes.KeyPair = { publicKey: '', privateKey: '' };
 
@@ -272,7 +275,7 @@ constructor(
       /*
         Is this a valid XRP secret? and if no keypair is set
       */
-      if (typeof account.keypair === 'undefined') {
+      if ((typeof account.keypair === 'undefined') || (typeof account.keypair === 'object' && (account.keypair.privateKey === '' || account.keypair.publicKey === ''))) {
         if (this.getRippleApi().isValidSecret(account.secret)) {
           this.secret = account.secret;
         } else {
@@ -280,6 +283,9 @@ constructor(
         }
       } else {
         this.keypair = account.keypair;
+
+        this.account = this.keypair.publicKey;
+        this.secret = this.keypair.privateKey;
       }
 
       /**
@@ -370,6 +376,7 @@ constructor(
       return validated.data;
     } else {
       const failed = await this.txmq.get('txmq:failed:' + this.account, id);
+
       if (typeof failed !== 'undefined') {
         return failed.data;
       }
@@ -622,6 +629,8 @@ constructor(
       // Set LastLedgerSequence for this tx to make sure it becomes invalid after 3 verified closed ledgers
       tx.LastLedgerSequence = this.ledger.ledgerVersion + 3;
 
+      // console.log(`Signing (secret=${this.secret}, keypair={publicKey=${this.keypair.publicKey}, privateKey=${this.keypair.privateKey}})`);
+
       // Sign the transaction using the secret provided on init
       const signedTx: SologenicTypes.signedTX = this.getRippleApi().sign(
         JSON.stringify(tx),
@@ -653,6 +662,7 @@ constructor(
         https://xrpl.org/ter-codes.html
         https://xrpl.org/tes-success.html
       */
+
       if (result.resultCode !== 'tesSUCCESS') {
         this.emit('warning', unsignedTX.id, 'dispatch', result.resultCode);
         if (typeof this.txEvents![unsignedTX.id] !== 'undefined') {

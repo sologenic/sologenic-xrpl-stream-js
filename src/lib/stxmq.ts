@@ -5,9 +5,21 @@ import {
   QUEUE_TYPE_STXMQ_HASH
 } from '../types';
 
+/**
+ * Import redis queue implementation
+ */
 import RedisQueue from './queues/redis';
+
+/**
+ * Import hash queue implementation
+ */
 import HashQueue from './queues/hash';
 
+/**
+ * The TXMQƨ class is an implementation that calls the methods against the queue
+ * instances.  When constructing the [[SologenicTxHandler]] the `sologenicOptions`
+ * parameter is passed to this classes constructor.
+*/
 export class TXMQƨ {
   private queue: IQueue;
 
@@ -21,6 +33,7 @@ export class TXMQƨ {
         case QUEUE_TYPE_STXMQ_HASH:
           this.queue = new HashQueue(sologenicOptions!.hash);
           break;
+
         default:
           this.queue = new HashQueue(sologenicOptions!.hash);
           break;
@@ -31,61 +44,68 @@ export class TXMQƨ {
   }
 
   /**
+   * Add a new data object to a queue with an optional `id`.  If the `id` is not provided
+   * an unique UUID will generated and assigned.  This method will return the created
+   * object rather than just the `id`.
    *
-   * @param queue
-   * @param data
-   * @param id
+   * @todo Only return `id` from this method
+   *
+   * @param queue  Queue name
+   * @param data   Object of keys and values
+   * @param id     Optional `id` key to store the data against
    */
   public async add(queue: string, data: object, id?: string): Promise<MQTX> {
     return this.queue.add(queue, data, id);
   }
 
   /**
+   * Returns a single object from the queue or undefined
    *
-   * @param queue
-   * @param id
+   * @param queue  Queue name
+   * @param id     Key used to retrieve the data
    */
   public async get(queue: string, id: string): Promise<MQTX | undefined> {
     return this.queue.get(queue, id);
   }
 
   /**
+   * Returns all objects from within the queue
    *
-   * @param queue
+   * @param queue  Queue name
    */
   public async getAll(queue: string): Promise<Array<MQTX>> {
     return this.queue.getAll(queue);
   }
   /**
+   * Pop and element from the end of the queue
    *
-   * @param queue
+   * @param queue  Queue name
    */
   public async pop(queue: string): Promise<MQTX | boolean> {
     return this.queue.pop(queue);
   }
 
   /**
+   * Delete an element from the queue
    *
-   * @param queue
-   * @param id
+   * @param queue  Queue name
+   * @param id     Key used to retrieve the data
    */
   public async del(queue: string, id: string): Promise<boolean> {
     return this.queue.del(queue, id);
   }
 
   /**
+   * Delete all items from the queue
    *
-   * @param queue
+   * @param queue  Queue name
    */
   public async delAll(queue: string): Promise<boolean> {
     return this.queue.delAll(queue);
   }
 
   /**
-   *
-   * @param queue
-   * @param id
-   * @param event_name
+   * @ignore  Not used anymore, to be removed.
    */
   public async appendEvent(queue: string, id: string, event_name: string): Promise<boolean> {
     return this.queue.appendEvent(queue, id, event_name);

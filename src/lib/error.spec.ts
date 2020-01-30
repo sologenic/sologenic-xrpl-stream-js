@@ -1,7 +1,7 @@
 import test from 'ava';
 import { SologenicError } from './error';
 
-test('check for duplicate error ids and messages', async function(t) {
+test.serial('check for duplicate error ids and messages', async function(t) {
     let errorCodes = SologenicError.getErrorCodes();
 
     for (var i in errorCodes) {
