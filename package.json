@@ -24,10 +24,11 @@
     "cov:html": "nyc report --reporter=html",
     "cov:send": "nyc report --reporter=lcov && codecov",
     "cov:check": "nyc report && nyc check-coverage --lines 100 --functions 100 --branches 100",
-    "doc": "run-s doc:html && open-cli build/docs/index.html",
-    "doc:html": "typedoc src/ --exclude **/*.spec.ts --target ES6 --mode file --out build/docs",
-    "doc:json": "typedoc src/ --exclude **/*.spec.ts --target ES6 --mode file --json build/docs/typedoc.json",
-    "doc:publish": "gh-pages -m \"[ci skip] Updates\" -d build/docs",
+    "doc": "run-s doc:html && run-s doc:markdown && open-cli docs/index.html",
+    "doc:html": "typedoc src/ --exclude **/*.spec.ts --target ES6 --plugin none --includeDeclarations --mode file --out docs/html",
+    "doc:markdown": "typedoc src/ --exclude **/*.spec.ts --target ES6 --plugin typedoc-plugin-markdown --includeDeclarations --mode file --out docs/markdown",
+    "doc:json": "typedoc src/ --exclude **/*.spec.ts --exclude node_modules/** --target ES6 --mode file --json docs/typedoc.json",
+    "doc:publish": "gh-pages -m \"[ci skip] Updates\" -d docs",
     "version": "standard-version",
     "reset": "git clean -dfx && git reset --hard && npm i",
     "clean": "trash build test",
@@ -59,6 +60,7 @@
     "mathjs": "6.2.3",
     "p-event": "^4.1.0",
     "ripple-lib": "1.3.4",
+    "typedoc-plugin-markdown": "^2.2.16",
     "underscore": "^1.9.2",
     "uuid": "^3.3.3"
   },
@@ -80,6 +82,7 @@
     "tslint": "^5.18.0",
     "tslint-config-prettier": "^1.18.0",
     "tslint-immutable": "^6.0.1",
+    "typedoc": "^0.16.9",
     "typescript": "3.5.3"
   },
   "ava": {

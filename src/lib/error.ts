@@ -1,4 +1,9 @@
 export class SologenicError extends Error {
+  /** 
+   * @param status       Status code for error
+   * @param rippleError  Inner error
+   */
+
   constructor(public status: string, public rippleError?: Error) {
     super();
     this.status = status;
@@ -6,6 +11,10 @@ export class SologenicError extends Error {
     Object.setPrototypeOf(this, SologenicError.prototype);
   }
   
+  /** 
+   * @returns  An array of error codes
+   */
+
   public static getErrorCodes(): Array<any> {
     return [
       { id: '1000', message: 'unspecified_error' },
@@ -20,15 +29,30 @@ export class SologenicError extends Error {
     ]
   }
 
+  /** 
+   * @param errorId  An error 'id'
+   * @returns        An error 'message' or undefined.
+   */
+
   public static getErrorCodeById(errorId: string): string {
     return SologenicError.getErrorCodes().find(
       e => e.id === errorId)!.message;
   }
 
+  /** 
+   * @param message  An error 'message'
+   * @returns        An error 'id' or undefined.
+   */
+
   public static getErrorCodeByMessage(message: string): string {
     return SologenicError.getErrorCodes().find(
       e => e.message === message)!.id;
   }
+
+  /** 
+   * @param errorId  An error 'id'
+   * @returns        An error 'message' or undefined.
+   */
 
   public _getError(errorId: string): string {
     return SologenicError.getErrorCodeById(errorId);

@@ -119,6 +119,16 @@ export interface ResolvedTX {
 }
 
 export interface TransactionObject {
+  /**
+  * @description events: Each instance of the submit() gets an instance of `EventEmitter` these events are emitted when certain actions take place within the transaction submission.
+  *              Events: {queued, dispatched, requeued, warning, validated}
+  *
+  * @description id: This is the uuid generated in a non-blocking approach so clients can later use this id for reference. The id is of type of string and are generated using v4 of uuid library.
+  *              e.g: 6316751c-bde4-412b-ac9a-7d05e548171f
+  *
+  * @description promise: This property contains a promise and resolves only when a transaction has been validated.
+  *              Contains: hash, dispatchedSequence, accountSequence, ledgerVersion, timestamp, fee
+  */
   events: EventEmitter;
   id: string;
   promise: Promise<ResolvedTX>;
