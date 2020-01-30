@@ -13,6 +13,7 @@ const wait = (milliseconds: number) => {
 
 export class SologenicTxHandler extends EventEmitter {
   protected txmq: any;
+  protected clearCache: boolean = false;
   protected rippleApi!: RippleAPI;
   protected account: string = '';
   protected secret: string = '';
@@ -48,6 +49,10 @@ export class SologenicTxHandler extends EventEmitter {
         }
 
     @example sologenicOptions: {
+
+          // Clear queues before initilizing, default to false
+          clearCache: true,
+
           // When using in-memory hashes
           queueType: 'hash',
           hash: {}
@@ -107,6 +112,14 @@ export class SologenicTxHandler extends EventEmitter {
         this.txmq = new TXMQƨ(sologenicOptions); // Pass on the queue connection details
       } catch (error) {
         throw new SologenicError('1002');
+      }
+
+      // Set clearCache to true if the client needs to ignore and clean the queue before starting
+      if (
+        typeof sologenicOptions.clearCache !== 'undefined' &&
+        sologenicOptions.clearCache
+      ) {
+        this.clearCache = true;
       }
 
       /*
@@ -217,10 +230,14 @@ export class SologenicTxHandler extends EventEmitter {
       // Fetch the current state of the ledger and account sequence
       await this._fetchCurrentState();
 
-      // proccess missed transactions before continuing.
-      // Transactions can be missed if they are in the dispatched state. This function processes previous
-      // transactions left in the queue, if any.
-      await this._validateMissedTransactions();
+      if (this.clearCache) {
+        await this.txmq.delAll();
+      } else {
+        // proccess missed transactions before continuing.
+        // Transactions can be missed if they are in the dispatched state. This function processes previous
+        // transactions left in the queue, if any.
+        await this._validateMissedTransactions();
+      }
     } catch (error) {
       throw new SologenicError('1001', error);
     }

@@ -9,12 +9,12 @@ export interface IQueue {
   pop(queue: string): Promise<MQTX | boolean>;
   del(queue: string, id: string): Promise<boolean>;
   delAll(queue: string): Promise<boolean>;
-  appendEvent(queue:string, id: string, event_name: string): Promise<boolean>;
+  appendEvent(queue: string, id: string, event_name: string): Promise<boolean>;
 }
 
 export interface TransactionHandlerOptions {
   queueType?: string;
-
+  clearCache?: boolean;
   redis?: {
     port?: number;
     host?: string;

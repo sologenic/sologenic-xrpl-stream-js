@@ -87,7 +87,11 @@ export class TXMQƨ {
    * @param id
    * @param event_name
    */
-  public async appendEvent(queue: string, id: string, event_name: string): Promise<boolean> {
+  public async appendEvent(
+    queue: string,
+    id: string,
+    event_name: string
+  ): Promise<boolean> {
     return this.queue.appendEvent(queue, id, event_name);
   }
 }

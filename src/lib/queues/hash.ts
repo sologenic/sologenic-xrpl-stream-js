@@ -9,14 +9,8 @@ export default class HashQueue implements IQueue {
     options;
   }
 
-  private _exist(queue: string): Promise<boolean> {
-    return new Promise((resolve, reject) => {
-      try {
-        resolve(this.hash.has(queue));
-      } catch (error) {
-        reject(false);
-      }
-    });
+  private _exist(queue: string): boolean {
+    return this.hash.has(queue);
   }
 
   /**
@@ -32,7 +26,7 @@ export default class HashQueue implements IQueue {
       data
     };
 
-    var _queue = await this._exist(queue) ? this.hash.get(queue) : new Array<MQTX>();
+    var _queue = this._exist(queue) ? this.hash.get(queue) : new Array<MQTX>();
 
     if (_queue instanceof Array) {
       _queue.push(element);
@@ -50,14 +44,13 @@ export default class HashQueue implements IQueue {
    * @description returns a specific object within the queue
    */
   public async get(queue: string, id: string): Promise<MQTX | undefined> {
-    var _queue = await this._exist(queue) ? this.hash.get(queue) : new Array<MQTX>();
+    var _queue = this._exist(queue) ? this.hash.get(queue) : new Array<MQTX>();
 
     var found = undefined;
 
     if (_queue instanceof Array) {
-      _queue.forEach((obj) => {
-        if (obj.id === id)
-          found = obj;
+      _queue.forEach(obj => {
+        if (obj.id === id) found = obj;
       });
     }
 
@@ -70,7 +63,7 @@ export default class HashQueue implements IQueue {
    * @description returns all elements of the queue
    */
   public async getAll(queue: string): Promise<Array<MQTX>> {
-    return await this._exist(queue) ? this.hash.get(queue) || [] : [];
+    return this._exist(queue) ? this.hash.get(queue) || [] : [];
   }
 
   /**
@@ -117,7 +110,7 @@ export default class HashQueue implements IQueue {
 
           this.hash.set(queue, filtered);
 
-          resolve((data.length - 1) === (this.hash.get(queue) || []).length);
+          resolve(data.length - 1 === (this.hash.get(queue) || []).length);
         } else {
           resolve(false);
         }
@@ -144,11 +137,15 @@ export default class HashQueue implements IQueue {
     });
   }
 
-  public async appendEvent(queue: string, id: string, event_name: string): Promise<boolean> {
+  public async appendEvent(
+    queue: string,
+    id: string,
+    event_name: string
+  ): Promise<boolean> {
     try {
       let result;
 
-      result = <MQTX> await this.get(queue, id);
+      result = <MQTX>await this.get(queue, id);
 
       if (result && typeof result.data.events === 'undefined')
         result.data.events = [];
