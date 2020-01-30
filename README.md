@@ -1,6 +1,20 @@
-# sologenic-xrpl-stream-js
+![sologenic-xrpl-stream-js](https://www.sologenic.com/images/solo-plain.png)
 
-## install
+# [&#x1a8; Sologenic Ecosystem](https://www.sologenic.com)
+
+*&#x1a8;* _sologenic_ is a sophisticated ecosystem that facilitates investing and trading of on-demand tokenized assets, including Stocks and ETFs from 25+ global exchanges on top of the XRP Ledger.
+
+* [White Paper](https://www.sologenic.com/downloads/sologenic-whitepaper.pdf)
+
+* [One Pager](https://www.sologenic.com/downloads/sologenic-onepage.pdf)
+
+# [&#x1a8; Sologenic XRPL Stream](https://github.com/sologenic/sologenic-xrpl-stream-js)
+
+## How to Participate
+
+We have a community for questions and support at [sologenic-dev.slack.com](https://sologenic-dev.slack.com).  To receive an invite for the community please fill out the [form](https://docs.google.com/forms/d/e/1FAIpQLSdcpIL-u2FsqBZj0ikG7UyJe3l9If7sVr7MdTpVnINQJJbsQg/viewform) and we'll send you your invite link.
+
+## Install
 
 ```
 $ npm install sologenic-xrpl-stream-js
@@ -17,7 +31,7 @@ const ƨ = require('sologenic-xrpl-stream-js');
     const sologenic = await new ƨ.SologenicTxHandler(
       // RippleAPI Options
       {
-        server: 'wss://testnet.xrpl-labs.com' // Kudos to Wietse Wind
+        server: 'wss://testnet.xrpl-labs.com', // Kudos to Wietse Wind
       },
       // Sologenic Options, hash or redis
       {
@@ -40,7 +54,7 @@ const ƨ = require('sologenic-xrpl-stream-js');
       console.log('GLOBAL DISPATCHED:', id, tx);
     });
     sologenic.on('requeued', id => {
-      console.log('GLOBAL requeued:', id);
+      console.log('GLOBAL REQUEUED:', id);
     });
     sologenic.on('warning', (id, type, reason) => {
       console.log('GLOBAL WARNING:', id, type, reason);
@@ -49,7 +63,7 @@ const ƨ = require('sologenic-xrpl-stream-js');
       console.log('GLOBAL VALIDATED:', id, result);
     });
     sologenic.on('failed', (id, type, reason) => {
-      console.log('GLOBAL FLAIED:', id, type, reason);
+      console.log('GLOBAL FAILED:', id, type, reason);
     });
 
     await sologenic.setAccount({
