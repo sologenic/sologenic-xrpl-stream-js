@@ -191,6 +191,7 @@ export class SologenicTxHandler extends EventEmitter {
     }
   }
 
+  /*
   private async validateAddress(address: string, secret: string): Promise<void> {
     if (!this.getRippleApi().isValidAddress(address))
       throw new SologenicError('2000', new RippleError.ValidationError());
@@ -198,21 +199,35 @@ export class SologenicTxHandler extends EventEmitter {
     if (!this.getRippleApi().isValidSecret(secret))
       throw new SologenicError('2001', new RippleError.ValidationError());
   }
+  */
 
   public async setAccount(account: SologenicTypes.Account): Promise<void> {
     try {
-      this.account = account.address;
-      this.secret = account.secret;
-
-      if (typeof account.keypair !== 'undefined') {
+      /*
+        Is this a valid XRP address?
+      */
+      if (this.getRippleApi().isValidAddress(account.address)) {
+        this.account = account.address;
+      } else {
+        throw new SologenicError('2000', new RippleError.ValidationError());
+      }
+      /*
+        Is this a valid XRP secret? and if no keypair is set
+      */
+      if ((typeof account.keypair === 'undefined') || (typeof account.keypair === 'object' && (account.keypair.privateKey === '' || account.keypair.publicKey === ''))) {
+        if (this.getRippleApi().isValidSecret(account.secret)) {
+          this.secret = account.secret;
+        } else {
+          throw new SologenicError('2001', new RippleError.ValidationError());
+        }
+      } else {
         this.keypair = account.keypair;
 
         this.account = this.keypair.publicKey;
         this.secret = this.keypair.privateKey;
       }
 
-      // Validate the address and secret
-      await this.validateAddress(this.account, this.secret);
+      // console.log(`Account (account=${this.account}, secret=${this.secret}, keypair={publicKey=${this.keypair.publicKey}, privateKey=${this.keypair.privateKey}})`);
 
       // Fetch the current state of the ledger and account sequence
       await this._fetchCurrentState();
@@ -293,6 +308,7 @@ export class SologenicTxHandler extends EventEmitter {
       return validated.data;
     } else {
       const failed = await this.txmq.get('txmq:failed:' + this.account, id);
+
       if (typeof failed !== 'undefined') {
         return failed.data;
       }
@@ -539,6 +555,8 @@ export class SologenicTxHandler extends EventEmitter {
       // Set LastLedgerSequence for this tx to make sure it becomes invalid after 3 verified closed ledgers
       tx.LastLedgerSequence = this.ledger.ledgerVersion + 3;
 
+      // console.log(`Signing (secret=${this.secret}, keypair={publicKey=${this.keypair.publicKey}, privateKey=${this.keypair.privateKey}})`);
+
       // Sign the transaction using the secret provided on init
       const signedTx: SologenicTypes.signedTX = this.getRippleApi().sign(
         JSON.stringify(tx),
@@ -570,6 +588,7 @@ export class SologenicTxHandler extends EventEmitter {
         https://xrpl.org/ter-codes.html
         https://xrpl.org/tes-success.html
       */
+
       if (result.resultCode !== 'tesSUCCESS') {
         this.emit('warning', unsignedTX.id, 'dispatch', result.resultCode);
         if (typeof this.txEvents![unsignedTX.id] !== 'undefined') {

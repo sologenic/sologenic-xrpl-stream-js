@@ -185,25 +185,25 @@ test.before(async t => {
     invalid_account: <SologenicTypes.Account> {
       address: accounts[0].data.account.address,
       secret: accounts[0].data.account.secret,
-      keypair: {
-        publicKey: accounts[0].data.account.address,
-        privateKey: accounts[0].data.account.secret
+      keypair: { 
+        publicKey: '',
+        privateKey: ''
       }
     },
     valid_account: <SologenicTypes.Account> {
       address: accounts[1].data.account.address,
       secret: accounts[1].data.account.secret,
       keypair: {
-        publicKey: accounts[1].data.account.address,
-        privateKey: accounts[1].data.account.secret
+        publicKey: '',
+        privateKey: ''
       }
     },
     empty_account: <SologenicTypes.Account> {
       address: accounts[2].data.account.address,
       secret: accounts[2].data.account.secret,
       keypair: {
-        publicKey: accounts[2].data.account.address,
-        privateKey: accounts[2].data.account.secret
+        publicKey: '',
+        privateKey: ''
       }
     }
   });
@@ -238,7 +238,7 @@ test.serial('sologenic stxmq initialization', t => {
   });
 });
 
-test('sologenic tx hash initialization', async t => {
+test.serial('sologenic tx hash initialization', async t => {
   let handler: SologenicTxHandler = (<any>t.context)!.handler;
 
   let valid_account: SologenicTypes.Account = {
@@ -249,8 +249,8 @@ test('sologenic tx hash initialization', async t => {
     address: 'foobar',
     secret: 'barbaz',
     keypair: {
-      publicKey: 'foobar',
-      privateKey: 'barbaz'
+      publicKey: '',
+      privateKey: ''
     }
   }));
 
@@ -272,17 +272,18 @@ test('sologenic tx hash initialization', async t => {
 test.serial('transaction to sologenic xrpl stream', async t => {
   try {
     let handler: SologenicTxHandler = (<any>t.context)!.handler;
+    let eventsReceived: Array<string> = [];
 
     await handler.setAccount(<any>(<any>t.context).valid_account);
 
+    // Make sure we're actually performing an operation (setflags: 5)
     let tx: SologenicTypes.TX = {
       Account: <any>(<any>t.context).valid_account.address,
-      TransactionType: 'AccountSet'
+      TransactionType: 'AccountSet',
+      SetFlag: 5
     };
 
     let transaction: SologenicTypes.TransactionObject = handler.submit(tx);
-
-    let eventsReceived: Array<string> = [];
 
     // noUnusedLocals is enabled in the tsconfig, so we access the object at least once
     transaction.events
@@ -317,20 +318,13 @@ test.serial('transaction to sologenic xrpl stream', async t => {
         eventsReceived.push('failed');
       });
 
-    let resolvedTx: SologenicTypes.ResolvedTX = await transaction.promise;
+    let resolvedTx = await transaction.promise;
 
-    t.true(
-      typeof resolvedTx.accountSequence !== undefined,
-      'Verify account sequence is a number'
-    );
-
-    t.true(
-      typeof resolvedTx.fee === 'string',
-      'Verify fee is a string (0.00012 currently)'
-    );
-
+    t.true(typeof resolvedTx.accountSequence !== undefined);
+    t.true(typeof resolvedTx.fee === 'string');
     t.true(typeof resolvedTx.ledgerVersion === 'number', 'Verify ledger version');
     t.true(typeof resolvedTx.timestamp === 'string', 'Verify timestamp');
+    t.true(typeof resolvedTx.hash === 'string');
     t.true(resolvedTx.hash.length === 64);
 
     t.false(eventsReceived.includes('failed'))
@@ -424,9 +418,52 @@ test.serial('transaction should fail with invalid_xrp_address', async t => {
 
     await transaction.promise;
   } catch (error) {
-    t.log(error);
+    t.fail(error);
   }
 });
+
+test.serial('transaction send multiple transactions', async t => {
+  try {
+    let handler: SologenicTxHandler = (<any>t.context)!.handler;
+
+    await handler.setAccount(<any>(<any>t.context).valid_account);
+
+    // See flags at https://xrpl.org/accountset.html
+    let tx1: SologenicTypes.TX = {
+      Account: <any>(<any>t.context).valid_account.address,
+      TransactionType: 'AccountSet',
+      SetFlag: 5
+    };
+
+    // See flags at https://xrpl.org/accountset.html
+    let tx2: SologenicTypes.TX = {
+      Account: <any>(<any>t.context).valid_account.address,
+      TransactionType: 'AccountSet',
+      SetFlag: 5
+    };
+
+    // See flags at https://xrpl.org/accountset.html
+    let tx3: SologenicTypes.TX = {
+      Account: <any>(<any>t.context).valid_account.address,
+      TransactionType: 'AccountSet',
+      SetFlag: 6
+    };
+
+    let promises = await Promise.all([
+      handler.submit(tx1).promise,
+      handler.submit(tx2).promise,
+      handler.submit(tx3).promise 
+    ]);
+
+    for (var transaction in promises) {
+      t.true(typeof promises[transaction] === 'object');
+      t.true(typeof promises[transaction].hash === 'string');
+    }
+  } catch (error) {
+    t.fail(error);
+  }
+});
+
 
 test.serial('transaction should fail with insufficient fee', async t => {
   try {

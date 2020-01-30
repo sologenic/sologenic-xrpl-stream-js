@@ -13,7 +13,7 @@ test.before(async t => {
   });
 });
 
-test("add to the queue", async t => {
+test.serial("add to the queue", async t => {
   var session = (<any>t.context).session;
   var queue = "add_to_queue";
   var data = (<any>t.context).data;
@@ -30,7 +30,7 @@ test("add to the queue", async t => {
   t.true(response.id === result.id);
 });
 
-test("add to the queue with custom id", async t => {
+test.serial("add to the queue with custom id", async t => {
   var session = (<any>t.context).session;
   var queue = "add_to_queue_with_redis_custom_id";
   var data = (<any>t.context).data;
@@ -60,14 +60,14 @@ test("add to the queue with custom id", async t => {
   t.true(results.data.events.length == 3);
 });
 
-test('validate retrieve with an invalid object identifier is undefined', async t => {
+test.serial('validate retrieve with an invalid object identifier is undefined', async t => {
   var session = (<any>t.context).session;
   var queue = "invalid_object_identifier";
 
   t.true(await session.get(queue, "barfoo") === undefined);
 });
 
-test('store and retrieve objects', async t => {
+test.serial('store and retrieve objects', async t => {
   try {
     var session = (<any>t.context).session;
     var queue = "store_and_retrieve";
@@ -103,7 +103,7 @@ test('store and retrieve objects', async t => {
   }
 });
 
-test('delete objects from queue', async t => {
+test.serial('delete objects from queue', async t => {
   try {
     var session = (<any>t.context).session;
     var queue = "delete_all_objects_from_queue";

@@ -26,7 +26,11 @@ test.beforeEach(async t => {
     // depleted, this will take quite some time before that happens however.
     invalid_account: {
       address: 'rfQoHxJsXoRVWZxZyJpigYeMC8fdnz8wak',
-      secret: 'snmy3Yr94vaV15jxNPkPeAgbnanxY'
+      secret: 'snmy3Yr94vaV15jxNPkPeAgbnanxY',
+      keypair: {
+        publicKey: '',
+        privateKey: ''
+      }
     }
   });
 
@@ -44,7 +48,11 @@ test.beforeEach(async t => {
   _.extend(t.context, {
     valid_account: {
       address: result.data.account.address,
-      secret: result.data.account.secret
+      secret: result.data.account.secret,
+      keypair: {
+        publicKey: '',
+        privateKey: ''
+      }
     }
   });
 
@@ -72,7 +80,7 @@ test.afterEach(async t => {
     await handler.getRippleApi().disconnect();
 });
 
-test('sologenic tx redis initialization', async t => {
+test.serial('sologenic tx redis initialization', async t => {
   let rippleOptions: SologenicTypes.RippleAPIOptions = {
     server: (<any>t.context).server,
     trace: false
@@ -104,7 +112,7 @@ test('sologenic tx redis initialization', async t => {
   await t.notThrowsAsync(handler.setAccount(valid_account));
 });
 
-test('submit transaction to xrp ledger on redis queue', async t => {
+test.serial('submit transaction to xrp ledger on redis queue', async t => {
   try {
     let handler: SologenicTxHandler = (<any>t.context)!.handler;
 
@@ -122,17 +130,11 @@ test('submit transaction to xrp ledger on redis queue', async t => {
 
     let rtx: SologenicTypes.ResolvedTX = await transaction.promise;
     if (rtx) {
-      t.true(
-        typeof rtx.accountSequence !== undefined,
-        'Verify account sequence is a number'
-      );
-      t.true(
-        typeof rtx.fee === 'string',
-        'Verify fee is a string (0.00012 currently)'
-      );
-      t.true(typeof rtx.ledgerVersion === 'number', 'Verify ledger version');
-      t.true(typeof rtx.timestamp === 'string', 'Verify timestamp');
-
+      t.true(typeof rtx.accountSequence !== undefined);
+      t.true(typeof rtx.fee === 'string');
+      t.true(typeof rtx.ledgerVersion === 'number');
+      t.true(typeof rtx.timestamp === 'string');
+      t.true(typeof rtx.hash === 'string');
       t.true(rtx.hash.length === 64);
 
       const xrplTransaction = await handler
@@ -144,8 +146,7 @@ test('submit transaction to xrp ledger on redis queue', async t => {
       t.true(rtx.hash === xrplTransaction.id);
       t.true(rtx.accountSequence === xrplTransaction.sequence);
       t.true(xrplTransaction.type === 'settings');
-      t.true(
-        xrplTransaction.address === <any>(<any>t.context).valid_account.address
+      t.true(xrplTransaction.address === <any>(<any>t.context).valid_account.address
       );
     } else {
       t.fail('Resolved TX not resolved');

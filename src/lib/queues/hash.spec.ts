@@ -13,7 +13,7 @@ test.before(async t => {
   });
 });
 
-test("add to the queue", async t => {
+test.serial("add to the queue", async t => {
   var session = (<any>t.context).session;
   var queue = "add_to_queue";
   var data = (<any>t.context).data;
@@ -30,7 +30,7 @@ test("add to the queue", async t => {
   t.true(response.id === result.id);
 });
 
-test("add to the queue with custom id", async t => {
+test.serial("add to the queue with custom id", async t => {
   var session = (<any>t.context).session;
   var queue = "add_to_queue_with_hash_custom_id";
   var data = (<any>t.context).data;
@@ -58,14 +58,14 @@ test("add to the queue with custom id", async t => {
   t.true(results.data.events.length == 3);
 });
 
-test('validate retrieve with an invalid object identifier is undefined', async t => {
+test.serial('validate retrieve with an invalid object identifier is undefined', async t => {
   var session = (<any>t.context).session;
   var queue = "invalid_object_identifier";
 
   t.true(await session.get(queue, "barfoo") === undefined);
 });
 
-test('store and retrieve objects', async t => {
+test.serial('store and retrieve objects', async t => {
   try {
     var session = (<any>t.context).session;
     var queue = "store_and_retrieve";
@@ -99,26 +99,36 @@ test('store and retrieve objects', async t => {
   }
 });
 
-test('delete objects from queue', async t => {
+test.serial('delete objects from queue', async t => {
   try {
     var session = (<any>t.context).session;
     var queue = "delete_all_objects_from_queue";
 
     var objects = [
-      { message: "Message 1" },
-      { message: "Message 2" },
-      { message: "Message 3" },
-      { message: "Message 4" }
+      { id: '1', message: "Message 1" },
+      { id: '2', message: "Message 2" },
+      { id: '3', message: "Message 3" },
+      { id: '4', message: "Message 4" }
     ];
 
+    // Empty the queue first
+    await session.delAll(queue);
+
+    // Add each element to the queue
     for (var index in objects) {
-      await session.add(queue, objects[index]);
+      let _created_object = await session.add(queue, objects[index]);
+      t.true(typeof _created_object !== 'undefined');
+
+      // Get the object back from the queue
+      var _result = await session.get(queue, _created_object.id);
+
+      t.true(typeof _result !== 'undefined');
+      t.true(_result.data.message === objects[index].message);
     }
 
-    let items = [];
-    items = await session.getAll(queue);
+    let items = await session.getAll(queue);
 
-    if (items)
+    if (typeof items !== 'undefined')
       t.true(items.length === objects.length, "Checking that items.length === objects.length");
     else
       t.fail("Failing test because the items.length !== objects.length");
