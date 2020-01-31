@@ -181,17 +181,18 @@ export class SologenicTxHandler extends EventEmitter {
    */
   public async connect(): Promise<this> {
     try {
-      await this.getRippleApi().connect();
-      await this._connected();
+      if (!this.getRippleApi().isConnected()) {
+        await this.getRippleApi().connect();
+        await this._connected();
 
-      // Start the dispatcher listener
-      this._dispatch();
+        // Start the dispatcher listener
+        this._dispatch();
 
-      // Start the validator listener
-      this._validateOnLedger();
+        // Start the validator listener
+        this._validateOnLedger();
 
-      // Return the current class
-
+        // Return the current class
+      }
       return this;
     } catch (error) {
       // if there is a disconnection error, keep trying until connection is made. Retry in 1000ms
