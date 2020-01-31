@@ -221,11 +221,13 @@ export class SologenicTxHandler extends EventEmitter {
       if (typeof account.keypair === 'undefined') {
         if (this.getRippleApi().isValidSecret(account.secret)) {
           this.secret = account.secret;
+          this.keypair = { publicKey: '', privateKey: '' };
         } else {
           throw new SologenicError('2001', new RippleError.ValidationError());
         }
       } else {
         this.keypair = account.keypair;
+        this.secret = '';
       }
 
       // Fetch the current state of the ledger and account sequence
@@ -674,6 +676,16 @@ export class SologenicTxHandler extends EventEmitter {
       // These codes indicate that the transaction failed and was not included in a ledger, but the transaction could have succeeded in some theoretical ledger. Typically this means that the transaction can no longer succeed in any future ledger. They have numerical values in the range -199 to -100. The exact code for any given error is subject to change, so don't rely on it.
       if (result.resultCode.startsWith('tef')) {
         if (result.resultCode === 'tefBAD_AUTH_MASTER') {
+          this.sequence--;
+          return await this._txFailed(unsignedTX, result.resultCode);
+        }
+
+        if (result.resultCode === 'tefBAD_AUTH') {
+          this.sequence--;
+          return await this._txFailed(unsignedTX, result.resultCode);
+        }
+
+        if (result.resultCode === 'tefALREADY') {
           this.sequence--;
           return await this._txFailed(unsignedTX, result.resultCode);
         }
