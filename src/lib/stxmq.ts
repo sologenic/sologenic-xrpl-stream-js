@@ -60,7 +60,7 @@ export class TXMQƨ {
    *
    * @param queue
    */
-  public async pop(queue: string): Promise<MQTX | boolean> {
+  public async pop(queue: string): Promise<MQTX | undefined> {
     return this.queue.pop(queue);
   }
 

@@ -120,7 +120,7 @@ test('submit transaction to xrp ledger on redis queue', async t => {
 
     t.true(events instanceof EventEmitter);
 
-    let rtx: SologenicTypes.ResolvedTX = await transaction.promise;
+    let rtx: SologenicTypes.ResolvedTx = await transaction.promise;
     if (rtx) {
       t.true(
         typeof rtx.accountSequence !== undefined,
