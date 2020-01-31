@@ -330,7 +330,7 @@ export class SologenicTxHandler extends EventEmitter {
     try {
       // If the Ripple API is not connected, make sure we connect.
       if (!this.getRippleApi().isConnected()) {
-        await this.connect();
+        await this.getRippleApi().connect();
       }
 
       // Use the ripple-lib built in REST functions to get the ledger version and fee. Please note that these
@@ -348,7 +348,7 @@ export class SologenicTxHandler extends EventEmitter {
       // if there is a disconnection error, keep trying until connection is made. Retry in 1000ms
       if (error instanceof RippleError.DisconnectedError) {
         // wait for connection to be re-established
-        await this.connect();
+        await this.getRippleApi().connect();
         // try fetching the current state again
         await this._fetchCurrentState();
         // Unspecific RippleError
@@ -381,12 +381,12 @@ export class SologenicTxHandler extends EventEmitter {
 
       this.getRippleApi().on('disconnect', () => {
         // Reconnect
-        this.connect();
+        this.getRippleApi().connect();
       });
 
       this.getRippleApi().on('error', () => {
         // Reconnect
-        this.connect();
+        this.getRippleApi().connect();
       });
 
       this.getRippleApi().on('ledger', (ledger: any) => {
