@@ -15,6 +15,7 @@ export class SologenicTxHandler extends EventEmitter {
   protected txmq: any;
   protected clearCache: boolean = false;
   protected rippleApi!: RippleAPI;
+  protected dispatchListener: boolean = false;
   protected account: string = '';
   protected secret: string = '';
   protected keypair: SologenicTypes.KeyPair = { publicKey: '', privateKey: '' };
@@ -186,13 +187,17 @@ export class SologenicTxHandler extends EventEmitter {
         await this._connected();
 
         // Start the dispatcher listener
-        this._dispatch();
+        if (!this.dispatchListener) {
+          this._dispatch();
+          this.dispatchListener = true;
+        }
 
         // Start the validator listener
         this._validateOnLedger();
 
         // Return the current class
       }
+
       return this;
     } catch (error) {
       // if there is a disconnection error, keep trying until connection is made. Retry in 1000ms
