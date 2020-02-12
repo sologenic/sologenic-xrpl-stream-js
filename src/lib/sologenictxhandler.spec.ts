@@ -492,7 +492,15 @@ test.serial('transaction will fail with tefBAD_AUTH (invalid account cannot send
   try {
     const handler: SologenicTxHandler = t.context!.handler;
 
+    await handler.setAccount(t.context.validAccount);
+
+    // Get the sequence number
+    const sequenceNumber = await handler.getAccountSequence();
+
+    // Set an invalid account and set the sequence number to the valid accounts
+    // sequence.
     await handler.setAccount(t.context.invalidAccount);
+    await handler.setAccountSequence(sequenceNumber);
 
     // See flags at https://xrpl.org/accountset.html
     const tx: SologenicTypes.TX = {
@@ -501,38 +509,28 @@ test.serial('transaction will fail with tefBAD_AUTH (invalid account cannot send
       SetFlag: 5
     };
 
-    const transaction: SologenicTypes.TransactionObject = handler.submit(tx);
-
     /*
-    {
-      unsignedTx: {
-        id: '39db7e35-e63d-46b2-a088-3c40af38f189',
-        data: { txJSON: [Object] }
-      },
-      result: {
-        resultCode: 'tefBAD_AUTH',
-        resultMessage: "Transaction's public key is not authorized.",
-        engine_result: 'tefBAD_AUTH',
-        engine_result_code: -196,
-        engine_result_message: "Transaction's public key is not authorized.",
-        tx_blob: '120003228000000024004A8B73201B004A8B7520210000000568400000000000000C732103CD5F0DCB5C251BE391ACB6FA3ACF2FCC24F526EE35140D5505A104CE2C1AFF787446304402202F46BEA246D1BD0A37328CDA433FD8D146A871E386645FB1847DA4B6AAF99086022052E26FD37E804BBA0A1E8F54CA086C886A62FF27E8EFF87A3FAD6453F1CA182F8114CDF8D447CE9FD229C5A7E9F55DCE9D3C351BF824F9EA7D2433396462376533352D653633642D343662322D613038382D336334306166333866313839E1F1',
-        tx_json: {
-          Account: 'rK8ncHPc8oFe8fHP9GStDgsypHPcfKR5vt',
-          Fee: '12',
-          Flags: 2147483648,
-          LastLedgerSequence: 4885365,
-          Memos: [Array],
-          Sequence: 4885363,
-          SetFlag: 5,
-          SigningPubKey: '03CD5F0DCB5C251BE391ACB6FA3ACF2FCC24F526EE35140D5505A104CE2C1AFF78',
-          TransactionType: 'AccountSet',
-          TxnSignature: '304402202F46BEA246D1BD0A37328CDA433FD8D146A871E386645FB1847DA4B6AAF99086022052E26FD37E804BBA0A1E8F54CA086C886A62FF27E8EFF87A3FAD6453F1CA182F',
-          hash: 'C6C2C1D4588CBE7BB2A8F1CFA939E27D567576D31761FB885A0EDFB5598776C9'
-        }
-      },
-      cause: { status: 'failed', reason: 'tefBAD_AUTH' }
-    }
+    handler.on('queued', (event: SologenicTypes.QueuedEvent) => {
+      console.log('GLOBAL QUEUED: ', event);
+    });
+    handler.on('dispatched', (event: SologenicTypes.DispatchedEvent) => {
+      console.log('GLOBAL DISPATCHED:', event);
+    });
+    handler.on('requeued', (event: SologenicTypes.RequeuedEvent) => {
+      console.log('GLOBAL REQUEUED:', event);
+    });
+    handler.on('warning', (event: SologenicTypes.WarningEvent) => {
+      console.log('GLOBAL WARNING:', event);
+    });
+    handler.on('validated', (event: SologenicTypes.ValidatedEvent) => {
+      console.log('GLOBAL VALIDATED:', event);
+    });
+    handler.on('failed', (event: SologenicTypes.FailedEvent) => {
+      console.log('GLOBAL FAILED:', event);
+    });
     */
+
+    const transaction: SologenicTypes.TransactionObject = handler.submit(tx);
 
     let txFailed = false;
 
@@ -541,8 +539,66 @@ test.serial('transaction will fail with tefBAD_AUTH (invalid account cannot send
       txFailed = true;
     });
 
-    const resolvedTx = await transaction.promise;
-    resolvedTx;
+    await transaction.promise;
+
+    t.true(txFailed);
+  } catch (error) {
+    t.fail(error);
+  }
+});
+
+test.serial('transaction will fail with tefPAST_SEQ (invalid account sequence is less than valid account)', async t => {
+  try {
+    const handler: SologenicTxHandler = t.context!.handler;
+
+    await handler.setAccount(t.context.validAccount);
+
+    // Get the sequence number
+    const sequenceNumber = await handler.getAccountSequence();
+
+    // Set an invalid account and set the sequence number to the valid accounts
+    // sequence.
+    await handler.setAccount(t.context.invalidAccount);
+    await handler.setAccountSequence(sequenceNumber - 1);
+
+    // See flags at https://xrpl.org/accountset.html
+    const tx: SologenicTypes.TX = {
+      Account: t.context.validAccount.address,
+      TransactionType: 'AccountSet',
+      SetFlag: 5
+    };
+
+    /*
+    handler.on('queued', (event: SologenicTypes.QueuedEvent) => {
+      console.log('GLOBAL QUEUED: ', event);
+    });
+    handler.on('dispatched', (event: SologenicTypes.DispatchedEvent) => {
+      console.log('GLOBAL DISPATCHED:', event);
+    });
+    handler.on('requeued', (event: SologenicTypes.RequeuedEvent) => {
+      console.log('GLOBAL REQUEUED:', event);
+    });
+    handler.on('warning', (event: SologenicTypes.WarningEvent) => {
+      console.log('GLOBAL WARNING:', event);
+    });
+    handler.on('validated', (event: SologenicTypes.ValidatedEvent) => {
+      console.log('GLOBAL VALIDATED:', event);
+    });
+    handler.on('failed', (event: SologenicTypes.FailedEvent) => {
+      console.log('GLOBAL FAILED:', event);
+    });
+    */
+
+    const transaction: SologenicTypes.TransactionObject = handler.submit(tx);
+
+    let txFailed = false;
+
+    transaction.events.on('failed', (failedTx: SologenicTypes.FailedEvent) => {
+      t.is(failedTx.reason, "tefPAST_SEQ");
+      txFailed = true;
+    });
+
+    await transaction.promise;
 
     t.true(txFailed);
   } catch (error) {

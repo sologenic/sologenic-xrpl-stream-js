@@ -716,17 +716,22 @@ export class SologenicTxHandler extends EventEmitter {
         // These codes indicate that the transaction failed and was not included in a ledger, but the transaction could have succeeded in some theoretical ledger. Typically this means that the transaction can no longer succeed in any future ledger. They have numerical values in the range -199 to -100. The exact code for any given error is subject to change, so don't rely on it.
         if (result.resultCode.startsWith('tef')) {
           if (result.resultCode === 'tefBAD_AUTH_MASTER') {
-            this.sequence--;
+            this.incrementAccountSequenceBy(-1);
             return await this._txFailed(unsignedTx, result.resultCode, result);
           }
 
           if (result.resultCode === 'tefBAD_AUTH') {
-            this.sequence--;
+            this.incrementAccountSequenceBy(-1);
             return await this._txFailed(unsignedTx, result.resultCode, result);
           }
 
           if (result.resultCode === 'tefALREADY') {
-            this.sequence--;
+            this.incrementAccountSequenceBy(-1);
+            return await this._txFailed(unsignedTx, result.resultCode, result);
+          }
+
+          if (result.resultCode === 'tefPAST_SEQ') {
+            // Past account sequence
             return await this._txFailed(unsignedTx, result.resultCode, result);
           }
         }
