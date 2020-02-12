@@ -1,12 +1,12 @@
-import { MQTX, IQueue } from '../../types';
+import { MQTX, IQueue, HashTransactionHandlerOptions } from '../../types';
 
 import { v4 as uuid } from 'uuid';
 
 export default class HashQueue implements IQueue {
   private hash: Map<string, Array<MQTX>> = new Map<string, Array<MQTX>>();
 
-  constructor(options: any) {
-    options;
+  constructor(options: HashTransactionHandlerOptions) {
+    options!;
   }
 
   private _exist(queue: string): boolean {

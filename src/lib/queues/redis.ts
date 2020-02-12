@@ -1,12 +1,12 @@
 import Redis from 'ioredis';
-import { MQTX, IQueue } from '../../types';
+import { MQTX, IQueue, RedisTransactionHandlerOptions } from '../../types';
 
 import { v4 as uuid } from 'uuid';
 
 export default class RedisQueue implements IQueue {
     private redis: any;
 
-    constructor(options: any) {
+    constructor(options: RedisTransactionHandlerOptions) {
       try {
         this.redis = new Redis(options);
       } catch (error) {

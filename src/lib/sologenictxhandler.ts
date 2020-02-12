@@ -15,7 +15,8 @@ export class SologenicTxHandler extends EventEmitter {
   protected txmq: any;
   protected clearCache: boolean = false;
   protected rippleApi!: RippleAPI;
-  protected address: string = '';
+  protected dispatchListener: boolean = false;
+  protected account: string = '';
   protected secret: string = '';
   protected keypair: SologenicTypes.KeyPair = { publicKey: '', privateKey: '' };
   protected txEvents: { [key: string]: EventEmitter } = {};
@@ -101,7 +102,7 @@ export class SologenicTxHandler extends EventEmitter {
 
       // Init ledger object
       this.ledger = {
-        baseFeeXRP: '0',
+        baseFeeXRP: '0.00001',
         ledgerTimestamp: '0',
         ledgerVersion: 0
       };
@@ -112,7 +113,7 @@ export class SologenicTxHandler extends EventEmitter {
       try {
         this.txmq = new TXMQƨ(sologenicOptions); // Pass on the queue connection details
       } catch (error) {
-        throw new SologenicError('1002');
+        throw new SologenicError('1002', error);
       }
 
       // Set clearCache to true if the client needs to ignore and clean the queue before starting
@@ -137,34 +138,40 @@ export class SologenicTxHandler extends EventEmitter {
   }
 
   /* Added for testing support to be able to override base fee */
-  public setLedgerBaseFeeXRP(fee: string): this {
+  public async setLedgerBaseFeeXRP(fee: string): Promise<this> {
     this.ledger.baseFeeXRP = fee;
 
     return this;
   }
-  public getLedgerBaseFeeXRP(): string {
+
+  public async getLedgerBaseFeeXRP(): Promise<string> {
     return this.ledger.baseFeeXRP;
   }
 
   /* Added for testing support to set ledger version */
-  public setLedgerVersion(version: number): this {
+  public async setLedgerVersion(version: number): Promise<this> {
     this.ledger.ledgerVersion = version;
 
     return this;
   }
 
-  public getLedgerVersion(): number {
+  public async getLedgerVersion(): Promise<number> {
     return this.ledger.ledgerVersion;
   }
 
-  /* Added for testing support to set account sequence */
-  public setAccountSequence(sequence: number): this {
+  public async setAccountSequence(sequence: number): Promise<this> {
     this.sequence = sequence;
 
     return this;
   }
 
-  public getAccountSequence(): number {
+  public async incrementAccountSequenceBy(steps: number): Promise<this> {
+    this.sequence = this.sequence + steps;
+
+    return this;
+  }
+
+  public async getAccountSequence(): Promise<number> {
     return this.sequence;
   }
 
@@ -187,13 +194,16 @@ export class SologenicTxHandler extends EventEmitter {
         await this._connected();
 
         // Start the dispatcher listener
-        this._dispatch();
+        if (!this.dispatchListener) {
+          this._dispatch();
+          this.dispatchListener = true;
+        }
 
         // Start the validator listener
         this._validateOnLedger();
-
-        // Return the current class
       }
+
+      // Return this
       return this;
     } catch (error) {
       // if there is a disconnection error, keep trying until connection is made. Retry in 1000ms
@@ -207,7 +217,7 @@ export class SologenicTxHandler extends EventEmitter {
   }
 
   public hasKeypair(): boolean {
-    if ((typeof this.address !== 'undefined' && this.address !== '') &&
+    if ((typeof this.account !== 'undefined' && this.account !== '') &&
       (typeof this.keypair.publicKey !== 'undefined' && this.keypair.publicKey !== '') &&
       (typeof this.keypair.privateKey !== 'undefined' && this.keypair.privateKey !== '')) {
         return true;
@@ -217,7 +227,7 @@ export class SologenicTxHandler extends EventEmitter {
   }
 
   public hasSecret(): boolean {
-    if ((typeof this.address !== 'undefined' && this.address !== '') &&
+    if ((typeof this.account !== 'undefined' && this.account !== '') &&
       (typeof this.secret !== 'undefined' && this.secret !== '')) {
         return true;
       }
@@ -233,7 +243,7 @@ export class SologenicTxHandler extends EventEmitter {
         Is this a valid XRP address?
       */
       if (this.getRippleApi().isValidAddress(account.address)) {
-        this.address = account.address;
+        this.account = account.address;
       } else {
         throw new SologenicError('2000', new RippleError.ValidationError());
       }
@@ -252,7 +262,8 @@ export class SologenicTxHandler extends EventEmitter {
         this.secret = '';
       }
 
-      // Fetch the current state of the ledger and account sequence
+      // Fetch the current state of the ledger and account sequence, if the tx returns tefPAST_SEQ
+      // we'll re-submit after refetching the account state
       await this._fetchCurrentState();
 
       if (this.clearCache) {
@@ -329,13 +340,12 @@ export class SologenicTxHandler extends EventEmitter {
    * @returns ResolvedTx
    */
   private async _resolve(id: string): Promise<SologenicTypes.ResolvedTx> {
-    const validated = await this.txmq.get('txmq:validated:' + this.address, id);
-    // console.log(`Attempting to resolve promise (queue: txmq:validated:${this.address}, key: ${id})`);
+    const validated = await this.txmq.get('txmq:validated:' + this.account, id);
 
     if (typeof validated !== 'undefined') {
       return validated.data;
     } else {
-      const failed = await this.txmq.get('txmq:failed:' + this.address, id);
+      const failed = await this.txmq.get('txmq:failed:' + this.account, id);
 
       if (typeof failed !== 'undefined') {
         return failed.data;
@@ -352,22 +362,27 @@ export class SologenicTxHandler extends EventEmitter {
    */
   private async _fetchCurrentState(): Promise<void> {
     try {
+      // If the Ripple API is not connected, make sure we connect.
+      if (!this.getRippleApi().isConnected()) {
+        await this.getRippleApi().connect();
+      }
+
       // Use the ripple-lib built in REST functions to get the ledger version and fee. Please note that these
       // values are updated using the WS after the first initilization, until this method is called again
-      this.setLedgerVersion(await this.getRippleApi().getLedgerVersion());
-      this.setLedgerBaseFeeXRP(await this.getRippleApi().getFee());
+      await this.setLedgerVersion(await this.getRippleApi().getLedgerVersion());
+      await this.setLedgerBaseFeeXRP(await this.getRippleApi().getFee());
 
       // Get account info of the current XRP account and set the sequence to submit transactions
       const account = await this.getRippleApi().request('account_info', {
-        account: this.address
+        account: this.account
       });
 
-      this.setAccountSequence(account.account_data.Sequence);
+      await this.setAccountSequence(account.account_data.Sequence);
     } catch (error) {
       // if there is a disconnection error, keep trying until connection is made. Retry in 1000ms
       if (error instanceof RippleError.DisconnectedError) {
         // wait for connection to be re-established
-        await this.connect();
+        await this.getRippleApi().connect();
         // try fetching the current state again
         await this._fetchCurrentState();
         // Unspecific RippleError
@@ -400,15 +415,15 @@ export class SologenicTxHandler extends EventEmitter {
 
       this.getRippleApi().on('disconnect', () => {
         // Reconnect
-        this.connect();
+        this.getRippleApi().connect();
       });
 
       this.getRippleApi().on('error', () => {
         // Reconnect
-        this.connect();
+        this.getRippleApi().connect();
       });
 
-      this.getRippleApi().on('ledger', (ledger: any) => {
+      this.getRippleApi().on('ledger', (ledger: SologenicTypes.Ledger) => {
         // Update the ledger version
         this.ledger = ledger;
       });
@@ -449,7 +464,7 @@ export class SologenicTxHandler extends EventEmitter {
     id?: string
   ): Promise<void> {
     try {
-      const item = await this.txmq.add('txmq:raw:' + this.address, txJson, id);
+      const item = await this.txmq.add('txmq:raw:' + this.account, txJson, id);
 
       const queuedEvent: SologenicTypes.QueuedEvent = {
         id: id!,
@@ -505,7 +520,7 @@ export class SologenicTxHandler extends EventEmitter {
     try {
       // Get raw transactions from the queue
       const unsignedTxs: Array<SologenicTypes.UnsignedTx> = await this.txmq.getAll(
-        'txmq:raw:' + this.address
+        'txmq:raw:' + this.account
       );
       // Loop through each, FIFO order, and dispatch the transaction
       for (const unsignedTx of unsignedTxs!) {
@@ -531,7 +546,7 @@ export class SologenicTxHandler extends EventEmitter {
     try {
       const result: boolean = await this._dispatchToLedger(unsignedTx);
       if (result) {
-        await this.txmq.del('txmq:raw:' + this.address, unsignedTx.id);
+        await this.txmq.del('txmq:raw:' + this.account, unsignedTx.id);
         return;
       } else {
         return await this._dispatchHandler(unsignedTx);
@@ -552,7 +567,6 @@ export class SologenicTxHandler extends EventEmitter {
       // Add id in the memo common field for tracking
       const tx = this._addMemo(unsignedTx);
 
-      // Make sure the account is valid
       if (!this.getRippleApi().isValidAddress(tx.Account)) {
         throw new SologenicError('2000', new RippleError.ValidationError());
       }
@@ -574,14 +588,14 @@ export class SologenicTxHandler extends EventEmitter {
       // multiply the fee by 1.2 to make sure the tx goes through
       // Suggestion. In cases of surge in network fee, this value can be dynamically increased.
       tx.Fee = this.getRippleApi().xrpToDrops(
-        this.math.multiply(this.ledger.baseFeeXRP, this.feeCushion).toFixed(6)
+        this.math.multiply(await this.getLedgerBaseFeeXRP(), this.feeCushion).toFixed(6)
       );
 
       // Set the sequence of this tx to the latest sequence obtained from account_info
-      tx.Sequence = this.sequence;
+      tx.Sequence = await this.getAccountSequence();
 
       // Set LastLedgerSequence for this tx to make sure it becomes invalid after 3 verified closed ledgers
-      tx.LastLedgerSequence = this.ledger.ledgerVersion + 3;
+      tx.LastLedgerSequence = (await this.getLedgerVersion()) + 3
 
       // Sign the transaction using the secret provided on init
       const signedTx: SologenicTypes.SignedTx = this.getRippleApi().sign(
@@ -591,20 +605,17 @@ export class SologenicTxHandler extends EventEmitter {
         this.hasKeypair() ? this.keypair : undefined
       );
 
-      // console.log(`Transaction signed: ${signedTx.signedTransaction}`);
-
       // store the `before` ledger this transaction is being submitted
-      const firstLedgerSequence: number = this.ledger.ledgerVersion;
+      const firstLedgerSequence: number = await this.getLedgerVersion();
 
       // Submit the transaction to the ledger
       const result: SologenicTypes.FormattedSubmitResponse = await this.getRippleApi().submit(
         signedTx.signedTransaction
       );
 
-      // console.log(`Transaction submitted to the XRPL: ${result.resultCode}, ${result.resultMessage}`);
+      // Increase our sequence for next transaction
+      await this.incrementAccountSequenceBy(1);
 
-      // increase the sequence for next transaction
-      this.sequence++;
       /*
         If the result code is NOT tesSUCCESS, emit to object listner and globally warning the error.
         Note transaction is not ignore as it could be still validated due to many reasons
@@ -780,7 +791,7 @@ export class SologenicTxHandler extends EventEmitter {
       };
 
       // Add to dispatched queue
-      const dispatched: SologenicTypes.DispatchedTx = await this.txmq.add('txmq:dispatched:' + this.address, dispatchedTx, unsignedTx.id);
+      const dispatched: SologenicTypes.DispatchedTx = await this.txmq.add('txmq:dispatched:' + this.account, dispatchedTx, unsignedTx.id);
 
       const dispatchedEvent: SologenicTypes.DispatchedEvent = {
         id: unsignedTx.id,
@@ -827,8 +838,8 @@ export class SologenicTxHandler extends EventEmitter {
         }
       };
 
-      await this.txmq.del('txmq:dispatched:' + this.address, unsignedTx.id);
-      await this.txmq.add('txmq:failed:' + this.address, failedTx, unsignedTx.id);
+      await this.txmq.del('txmq:dispatched:' + this.account, unsignedTx.id);
+      await this.txmq.add('txmq:failed:' + this.account, failedTx, unsignedTx.id);
 
       const failedEvent: SologenicTypes.FailedEvent = {
         id: unsignedTx.id,
@@ -856,7 +867,7 @@ export class SologenicTxHandler extends EventEmitter {
    */
   private async _validateMissedTransactions(): Promise<void> {
     try {
-      const dispatchedTxs = await this.txmq.getAll('txmq:dispatched:' + this.address);
+      const dispatchedTxs = await this.txmq.getAll('txmq:dispatched:' + this.account);
       for (const dispatchedTx of dispatchedTxs!) {
         await this._validateTxOnLedger(dispatchedTx.id, dispatchedTx.data);
       }
@@ -897,7 +908,7 @@ export class SologenicTxHandler extends EventEmitter {
           });
 
         // Remove the transaction from the dispatched queue
-        const exists = await this.txmq.del('txmq:dispatched:' + this.address, id);
+        const exists = await this.txmq.del('txmq:dispatched:' + this.account, id);
 
         // Make sure this transaction existed in the queue
         if (exists) {
@@ -925,7 +936,7 @@ export class SologenicTxHandler extends EventEmitter {
             };
 
             // console.log(`Adding validated event (queue: txmq:validated:${this.address}, key: ${id})`);
-            await this.txmq.add('txmq:validated:' + this.address, validatedEvent.resolvedTx, id);
+            await this.txmq.add('txmq:validated:' + this.account, validatedEvent.resolvedTx, id);
 
             if (typeof this.txEvents![id] !== 'undefined') {
               this.txEvents![id].emit('validated', validatedEvent);
@@ -964,7 +975,7 @@ export class SologenicTxHandler extends EventEmitter {
             }
 
             // add the transaction to the raw queue
-            this._addRawTxToQueue(dispatchedTx.unsignedTx.data.txJSON, id);
+            this._addRawTxToQueue(dispatchedTx.unsignedTx.data, id);
           }
         }
       } else {
@@ -1003,10 +1014,10 @@ export class SologenicTxHandler extends EventEmitter {
         }
 
         // remove transaction from the dispatched queue
-        await this.txmq.del('txmq:dispatched:' + this.address, id);
+        await this.txmq.del('txmq:dispatched:' + this.account, id);
 
         // add the transaction to the raw queue
-        this._addRawTxToQueue(dispatchedTx.unsignedTx.data.txJSON, id);
+        this._addRawTxToQueue(dispatchedTx.unsignedTx.data, id);
       } else {
         // if unspecified error, wait 1000ms re-try validation
         await wait(1000);

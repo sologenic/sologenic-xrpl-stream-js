@@ -214,12 +214,8 @@ test.before(async t => {
 
   const thOptions: SologenicTypes.TransactionHandlerOptions = {
     queueType: SologenicTypes.QUEUE_TYPE_STXMQ_HASH,
-    redis: {
-      host: 'localhost'
-    }
+    hash: {}
   };
-
-  // t.log(t.context);
 
   t.context.handler = new SologenicTxHandler(rippleOptions, thOptions);
 });
@@ -244,8 +240,6 @@ test.serial('sologenic tx hash initialization', async t => {
   }));
 
   await t.notThrowsAsync(t.context.handler.setAccount(t.context.validAccount));
-
-  t.pass();
 });
 
 test.serial('transaction to sologenic xrpl stream', async t => {
@@ -266,34 +260,24 @@ test.serial('transaction to sologenic xrpl stream', async t => {
 
     // noUnusedLocals is enabled in the tsconfig, so we access the object at least once
     transaction.events
-      .on('queued', (event: SologenicTypes.QueuedEvent) => {
-        t.log("Event (queued): ", JSON.stringify(event));
-
+      .on('queued', () => {
         eventsReceived.push('queued');
       })
-      .on('dispatched', (event: SologenicTypes.DispatchedEvent) => {
-        t.log("Event (dispatched): ", JSON.stringify(event));
-
+      .on('dispatched', () => {
         eventsReceived.push('dispatched');
       })
-      .on('requeued', (event: SologenicTypes.RequeuedEvent) => {
-        t.log("Event (requeued): ", JSON.stringify(event));
-
+      .on('requeued', () => {
         eventsReceived.push('requeued');
       })
-      .on('warning', (event: SologenicTypes.WarningEvent) => {
-        t.log("Event (warning): ", JSON.stringify(event));
-
+      .on('warning', () => {
         eventsReceived.push('warning');
       })
       .on('validated', (event: SologenicTypes.ValidatedEvent) => {
-        t.log("Event (validated): ", JSON.stringify(event));
         eventsReceived.push('validated');
 
         t.is(event.reason, 'tesSUCCESS');
       })
       .on('failed', (event: SologenicTypes.FailedEvent) => {
-        t.log("Event (failed): ", JSON.stringify(event));
         eventsReceived.push('failed');
 
         t.fail(event.reason);
@@ -318,7 +302,6 @@ test.serial('transaction to sologenic xrpl stream', async t => {
   }
 });
 
-// https://xrpl.org/transaction-results.html
 test.serial('transaction should fail immediately (invalid flags)', async t => {
   try {
     const handler: SologenicTxHandler = t.context!.handler;
@@ -333,11 +316,17 @@ test.serial('transaction should fail immediately (invalid flags)', async t => {
 
     const transaction: SologenicTypes.TransactionObject = handler.submit(tx);
 
+    let txFailed = false;
+
     transaction.events.on('failed', (failedTx: SologenicTypes.FailedEvent) => {
+      txFailed = true;
+
       t.is(failedTx.reason, "-1 not in range 0 <= $val <= 4294967295");
     });
 
     await transaction.promise;
+
+    t.true(txFailed);
   } catch (error) {
     t.fail();
   }
@@ -359,13 +348,13 @@ test.serial('transaction should be successful', async t => {
     const transaction: SologenicTypes.TransactionObject = handler.submit(tx);
 
     transaction.events
-      .on('validated', (dispatched: SologenicTypes.DispatchedTx, result: SologenicTypes.txResult) => {
-        t.true(dispatched != null);
-        t.is(result.status, 'tesSUCCESS');
+      .on('validated', (event: SologenicTypes.ValidatedEvent) => {
+        t.true(typeof event !== 'undefined');
+        t.is(event.reason, 'tesSUCCESS');
       })
-      .on('failed', (type: any, code: any) => {
-        t.fail(type);
-        t.fail(code);
+      .on('failed', (event: SologenicTypes.FailedEvent) => {
+        t.true(typeof event !== 'undefined');
+        t.fail(event.reason);
       });
 
     await transaction.promise;
@@ -374,7 +363,7 @@ test.serial('transaction should be successful', async t => {
   }
 });
 
-test.serial('transaction should fail with invalid_xrp_address', async t => {
+test.serial('transaction will fail with tefBAD_AUTH (invalid account cannot send on behalf of valid account)', async t => {
   try {
     const handler: SologenicTxHandler = t.context!.handler;
 
@@ -389,32 +378,47 @@ test.serial('transaction should fail with invalid_xrp_address', async t => {
 
     const transaction: SologenicTypes.TransactionObject = handler.submit(tx);
 
-    transaction.events
-      .on('failed', (failedTx: SologenicTypes.FailedEvent) => {
-
-        /*
-        ℹ {
-          failedTx: {
-            cause: {
-              reason: 'invalid_xrp_address',
-              status: 'failed',
-            },
-            result: undefined,
-            unsignedTx: {
-              data: Object { … },
-              id: '3a8bfdba-41b0-4f94-86d0-297dcfbe45a9',
-            },
-          },
-          id: '3a8bfdba-41b0-4f94-86d0-297dcfbe45a9',
-          reason: 'invalid_xrp_address',
-          result: undefined,
+    /*
+    {
+      unsignedTx: {
+        id: '39db7e35-e63d-46b2-a088-3c40af38f189',
+        data: { txJSON: [Object] }
+      },
+      result: {
+        resultCode: 'tefBAD_AUTH',
+        resultMessage: "Transaction's public key is not authorized.",
+        engine_result: 'tefBAD_AUTH',
+        engine_result_code: -196,
+        engine_result_message: "Transaction's public key is not authorized.",
+        tx_blob: '120003228000000024004A8B73201B004A8B7520210000000568400000000000000C732103CD5F0DCB5C251BE391ACB6FA3ACF2FCC24F526EE35140D5505A104CE2C1AFF787446304402202F46BEA246D1BD0A37328CDA433FD8D146A871E386645FB1847DA4B6AAF99086022052E26FD37E804BBA0A1E8F54CA086C886A62FF27E8EFF87A3FAD6453F1CA182F8114CDF8D447CE9FD229C5A7E9F55DCE9D3C351BF824F9EA7D2433396462376533352D653633642D343662322D613038382D336334306166333866313839E1F1',
+        tx_json: {
+          Account: 'rK8ncHPc8oFe8fHP9GStDgsypHPcfKR5vt',
+          Fee: '12',
+          Flags: 2147483648,
+          LastLedgerSequence: 4885365,
+          Memos: [Array],
+          Sequence: 4885363,
+          SetFlag: 5,
+          SigningPubKey: '03CD5F0DCB5C251BE391ACB6FA3ACF2FCC24F526EE35140D5505A104CE2C1AFF78',
+          TransactionType: 'AccountSet',
+          TxnSignature: '304402202F46BEA246D1BD0A37328CDA433FD8D146A871E386645FB1847DA4B6AAF99086022052E26FD37E804BBA0A1E8F54CA086C886A62FF27E8EFF87A3FAD6453F1CA182F',
+          hash: 'C6C2C1D4588CBE7BB2A8F1CFA939E27D567576D31761FB885A0EDFB5598776C9'
         }
-        */
+      },
+      cause: { status: 'failed', reason: 'tefBAD_AUTH' }
+    }
+    */
 
-        t.is(failedTx.reason, "invalid_xrp_address");
-      });
+    let txFailed = false;
+
+    transaction.events.on('failed', (failedTx: SologenicTypes.FailedEvent) => {
+      t.is(failedTx.reason, "tefBAD_AUTH");
+      txFailed = true;
+    });
 
     await transaction.promise;
+
+    t.true(txFailed);
   } catch (error) {
     t.fail(error);
   }
@@ -471,9 +475,9 @@ test.serial('transaction should fail with insufficient fee', async t => {
     const handler: SologenicTxHandler = t.context!.handler;
 
     await handler.setAccount(t.context.validAccount);
+    await handler.fetchCurrentState();
 
-    handler.fetchCurrentState();
-    handler.setLedgerBaseFeeXRP('0');
+    await handler.setLedgerBaseFeeXRP('0');
 
     // See flags at https://xrpl.org/accountset.html
     const tx: SologenicTypes.TX = {
@@ -482,29 +486,49 @@ test.serial('transaction should fail with insufficient fee', async t => {
       SetFlag: 5
     };
 
+    let txQueued = false;
+    let txDispatched = false;
+    let txRequeued = false;
+    let txWarning: boolean = false;
+    let txValidated: boolean = false;
+    let txFailed = false;
+
     const transaction: SologenicTypes.TransactionObject = handler.submit(tx);
 
-    transaction.events.on('failed', (failedTx: SologenicTypes.FailedEvent) => {
-      t.log(failedTx);
-
-      /*
-      t.log(unsignedTx);
-      t.log(code);
-      t.log(type);
-      t.log(unsignedTx);
-      t.log(code);
-      t.log(type);
-
-      t.true(typeof unsignedTx !== 'undefined');
-      t.true(typeof code !== 'undefined');
-      t.true(typeof type !== 'undefined');
-      t.is(code, 'tecUNFUNDED_PAYMENT');
-      */
-
-      t.pass();
-    });
+    transaction.events
+      .on('queued', () => {
+        txQueued = true;
+      })
+      .on('dispatched', () => {
+        txDispatched = true;
+      })
+      .on('requeued', () => {
+        txRequeued = true;
+      })
+      .on('warning', (event: SologenicTypes.WarningEvent) => {
+        if (!txWarning) {
+          // TODO: Clean up the reason to only contain telINSUF_FEE_P
+          t.is(event.reason, 'telINSUF_FEE_P: Fee insufficient.');
+          txWarning = true;
+        }
+      })
+      .on('validated', () => {
+        // Our transaction has been validated
+        txValidated = true;
+      })
+      .on('failed', () => {
+        txFailed = true;
+      });
 
     await transaction.promise;
+
+    t.true(txQueued);
+    t.true(txDispatched);
+    t.true(txRequeued);
+    t.true(txValidated);
+    t.true(txWarning);
+    t.false(txFailed);
+
   } catch (error) {
     t.fail(error);
   }
@@ -530,11 +554,9 @@ test.serial('transaction should fail because not enough funds are available', as
 
     const transaction: SologenicTypes.TransactionObject = handler.submit(tx1);
 
-    transaction.events.on('failed', (unsignedTx: any, code: any, type: any) => {
-      t.true(typeof unsignedTx !== 'undefined');
-      t.true(typeof code !== 'undefined');
-      t.true(typeof type !== 'undefined');
-      t.is(code, 'tecUNFUNDED_PAYMENT');
+    transaction.events.on('failed', (failedTx: SologenicTypes.FailedEvent) => {
+      t.true(typeof failedTx !== 'undefined');
+      t.is(failedTx.reason, 'tecUNFUNDED_PAYMENT');
     });
 
     await transaction.promise;
@@ -583,11 +605,9 @@ test.serial('transaction should fail because account is not funded', async t => 
 
     const transaction2: SologenicTypes.TransactionObject = handler.submit(tx2);
 
-    transaction2.events.on('failed', (unsignedTx: any, code: any, type: any) => {
-      t.true(typeof unsignedTx !== 'undefined');
-      t.true(typeof code !== 'undefined');
-      t.true(typeof type !== 'undefined');
-      t.is(code, 'tecUNFUNDED_PAYMENT');
+    transaction2.events.on('failed', (failedTx: SologenicTypes.FailedEvent) => {
+      t.true(typeof failedTx !== 'undefined');
+      t.is(failedTx.reason, 'tecUNFUNDED_PAYMENT');
     });
 
     await transaction2.promise;
