@@ -363,67 +363,6 @@ test.serial('transaction should be successful', async t => {
   }
 });
 
-test.serial('transaction will fail with tefBAD_AUTH (invalid account cannot send on behalf of valid account)', async t => {
-  try {
-    const handler: SologenicTxHandler = t.context!.handler;
-
-    await handler.setAccount(t.context.invalidAccount);
-
-    // See flags at https://xrpl.org/accountset.html
-    const tx: SologenicTypes.TX = {
-      Account: t.context.validAccount.address,
-      TransactionType: 'AccountSet',
-      SetFlag: 5
-    };
-
-    const transaction: SologenicTypes.TransactionObject = handler.submit(tx);
-
-    /*
-    {
-      unsignedTx: {
-        id: '39db7e35-e63d-46b2-a088-3c40af38f189',
-        data: { txJSON: [Object] }
-      },
-      result: {
-        resultCode: 'tefBAD_AUTH',
-        resultMessage: "Transaction's public key is not authorized.",
-        engine_result: 'tefBAD_AUTH',
-        engine_result_code: -196,
-        engine_result_message: "Transaction's public key is not authorized.",
-        tx_blob: '120003228000000024004A8B73201B004A8B7520210000000568400000000000000C732103CD5F0DCB5C251BE391ACB6FA3ACF2FCC24F526EE35140D5505A104CE2C1AFF787446304402202F46BEA246D1BD0A37328CDA433FD8D146A871E386645FB1847DA4B6AAF99086022052E26FD37E804BBA0A1E8F54CA086C886A62FF27E8EFF87A3FAD6453F1CA182F8114CDF8D447CE9FD229C5A7E9F55DCE9D3C351BF824F9EA7D2433396462376533352D653633642D343662322D613038382D336334306166333866313839E1F1',
-        tx_json: {
-          Account: 'rK8ncHPc8oFe8fHP9GStDgsypHPcfKR5vt',
-          Fee: '12',
-          Flags: 2147483648,
-          LastLedgerSequence: 4885365,
-          Memos: [Array],
-          Sequence: 4885363,
-          SetFlag: 5,
-          SigningPubKey: '03CD5F0DCB5C251BE391ACB6FA3ACF2FCC24F526EE35140D5505A104CE2C1AFF78',
-          TransactionType: 'AccountSet',
-          TxnSignature: '304402202F46BEA246D1BD0A37328CDA433FD8D146A871E386645FB1847DA4B6AAF99086022052E26FD37E804BBA0A1E8F54CA086C886A62FF27E8EFF87A3FAD6453F1CA182F',
-          hash: 'C6C2C1D4588CBE7BB2A8F1CFA939E27D567576D31761FB885A0EDFB5598776C9'
-        }
-      },
-      cause: { status: 'failed', reason: 'tefBAD_AUTH' }
-    }
-    */
-
-    let txFailed = false;
-
-    transaction.events.on('failed', (failedTx: SologenicTypes.FailedEvent) => {
-      t.is(failedTx.reason, "tefBAD_AUTH");
-      txFailed = true;
-    });
-
-    await transaction.promise;
-
-    t.true(txFailed);
-  } catch (error) {
-    t.fail(error);
-  }
-});
-
 test.serial('transaction send multiple transactions', async t => {
   try {
     const handler: SologenicTxHandler = t.context!.handler;
@@ -534,89 +473,6 @@ test.serial('transaction should fail with insufficient fee', async t => {
   }
 });
 
-test.serial('transaction should fail because not enough funds are available', async t => {
-  try {
-    const handler: SologenicTxHandler = t.context!.handler;
-
-    await handler.setAccount(t.context.emptyAccount);
-
-    // See flags at https://xrpl.org/accountset.html
-    const tx1: SologenicTypes.TX = {
-      Account: t.context.emptyAccount.address,
-      TransactionType: 'Payment',
-      Amount: handler.getRippleApi().xrpToDrops('99999'),
-      Destination: t.context.validAccount.address
-    };
-
-    // Send all funds out of this account to our validAccount, then
-    // we'll send another transaction which will not be successful
-    // because we'll be out of funds.
-
-    const transaction: SologenicTypes.TransactionObject = handler.submit(tx1);
-
-    transaction.events.on('failed', (failedTx: SologenicTypes.FailedEvent) => {
-      t.true(typeof failedTx !== 'undefined');
-      t.is(failedTx.reason, 'tecUNFUNDED_PAYMENT');
-    });
-
-    await transaction.promise;
-
-  } catch (error) {
-    t.fail(error);
-  }
-});
-
-test.serial('transaction should fail because account is not funded', async t => {
-  try {
-    const handler: SologenicTxHandler = t.context.handler;
-
-    const xrplAddress = handler.getRippleApi().generateAddress();
-
-    await handler.setAccount(t.context.validAccount);
-
-    // Activate the new account
-    const tx1: SologenicTypes.TX = {
-      Account: t.context.validAccount.address,
-      TransactionType: 'Payment',
-      Amount: handler.getRippleApi().xrpToDrops('20'),
-      Destination: xrplAddress.address
-    };
-
-    const transaction1: SologenicTypes.TransactionObject = handler.submit(tx1);
-    await transaction1.promise;
-
-    // With the newly activated account perform an underfunded transaction
-    await handler.setAccount({
-      address: xrplAddress.address!,
-      secret: xrplAddress.secret!,
-      keypair: {
-        publicKey: '',
-        privateKey: ''
-      }
-    });
-
-    // See flags at https://xrpl.org/accountset.html
-    const tx2: SologenicTypes.TX = {
-      Account: xrplAddress.address!,
-      TransactionType: 'Payment',
-      Amount: handler.getRippleApi().xrpToDrops('100'),
-      Destination: t.context.validAccount.address
-    };
-
-    const transaction2: SologenicTypes.TransactionObject = handler.submit(tx2);
-
-    transaction2.events.on('failed', (failedTx: SologenicTypes.FailedEvent) => {
-      t.true(typeof failedTx !== 'undefined');
-      t.is(failedTx.reason, 'tecUNFUNDED_PAYMENT');
-    });
-
-    await transaction2.promise;
-
-  } catch (error) {
-    t.fail(error);
-  }
-});
-
 test.serial('transaction should return next sequence', async t => {
   try {
     const handler: SologenicTxHandler = t.context.handler;
@@ -627,6 +483,68 @@ test.serial('transaction should return next sequence', async t => {
     const sequence = await handler.fetchCurrentState();
     t.true(sequence !== 0);
 
+  } catch (error) {
+    t.fail(error);
+  }
+});
+
+test.serial('transaction will fail with tefBAD_AUTH (invalid account cannot send on behalf of valid account)', async t => {
+  try {
+    const handler: SologenicTxHandler = t.context!.handler;
+
+    await handler.setAccount(t.context.invalidAccount);
+
+    // See flags at https://xrpl.org/accountset.html
+    const tx: SologenicTypes.TX = {
+      Account: t.context.validAccount.address,
+      TransactionType: 'AccountSet',
+      SetFlag: 5
+    };
+
+    const transaction: SologenicTypes.TransactionObject = handler.submit(tx);
+
+    /*
+    {
+      unsignedTx: {
+        id: '39db7e35-e63d-46b2-a088-3c40af38f189',
+        data: { txJSON: [Object] }
+      },
+      result: {
+        resultCode: 'tefBAD_AUTH',
+        resultMessage: "Transaction's public key is not authorized.",
+        engine_result: 'tefBAD_AUTH',
+        engine_result_code: -196,
+        engine_result_message: "Transaction's public key is not authorized.",
+        tx_blob: '120003228000000024004A8B73201B004A8B7520210000000568400000000000000C732103CD5F0DCB5C251BE391ACB6FA3ACF2FCC24F526EE35140D5505A104CE2C1AFF787446304402202F46BEA246D1BD0A37328CDA433FD8D146A871E386645FB1847DA4B6AAF99086022052E26FD37E804BBA0A1E8F54CA086C886A62FF27E8EFF87A3FAD6453F1CA182F8114CDF8D447CE9FD229C5A7E9F55DCE9D3C351BF824F9EA7D2433396462376533352D653633642D343662322D613038382D336334306166333866313839E1F1',
+        tx_json: {
+          Account: 'rK8ncHPc8oFe8fHP9GStDgsypHPcfKR5vt',
+          Fee: '12',
+          Flags: 2147483648,
+          LastLedgerSequence: 4885365,
+          Memos: [Array],
+          Sequence: 4885363,
+          SetFlag: 5,
+          SigningPubKey: '03CD5F0DCB5C251BE391ACB6FA3ACF2FCC24F526EE35140D5505A104CE2C1AFF78',
+          TransactionType: 'AccountSet',
+          TxnSignature: '304402202F46BEA246D1BD0A37328CDA433FD8D146A871E386645FB1847DA4B6AAF99086022052E26FD37E804BBA0A1E8F54CA086C886A62FF27E8EFF87A3FAD6453F1CA182F',
+          hash: 'C6C2C1D4588CBE7BB2A8F1CFA939E27D567576D31761FB885A0EDFB5598776C9'
+        }
+      },
+      cause: { status: 'failed', reason: 'tefBAD_AUTH' }
+    }
+    */
+
+    let txFailed = false;
+
+    transaction.events.on('failed', (failedTx: SologenicTypes.FailedEvent) => {
+      t.is(failedTx.reason, "tefBAD_AUTH");
+      txFailed = true;
+    });
+
+    const resolvedTx = await transaction.promise;
+    resolvedTx;
+
+    t.true(txFailed);
   } catch (error) {
     t.fail(error);
   }
