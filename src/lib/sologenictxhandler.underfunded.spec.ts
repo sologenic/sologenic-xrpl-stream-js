@@ -254,18 +254,9 @@ test.serial('transaction should fail because not enough funds are available', as
 });
 
 /*
- * Broken test, the generateAddress() method is throwing an exception in ripple-lib 1.6.3.  It's not a blocker, but we'll get it fixed once we find out the issue.
-
 test.serial('transaction should fail because account is not funded', async t => {
   try {
     const handler: SologenicTxHandler = t.context.handler;
-    t.log("Here");
-
-    console.log(handler.getRippleApi());
-
-    const xrplAddress: GeneratedAddress = handler.getRippleApi().generateAddress({});
-
-    t.log(`Address generated ${xrplAddress.classicAddress}`);
 
     await handler.setAccount(t.context.validAccount);
 
@@ -281,6 +272,12 @@ test.serial('transaction should fail because account is not funded', async t => 
     await transaction1.promise;
 
     // With the newly activated account perform an underfunded transaction
+    // ripple-lib 1.6.3 you must specify entropy otherwise you'll get an
+    // unspecified error.  Possibly a bug.
+    const xrplAddress: GeneratedAddress = handler.getRippleApi().generateAddress({
+      entropy: [ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 ]
+    });
+
     await handler.setAccount({
       address: xrplAddress.address!,
       secret: xrplAddress.secret!,
