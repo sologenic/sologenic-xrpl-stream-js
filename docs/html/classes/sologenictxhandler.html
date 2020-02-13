@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>SologenicTxHandler | typescript</title>
+	<title>SologenicTxHandler | sologenic-xrpl-stream-js</title>
 	<meta name="description" content="">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -22,7 +22,7 @@
 						<li class="state loading">Preparing search index...</li>
 						<li class="state failure">The search index is not available</li>
 					</ul>
-					<a href="../index.html" class="title">typescript</a>
+					<a href="../index.html" class="title">sologenic-xrpl-stream-js</a>
 				</div>
 				<div class="table-cell" id="tsd-widgets">
 					<div id="tsd-filter">
@@ -66,11 +66,27 @@
 <div class="container container-main">
 	<div class="row">
 		<div class="col-8 col-content">
+			<section class="tsd-panel tsd-comment">
+				<div class="tsd-comment tsd-typography">
+					<div class="lead">
+						<p>The <a href="sologenictxhandler.html">SologenicTxHandler</a> maintains state of a transaction from
+						its inception until it has been validated in the XRPL.</p>
+					</div>
+					<p>The Sologenic TX handler can use two different queues at the
+						current point in time, one which is called <a href="hashqueue.html">HashQueue</a> and
+						the other <a href="redisqueue.html">RedisQueue</a> where the hash queue is ephemeral and
+					the redis queue can persist events between process restarts.</p>
+					<dl class="tsd-comment-tags">
+						<dt>packagedocumentation</dt>
+						<dd></dd>
+					</dl>
+				</div>
+			</section>
 			<section class="tsd-panel tsd-hierarchy">
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
 					<li>
-						<a href="_events_.internal.eventemitter.html" class="tsd-signature-type">EventEmitter</a>
+						<span class="tsd-signature-type">EventEmitter</span>
 						<ul class="tsd-hierarchy">
 							<li>
 								<span class="target">SologenicTxHandler</span>
@@ -93,6 +109,8 @@
 							<h3>Properties</h3>
 							<ul class="tsd-index-list">
 								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-protected"><a href="sologenictxhandler.html#account" class="tsd-kind-icon">account</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-protected"><a href="sologenictxhandler.html#clearcache" class="tsd-kind-icon">clear<wbr>Cache</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-protected"><a href="sologenictxhandler.html#dispatchlistener" class="tsd-kind-icon">dispatch<wbr>Listener</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-protected"><a href="sologenictxhandler.html#feecushion" class="tsd-kind-icon">fee<wbr>Cushion</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-protected"><a href="sologenictxhandler.html#ledger" class="tsd-kind-icon">ledger</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-protected"><a href="sologenictxhandler.html#math" class="tsd-kind-icon">math</a></li>
@@ -107,9 +125,8 @@
 						<section class="tsd-index-section ">
 							<h3>Methods</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><a href="sologenictxhandler.html#_validatetxonledger" class="tsd-kind-icon">_<wbr>Validate<wbr>TxOn<wbr>Ledger</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><a href="sologenictxhandler.html#_addmemo" class="tsd-kind-icon">_add<wbr>Memo</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><a href="sologenictxhandler.html#_addrawtxtoqueue" class="tsd-kind-icon">_add<wbr>RawTXto<wbr>Queue</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><a href="sologenictxhandler.html#_addrawtxtoqueue" class="tsd-kind-icon">_add<wbr>Raw<wbr>TxTo<wbr>Queue</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><a href="sologenictxhandler.html#_connected" class="tsd-kind-icon">_connected</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><a href="sologenictxhandler.html#_constructrawtx" class="tsd-kind-icon">_construct<wbr>Raw<wbr>Tx</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><a href="sologenictxhandler.html#_dispatch" class="tsd-kind-icon">_dispatch</a></li>
@@ -123,6 +140,7 @@
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><a href="sologenictxhandler.html#_txfailed" class="tsd-kind-icon">_tx<wbr>Failed</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><a href="sologenictxhandler.html#_validatemissedtransactions" class="tsd-kind-icon">_validate<wbr>Missed<wbr>Transactions</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><a href="sologenictxhandler.html#_validateonledger" class="tsd-kind-icon">_validate<wbr>OnLedger</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><a href="sologenictxhandler.html#_validatetxonledger" class="tsd-kind-icon">_validate<wbr>TxOn<wbr>Ledger</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-overwrite tsd-is-inherited"><a href="sologenictxhandler.html#addlistener" class="tsd-kind-icon">add<wbr>Listener</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="sologenictxhandler.html#connect" class="tsd-kind-icon">connect</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-overwrite tsd-is-inherited"><a href="sologenictxhandler.html#emit" class="tsd-kind-icon">emit</a></li>
@@ -133,6 +151,9 @@
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="sologenictxhandler.html#getledgerversion" class="tsd-kind-icon">get<wbr>Ledger<wbr>Version</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-overwrite tsd-is-inherited"><a href="sologenictxhandler.html#getmaxlisteners" class="tsd-kind-icon">get<wbr>Max<wbr>Listeners</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="sologenictxhandler.html#getrippleapi" class="tsd-kind-icon">get<wbr>Ripple<wbr>Api</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="sologenictxhandler.html#haskeypair" class="tsd-kind-icon">has<wbr>Keypair</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="sologenictxhandler.html#hassecret" class="tsd-kind-icon">has<wbr>Secret</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="sologenictxhandler.html#incrementaccountsequenceby" class="tsd-kind-icon">increment<wbr>Account<wbr>Sequence<wbr>By</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-overwrite tsd-is-inherited"><a href="sologenictxhandler.html#listenercount" class="tsd-kind-icon">listener<wbr>Count</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-overwrite tsd-is-inherited"><a href="sologenictxhandler.html#listeners" class="tsd-kind-icon">listeners</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-overwrite tsd-is-inherited"><a href="sologenictxhandler.html#off" class="tsd-kind-icon">off</a></li>
@@ -167,24 +188,30 @@
 					<a name="constructor" class="tsd-anchor"></a>
 					<h3>constructor</h3>
 					<ul class="tsd-signatures tsd-kind-constructor tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">new <wbr>Sologenic<wbr>TxHandler<span class="tsd-signature-symbol">(</span>rippleApiOptions<span class="tsd-signature-symbol">: </span><a href="../interfaces/rippleapioptions.html" class="tsd-signature-type">RippleAPIOptions</a>, sologenicOptions<span class="tsd-signature-symbol">: </span><a href="../interfaces/transactionhandleroptions.html" class="tsd-signature-type">TransactionHandlerOptions</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="sologenictxhandler.html" class="tsd-signature-type">SologenicTxHandler</a></li>
+						<li class="tsd-signature tsd-kind-icon">new <wbr>Sologenic<wbr>TxHandler<span class="tsd-signature-symbol">(</span>rippleApiOptions<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">RippleAPIOptions</span>, sologenicOptions<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">TransactionHandlerOptions</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="sologenictxhandler.html" class="tsd-signature-type">SologenicTxHandler</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/sologenic/sologenic-xrpl-stream-js/blob/2cf7f25/src/lib/sologenictxhandler.ts#L82">src/lib/sologenictxhandler.ts:82</a></li>
+									<li>Defined in <a href="https://github.com/okanaganrusty/sologenic-xrpl-stream-js/blob/cb64053/src/lib/sologenictxhandler.ts#L102">lib/sologenictxhandler.ts:102</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
-									<p>Creates an instance of sologenic tx handler.</p>
+									<p>Constructor for an instance of sologenic tx handler.</p>
 								</div>
+								<dl class="tsd-comment-tags">
+									<dt>throws</dt>
+									<dd><p>SologenicError      Sologenic exception</p>
+										<p>Please see the [[README.md]] for an example and more details on using this library and the initialization parameters.</p>
+									</dd>
+								</dl>
 							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>rippleApiOptions: <a href="../interfaces/rippleapioptions.html" class="tsd-signature-type">RippleAPIOptions</a></h5>
+									<h5>rippleApiOptions: <span class="tsd-signature-type">RippleAPIOptions</span></h5>
 									<div class="tsd-comment tsd-typography">
 										<div class="lead">
 											<p>This parameter is used to construct ripple-lib and takes in:</p>
@@ -192,22 +219,10 @@
 									</div>
 								</li>
 								<li>
-									<h5>sologenicOptions: <a href="../interfaces/transactionhandleroptions.html" class="tsd-signature-type">TransactionHandlerOptions</a></h5>
+									<h5>sologenicOptions: <span class="tsd-signature-type">TransactionHandlerOptions</span></h5>
 									<div class="tsd-comment tsd-typography">
 										<div class="lead">
 											<p>Sologenic queue option.  See <a href="../globals.html#queue_type_stxmq_hash">QUEUE_TYPE_STXMQ_HASH</a> or <a href="../globals.html#queue_type_stxmq_redis">QUEUE_TYPE_STXMQ_REDIS</a></p>
-											<pre><code class="language-typescript">{
-  queueType?: QueueType;
-
-  <span class="hljs-comment">// If queueType is &lt;a href="../globals.html#queue_type_stxmq_redis"&gt;QUEUE_TYPE_STXMQ_REDIS&lt;/a&gt;</span>
-  redis?: {
-    port?: <span class="hljs-built_in">number</span>;
-    host?: <span class="hljs-built_in">string</span>;
-    family?: <span class="hljs-built_in">number</span>;
-    password?: <span class="hljs-built_in">string</span>;
-    db?: <span class="hljs-built_in">number</span>;
-  };
-}</code></pre>
 										</div>
 									</div>
 								</li>
@@ -222,25 +237,56 @@
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-protected">
 					<a name="account" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagProtected">Protected</span> account</h3>
-					<div class="tsd-signature tsd-kind-icon">account<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> = &quot;&quot;</span></div>
+					<div class="tsd-signature tsd-kind-icon">account<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;&quot;</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/sologenic/sologenic-xrpl-stream-js/blob/2cf7f25/src/lib/sologenictxhandler.ts#L38">src/lib/sologenictxhandler.ts:38</a></li>
+							<li>Defined in <a href="https://github.com/okanaganrusty/sologenic-xrpl-stream-js/blob/cb64053/src/lib/sologenictxhandler.ts#L57">lib/sologenictxhandler.ts:57</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
 						<div class="lead">
-							<p>XRPL Master Account Address</p>
+							<p>XRPL Account</p>
+						</div>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-protected">
+					<a name="clearcache" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagProtected">Protected</span> clear<wbr>Cache</h3>
+					<div class="tsd-signature tsd-kind-icon">clear<wbr>Cache<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol"> =&nbsp;false</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/okanaganrusty/sologenic-xrpl-stream-js/blob/cb64053/src/lib/sologenictxhandler.ts#L41">lib/sologenictxhandler.ts:41</a></li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>Clear cache of sologenic tx handler when the queue is initialized</p>
+						</div>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-protected">
+					<a name="dispatchlistener" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagProtected">Protected</span> dispatch<wbr>Listener</h3>
+					<div class="tsd-signature tsd-kind-icon">dispatch<wbr>Listener<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol"> =&nbsp;false</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/okanaganrusty/sologenic-xrpl-stream-js/blob/cb64053/src/lib/sologenictxhandler.ts#L52">lib/sologenictxhandler.ts:52</a></li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>Dispatch listener boolean flag for Sologenic TX Handler.  This is to ensure we&#39;re only
+							running a single dispatcher thread at a time.</p>
 						</div>
 					</div>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-protected">
 					<a name="feecushion" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagProtected">Protected</span> fee<wbr>Cushion</h3>
-					<div class="tsd-signature tsd-kind-icon">fee<wbr>Cushion<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> = 1.2</span></div>
+					<div class="tsd-signature tsd-kind-icon">fee<wbr>Cushion<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> =&nbsp;1.2</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/sologenic/sologenic-xrpl-stream-js/blob/2cf7f25/src/lib/sologenictxhandler.ts#L72">src/lib/sologenictxhandler.ts:72</a></li>
+							<li>Defined in <a href="https://github.com/okanaganrusty/sologenic-xrpl-stream-js/blob/cb64053/src/lib/sologenictxhandler.ts#L92">lib/sologenictxhandler.ts:92</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -254,10 +300,10 @@
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-protected">
 					<a name="ledger" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagProtected">Protected</span> ledger</h3>
-					<div class="tsd-signature tsd-kind-icon">ledger<span class="tsd-signature-symbol">:</span> <a href="../interfaces/ledger.html" class="tsd-signature-type">Ledger</a></div>
+					<div class="tsd-signature tsd-kind-icon">ledger<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Ledger</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/sologenic/sologenic-xrpl-stream-js/blob/2cf7f25/src/lib/sologenictxhandler.ts#L65">src/lib/sologenictxhandler.ts:65</a></li>
+							<li>Defined in <a href="https://github.com/okanaganrusty/sologenic-xrpl-stream-js/blob/cb64053/src/lib/sologenictxhandler.ts#L85">lib/sologenictxhandler.ts:85</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -275,7 +321,7 @@
 					<div class="tsd-signature tsd-kind-icon">math<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">any</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/sologenic/sologenic-xrpl-stream-js/blob/2cf7f25/src/lib/sologenictxhandler.ts#L82">src/lib/sologenictxhandler.ts:82</a></li>
+							<li>Defined in <a href="https://github.com/okanaganrusty/sologenic-xrpl-stream-js/blob/cb64053/src/lib/sologenictxhandler.ts#L102">lib/sologenictxhandler.ts:102</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -287,40 +333,40 @@
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-protected">
 					<a name="rippleapi" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagProtected">Protected</span> ripple<wbr>Api</h3>
-					<div class="tsd-signature tsd-kind-icon">ripple<wbr>Api<span class="tsd-signature-symbol">:</span> <a href="rippleapi.html" class="tsd-signature-type">RippleAPI</a></div>
+					<div class="tsd-signature tsd-kind-icon">ripple<wbr>Api<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">RippleAPI</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/sologenic/sologenic-xrpl-stream-js/blob/2cf7f25/src/lib/sologenictxhandler.ts#L33">src/lib/sologenictxhandler.ts:33</a></li>
+							<li>Defined in <a href="https://github.com/okanaganrusty/sologenic-xrpl-stream-js/blob/cb64053/src/lib/sologenictxhandler.ts#L46">lib/sologenictxhandler.ts:46</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
 						<div class="lead">
-							<p>Ripple API.  See <a href="rippleapi.html">RippleAPI</a> for more details.</p>
+							<p>Ripple API of Sologenic TX Handler.  See [[RippleAPI]] for more documentation</p>
 						</div>
 					</div>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-protected">
 					<a name="secret" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagProtected">Protected</span> secret</h3>
-					<div class="tsd-signature tsd-kind-icon">secret<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> = &quot;&quot;</span></div>
+					<div class="tsd-signature tsd-kind-icon">secret<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;&quot;</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/sologenic/sologenic-xrpl-stream-js/blob/2cf7f25/src/lib/sologenictxhandler.ts#L43">src/lib/sologenictxhandler.ts:43</a></li>
+							<li>Defined in <a href="https://github.com/okanaganrusty/sologenic-xrpl-stream-js/blob/cb64053/src/lib/sologenictxhandler.ts#L62">lib/sologenictxhandler.ts:62</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
 						<div class="lead">
-							<p>XRPL Master Account Secret/Seed</p>
+							<p>XRPL Account Secret</p>
 						</div>
 					</div>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-protected">
 					<a name="sequence" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagProtected">Protected</span> sequence</h3>
-					<div class="tsd-signature tsd-kind-icon">sequence<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> = 0</span></div>
+					<div class="tsd-signature tsd-kind-icon">sequence<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> =&nbsp;0</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/sologenic/sologenic-xrpl-stream-js/blob/2cf7f25/src/lib/sologenictxhandler.ts#L77">src/lib/sologenictxhandler.ts:77</a></li>
+							<li>Defined in <a href="https://github.com/okanaganrusty/sologenic-xrpl-stream-js/blob/cb64053/src/lib/sologenictxhandler.ts#L97">lib/sologenictxhandler.ts:97</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -332,10 +378,10 @@
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-protected">
 					<a name="txevents" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagProtected">Protected</span> tx<wbr>Events</h3>
-					<div class="tsd-signature tsd-kind-icon">tx<wbr>Events<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">{}</span></div>
+					<div class="tsd-signature tsd-kind-icon">tx<wbr>Events<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/sologenic/sologenic-xrpl-stream-js/blob/2cf7f25/src/lib/sologenictxhandler.ts#L57">src/lib/sologenictxhandler.ts:57</a></li>
+							<li>Defined in <a href="https://github.com/okanaganrusty/sologenic-xrpl-stream-js/blob/cb64053/src/lib/sologenictxhandler.ts#L77">lib/sologenictxhandler.ts:77</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -349,7 +395,7 @@
 						<h4>Type declaration</h4>
 						<ul class="tsd-parameters">
 							<li class="tsd-parameter-index-signature">
-								<h5><span class="tsd-signature-symbol">[</span>key: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">]: </span><a href="_events_.internal.eventemitter.html" class="tsd-signature-type">EventEmitter</a></h5>
+								<h5><span class="tsd-signature-symbol">[</span>key: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">]: </span><span class="tsd-signature-type">EventEmitter</span></h5>
 							</li>
 						</ul>
 					</div>
@@ -360,12 +406,12 @@
 					<div class="tsd-signature tsd-kind-icon">txmq<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">any</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/sologenic/sologenic-xrpl-stream-js/blob/2cf7f25/src/lib/sologenictxhandler.ts#L28">src/lib/sologenictxhandler.ts:28</a></li>
+							<li>Defined in <a href="https://github.com/okanaganrusty/sologenic-xrpl-stream-js/blob/cb64053/src/lib/sologenictxhandler.ts#L36">lib/sologenictxhandler.ts:36</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
 						<div class="lead">
-							<p>Transaction management queue.  See <a href="txmq_.html">TXMQƨ</a> for more details</p>
+							<p>Queue mutator/getter for create, replace, update, and delete type queue based operations</p>
 						</div>
 					</div>
 				</section>
@@ -374,9 +420,9 @@
 					<h3><span class="tsd-flag ts-flagStatic">Static</span> default<wbr>Max<wbr>Listeners</h3>
 					<div class="tsd-signature tsd-kind-icon">default<wbr>Max<wbr>Listeners<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
 					<aside class="tsd-sources">
-						<p>Inherited from <a href="../interfaces/isologenictxhandler.html">ISologenicTxHandler</a>.<a href="../interfaces/isologenictxhandler.html#defaultmaxlisteners">defaultMaxListeners</a></p>
+						<p>Inherited from EventEmitter.defaultMaxListeners</p>
 						<ul>
-							<li>Defined in node_modules/@types/node/events.d.ts:18</li>
+							<li>Defined in /Users/pmcconna/Development/sologenic/sologenic-xrpl-stream-js/node_modules/@types/node/events.d.ts:18</li>
 						</ul>
 					</aside>
 				</section>
@@ -384,49 +430,16 @@
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Methods</h2>
 				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-private">
-					<a name="_validatetxonledger" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagPrivate">Private</span> _<wbr>Validate<wbr>TxOn<wbr>Ledger</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-private">
-						<li class="tsd-signature tsd-kind-icon">_<wbr>Validate<wbr>TxOn<wbr>Ledger<span class="tsd-signature-symbol">(</span>id<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, dispatchedTX<span class="tsd-signature-symbol">: </span><a href="../interfaces/dispatchedtx.html" class="tsd-signature-type">dispatchedTX</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/promise.html" class="tsd-signature-type">Promise</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li>
-					</ul>
-					<ul class="tsd-descriptions">
-						<li class="tsd-description">
-							<aside class="tsd-sources">
-								<ul>
-									<li>Defined in <a href="https://github.com/sologenic/sologenic-xrpl-stream-js/blob/2cf7f25/src/lib/sologenictxhandler.ts#L930">src/lib/sologenictxhandler.ts:930</a></li>
-								</ul>
-							</aside>
-							<div class="tsd-comment tsd-typography">
-								<div class="lead">
-									<p>Validate transaction on the XRP Ledger</p>
-								</div>
-							</div>
-							<h4 class="tsd-parameters-title">Parameters</h4>
-							<ul class="tsd-parameters">
-								<li>
-									<h5>id: <span class="tsd-signature-type">string</span></h5>
-								</li>
-								<li>
-									<h5>dispatchedTX: <a href="../interfaces/dispatchedtx.html" class="tsd-signature-type">dispatchedTX</a></h5>
-									<div class="tsd-comment tsd-typography">
-									</div>
-								</li>
-							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="../interfaces/promise.html" class="tsd-signature-type">Promise</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4>
-						</li>
-					</ul>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-private">
 					<a name="_addmemo" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagPrivate">Private</span> _add<wbr>Memo</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-private">
-						<li class="tsd-signature tsd-kind-icon">_add<wbr>Memo<span class="tsd-signature-symbol">(</span>tx<span class="tsd-signature-symbol">: </span><a href="../interfaces/unsignedtx.html" class="tsd-signature-type">unsignedTX</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/tx.html" class="tsd-signature-type">TX</a></li>
+						<li class="tsd-signature tsd-kind-icon">_add<wbr>Memo<span class="tsd-signature-symbol">(</span>tx<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">UnsignedTx</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">TX</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/sologenic/sologenic-xrpl-stream-js/blob/2cf7f25/src/lib/sologenictxhandler.ts#L513">src/lib/sologenictxhandler.ts:513</a></li>
+									<li>Defined in <a href="https://github.com/okanaganrusty/sologenic-xrpl-stream-js/blob/cb64053/src/lib/sologenictxhandler.ts#L606">lib/sologenictxhandler.ts:606</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -438,28 +451,24 @@
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>tx: <a href="../interfaces/unsignedtx.html" class="tsd-signature-type">unsignedTX</a></h5>
-									<div class="tsd-comment tsd-typography">
-										<p>An unsigned transaction that a memo field will be added</p>
-									</div>
+									<h5>tx: <span class="tsd-signature-type">UnsignedTx</span></h5>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="../interfaces/tx.html" class="tsd-signature-type">TX</a></h4>
-							<p>SologenicTypes.TX or throws an Error if the memo cannot be added to the unsigned transaction</p>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">TX</span></h4>
 						</li>
 					</ul>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-private">
 					<a name="_addrawtxtoqueue" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagPrivate">Private</span> _add<wbr>RawTXto<wbr>Queue</h3>
+					<h3><span class="tsd-flag ts-flagPrivate">Private</span> _add<wbr>Raw<wbr>TxTo<wbr>Queue</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-private">
-						<li class="tsd-signature tsd-kind-icon">_add<wbr>RawTXto<wbr>Queue<span class="tsd-signature-symbol">(</span>tx<span class="tsd-signature-symbol">: </span><a href="../interfaces/txjson.html" class="tsd-signature-type">txJSON</a>, id<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/promise.html" class="tsd-signature-type">Promise</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">_add<wbr>Raw<wbr>TxTo<wbr>Queue<span class="tsd-signature-symbol">(</span>txJson<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">TxJSON</span>, id<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/sologenic/sologenic-xrpl-stream-js/blob/2cf7f25/src/lib/sologenictxhandler.ts#L487">src/lib/sologenictxhandler.ts:487</a></li>
+									<li>Defined in <a href="https://github.com/okanaganrusty/sologenic-xrpl-stream-js/blob/cb64053/src/lib/sologenictxhandler.ts#L576">lib/sologenictxhandler.ts:576</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -470,15 +479,13 @@
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>tx: <a href="../interfaces/txjson.html" class="tsd-signature-type">txJSON</a></h5>
+									<h5>txJson: <span class="tsd-signature-type">TxJSON</span></h5>
 								</li>
 								<li>
 									<h5><span class="tsd-flag ts-flagOptional">Optional</span> id: <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span></h5>
-									<div class="tsd-comment tsd-typography">
-									</div>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="../interfaces/promise.html" class="tsd-signature-type">Promise</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -486,13 +493,13 @@
 					<a name="_connected" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagPrivate">Private</span> _connected</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-private">
-						<li class="tsd-signature tsd-kind-icon">_connected<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/promise.html" class="tsd-signature-type">Promise</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">_connected<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/sologenic/sologenic-xrpl-stream-js/blob/2cf7f25/src/lib/sologenictxhandler.ts#L352">src/lib/sologenictxhandler.ts:352</a></li>
+									<li>Defined in <a href="https://github.com/okanaganrusty/sologenic-xrpl-stream-js/blob/cb64053/src/lib/sologenictxhandler.ts#L437">lib/sologenictxhandler.ts:437</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -500,7 +507,7 @@
 									<p>Check if we&#39;re connected to the XRPL</p>
 								</div>
 							</div>
-							<h4 class="tsd-returns-title">Returns <a href="../interfaces/promise.html" class="tsd-signature-type">Promise</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">&gt;</span></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">&gt;</span></h4>
 							<p>connected</p>
 						</li>
 					</ul>
@@ -509,13 +516,13 @@
 					<a name="_constructrawtx" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagPrivate">Private</span> _construct<wbr>Raw<wbr>Tx</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-private">
-						<li class="tsd-signature tsd-kind-icon">_construct<wbr>Raw<wbr>Tx<span class="tsd-signature-symbol">(</span>tx<span class="tsd-signature-symbol">: </span><a href="../interfaces/tx.html" class="tsd-signature-type">TX</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/txjson.html" class="tsd-signature-type">txJSON</a></li>
+						<li class="tsd-signature tsd-kind-icon">_construct<wbr>Raw<wbr>Tx<span class="tsd-signature-symbol">(</span>tx<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">TX</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">TxJSON</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/sologenic/sologenic-xrpl-stream-js/blob/2cf7f25/src/lib/sologenictxhandler.ts#L478">src/lib/sologenictxhandler.ts:478</a></li>
+									<li>Defined in <a href="https://github.com/okanaganrusty/sologenic-xrpl-stream-js/blob/cb64053/src/lib/sologenictxhandler.ts#L567">lib/sologenictxhandler.ts:567</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -526,11 +533,10 @@
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>tx: <a href="../interfaces/tx.html" class="tsd-signature-type">TX</a></h5>
+									<h5>tx: <span class="tsd-signature-type">TX</span></h5>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="../interfaces/txjson.html" class="tsd-signature-type">txJSON</a></h4>
-							<p>SologenicTypes.txJSON</p>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">TxJSON</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -538,13 +544,13 @@
 					<a name="_dispatch" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagPrivate">Private</span> _dispatch</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-private">
-						<li class="tsd-signature tsd-kind-icon">_dispatch<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/promise.html" class="tsd-signature-type">Promise</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">_dispatch<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/sologenic/sologenic-xrpl-stream-js/blob/2cf7f25/src/lib/sologenictxhandler.ts#L541">src/lib/sologenictxhandler.ts:541</a></li>
+									<li>Defined in <a href="https://github.com/okanaganrusty/sologenic-xrpl-stream-js/blob/cb64053/src/lib/sologenictxhandler.ts#L635">lib/sologenictxhandler.ts:635</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -557,7 +563,7 @@
 									</dd>
 								</dl>
 							</div>
-							<h4 class="tsd-returns-title">Returns <a href="../interfaces/promise.html" class="tsd-signature-type">Promise</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -565,13 +571,13 @@
 					<a name="_dispatchhandler" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagPrivate">Private</span> _dispatch<wbr>Handler</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-private">
-						<li class="tsd-signature tsd-kind-icon">_dispatch<wbr>Handler<span class="tsd-signature-symbol">(</span>unsignedTX<span class="tsd-signature-symbol">: </span><a href="../interfaces/unsignedtx.html" class="tsd-signature-type">unsignedTX</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/promise.html" class="tsd-signature-type">Promise</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">_dispatch<wbr>Handler<span class="tsd-signature-symbol">(</span>unsignedTx<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">UnsignedTx</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/sologenic/sologenic-xrpl-stream-js/blob/2cf7f25/src/lib/sologenictxhandler.ts#L566">src/lib/sologenictxhandler.ts:566</a></li>
+									<li>Defined in <a href="https://github.com/okanaganrusty/sologenic-xrpl-stream-js/blob/cb64053/src/lib/sologenictxhandler.ts#L661">lib/sologenictxhandler.ts:661</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -587,12 +593,12 @@
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>unsignedTX: <a href="../interfaces/unsignedtx.html" class="tsd-signature-type">unsignedTX</a></h5>
+									<h5>unsignedTx: <span class="tsd-signature-type">UnsignedTx</span></h5>
 									<div class="tsd-comment tsd-typography">
 									</div>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="../interfaces/promise.html" class="tsd-signature-type">Promise</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -600,34 +606,50 @@
 					<a name="_dispatchtoledger" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagPrivate">Private</span> _dispatch<wbr>ToLedger</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-private">
-						<li class="tsd-signature tsd-kind-icon">_dispatch<wbr>ToLedger<span class="tsd-signature-symbol">(</span>unsignedTX<span class="tsd-signature-symbol">: </span><a href="../interfaces/unsignedtx.html" class="tsd-signature-type">unsignedTX</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/promise.html" class="tsd-signature-type">Promise</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">_dispatch<wbr>ToLedger<span class="tsd-signature-symbol">(</span>unsignedTx<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">UnsignedTx</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/sologenic/sologenic-xrpl-stream-js/blob/2cf7f25/src/lib/sologenictxhandler.ts#L587">src/lib/sologenictxhandler.ts:587</a></li>
+									<li>Defined in <a href="https://github.com/okanaganrusty/sologenic-xrpl-stream-js/blob/cb64053/src/lib/sologenictxhandler.ts#L690">lib/sologenictxhandler.ts:690</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
-									<p>Dispatch executor</p>
+									<p>Dispatch the transaction to the ledger</p>
 								</div>
 								<dl class="tsd-comment-tags">
 									<dt>description</dt>
-									<dd><p>Dispatches the transaction to the ledger</p>
+									<dd><p>Adds a memo to the transaction for tracking</p>
+									</dd>
+									<dt>description</dt>
+									<dd><p>Validates the the tx Flags are stored as an unsigned integer as JS converts to a signed integer</p>
+									</dd>
+									<dt>description</dt>
+									<dd><p>Calculates the transaction fee, including applying a multiplier (default: 1.2)</p>
+									</dd>
+									<dt>description</dt>
+									<dd><p>Sets the sequence for the transaction based on the accounts last sequence number</p>
+									</dd>
+									<dt>description</dt>
+									<dd><p>Calculates the maximum ledger version we will wait for before we fail or requeue the transaction (default: 3 validated ledgers)</p>
+									</dd>
+									<dt>description</dt>
+									<dd><p>Signs the transaction with the account secret or keypair</p>
+									</dd>
+									<dt>throws</dt>
+									<dd><p>{SologenicError}</p>
 									</dd>
 								</dl>
 							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>unsignedTX: <a href="../interfaces/unsignedtx.html" class="tsd-signature-type">unsignedTX</a></h5>
-									<div class="tsd-comment tsd-typography">
-									</div>
+									<h5>unsignedTx: <span class="tsd-signature-type">UnsignedTx</span></h5>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="../interfaces/promise.html" class="tsd-signature-type">Promise</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">&gt;</span></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -635,22 +657,26 @@
 					<a name="_fetchcurrentstate" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagPrivate">Private</span> _fetch<wbr>Current<wbr>State</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-private">
-						<li class="tsd-signature tsd-kind-icon">_fetch<wbr>Current<wbr>State<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/promise.html" class="tsd-signature-type">Promise</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">_fetch<wbr>Current<wbr>State<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/sologenic/sologenic-xrpl-stream-js/blob/2cf7f25/src/lib/sologenictxhandler.ts#L387">src/lib/sologenictxhandler.ts:387</a></li>
+									<li>Defined in <a href="https://github.com/okanaganrusty/sologenic-xrpl-stream-js/blob/cb64053/src/lib/sologenictxhandler.ts#L475">lib/sologenictxhandler.ts:475</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
-									<p>Fetch the current ledger and account information to be used for transaction submission</p>
+									<p>Fetches current ledger and account information to be used for transaction submission</p>
 								</div>
+								<dl class="tsd-comment-tags">
+									<dt>throws</dt>
+									<dd><p>{SologenicError}</p>
+									</dd>
+								</dl>
 							</div>
-							<h4 class="tsd-returns-title">Returns <a href="../interfaces/promise.html" class="tsd-signature-type">Promise</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4>
-							<p>void or throws an Error if the error is unrecoverable and cannot connect to the XRPL</p>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -658,19 +684,24 @@
 					<a name="_initiatetx" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagPrivate">Private</span> _initiate<wbr>Tx</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-private">
-						<li class="tsd-signature tsd-kind-icon">_initiate<wbr>Tx<span class="tsd-signature-symbol">(</span>id<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, tx<span class="tsd-signature-symbol">: </span><a href="../interfaces/tx.html" class="tsd-signature-type">TX</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/promise.html" class="tsd-signature-type">Promise</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">_initiate<wbr>Tx<span class="tsd-signature-symbol">(</span>id<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, tx<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">TX</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/sologenic/sologenic-xrpl-stream-js/blob/2cf7f25/src/lib/sologenictxhandler.ts#L465">src/lib/sologenictxhandler.ts:465</a></li>
+									<li>Defined in <a href="https://github.com/okanaganrusty/sologenic-xrpl-stream-js/blob/cb64053/src/lib/sologenictxhandler.ts#L555">lib/sologenictxhandler.ts:555</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
 									<p>Initiate the transaction, prepare it to add the queue</p>
 								</div>
+								<dl class="tsd-comment-tags">
+									<dt>throws</dt>
+									<dd><p>{SologenicError}</p>
+									</dd>
+								</dl>
 							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
@@ -678,11 +709,10 @@
 									<h5>id: <span class="tsd-signature-type">string</span></h5>
 								</li>
 								<li>
-									<h5>tx: <a href="../interfaces/tx.html" class="tsd-signature-type">TX</a></h5>
+									<h5>tx: <span class="tsd-signature-type">TX</span></h5>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="../interfaces/promise.html" class="tsd-signature-type">Promise</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4>
-							<p>void  Throws an Error if unable to add the queue to the TXMQƨ</p>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -690,31 +720,28 @@
 					<a name="_resolve" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagPrivate">Private</span> _resolve</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-private">
-						<li class="tsd-signature tsd-kind-icon">_resolve<span class="tsd-signature-symbol">(</span>id<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/promise.html" class="tsd-signature-type">Promise</a><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/resolvedtx.html" class="tsd-signature-type">ResolvedTX</a><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">_resolve<span class="tsd-signature-symbol">(</span>id<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">ResolvedTx</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/sologenic/sologenic-xrpl-stream-js/blob/2cf7f25/src/lib/sologenictxhandler.ts#L366">src/lib/sologenictxhandler.ts:366</a></li>
+									<li>Defined in <a href="https://github.com/okanaganrusty/sologenic-xrpl-stream-js/blob/cb64053/src/lib/sologenictxhandler.ts#L451">lib/sologenictxhandler.ts:451</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
-									<p>Recursive loop and query TXMQƨ to see when the id is validated</p>
+									<p>Recursivle loop and query TXMQƨ to see when the id has been validated, every 100 milliseconds</p>
 								</div>
 							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
 									<h5>id: <span class="tsd-signature-type">string</span></h5>
-									<div class="tsd-comment tsd-typography">
-										<p>Transaction ID in the TXMQƨ</p>
-									</div>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="../interfaces/promise.html" class="tsd-signature-type">Promise</a><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/resolvedtx.html" class="tsd-signature-type">ResolvedTX</a><span class="tsd-signature-symbol">&gt;</span></h4>
-							<p>SologenicTypes.ResolvedTX</p>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">ResolvedTx</span><span class="tsd-signature-symbol">&gt;</span></h4>
+							<p>ResolvedTx</p>
 						</li>
 					</ul>
 				</section>
@@ -728,13 +755,18 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/sologenic/sologenic-xrpl-stream-js/blob/2cf7f25/src/lib/sologenictxhandler.ts#L434">src/lib/sologenictxhandler.ts:434</a></li>
+									<li>Defined in <a href="https://github.com/okanaganrusty/sologenic-xrpl-stream-js/blob/cb64053/src/lib/sologenictxhandler.ts#L522">lib/sologenictxhandler.ts:522</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
 									<p>Subscribe to ripple-lib websocket events connect, disconnect, error and ledger stream updates.</p>
 								</div>
+								<dl class="tsd-comment-tags">
+									<dt>throws</dt>
+									<dd><p>{SologenicError}</p>
+									</dd>
+								</dl>
 							</div>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">any</span></h4>
 						</li>
@@ -744,38 +776,33 @@
 					<a name="_txdispatched" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagPrivate">Private</span> _tx<wbr>Dispatched</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-private">
-						<li class="tsd-signature tsd-kind-icon">_tx<wbr>Dispatched<span class="tsd-signature-symbol">(</span>unsignedTX<span class="tsd-signature-symbol">: </span><a href="../interfaces/unsignedtx.html" class="tsd-signature-type">unsignedTX</a>, tx<span class="tsd-signature-symbol">: </span><a href="../interfaces/tx.html" class="tsd-signature-type">TX</a>, result<span class="tsd-signature-symbol">: </span><a href="../interfaces/formattedsubmitresponse.html" class="tsd-signature-type">FormattedSubmitResponse</a>, signedTx<span class="tsd-signature-symbol">: </span><a href="../interfaces/signedtx.html" class="tsd-signature-type">signedTX</a>, firstLedgerSequence<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/promise.html" class="tsd-signature-type">Promise</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">_tx<wbr>Dispatched<span class="tsd-signature-symbol">(</span>unsignedTx<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">UnsignedTx</span>, tx<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">TX</span>, result<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">FormattedSubmitResponse</span>, signedTx<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">SignedTx</span>, firstLedgerSequence<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/sologenic/sologenic-xrpl-stream-js/blob/2cf7f25/src/lib/sologenictxhandler.ts#L807">src/lib/sologenictxhandler.ts:807</a></li>
+									<li>Defined in <a href="https://github.com/okanaganrusty/sologenic-xrpl-stream-js/blob/cb64053/src/lib/sologenictxhandler.ts#L907">lib/sologenictxhandler.ts:907</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
-									<p>Handle dispatched transaction</p>
+									<p>Handle dispatched transaction and emit (dispatched) events to event listeners</p>
 								</div>
-								<dl class="tsd-comment-tags">
-									<dt>description</dt>
-									<dd><p>Check the state of the dispatched transaction</p>
-									</dd>
-								</dl>
 							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>unsignedTX: <a href="../interfaces/unsignedtx.html" class="tsd-signature-type">unsignedTX</a></h5>
+									<h5>unsignedTx: <span class="tsd-signature-type">UnsignedTx</span></h5>
 								</li>
 								<li>
-									<h5>tx: <a href="../interfaces/tx.html" class="tsd-signature-type">TX</a></h5>
+									<h5>tx: <span class="tsd-signature-type">TX</span></h5>
 								</li>
 								<li>
-									<h5>result: <a href="../interfaces/formattedsubmitresponse.html" class="tsd-signature-type">FormattedSubmitResponse</a></h5>
+									<h5>result: <span class="tsd-signature-type">FormattedSubmitResponse</span></h5>
 								</li>
 								<li>
-									<h5>signedTx: <a href="../interfaces/signedtx.html" class="tsd-signature-type">signedTX</a></h5>
+									<h5>signedTx: <span class="tsd-signature-type">SignedTx</span></h5>
 								</li>
 								<li>
 									<h5>firstLedgerSequence: <span class="tsd-signature-type">number</span></h5>
@@ -783,7 +810,7 @@
 									</div>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="../interfaces/promise.html" class="tsd-signature-type">Promise</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">&gt;</span></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -791,35 +818,38 @@
 					<a name="_txfailed" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagPrivate">Private</span> _tx<wbr>Failed</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-private">
-						<li class="tsd-signature tsd-kind-icon">_tx<wbr>Failed<span class="tsd-signature-symbol">(</span>unsignedTX<span class="tsd-signature-symbol">: </span><a href="../interfaces/unsignedtx.html" class="tsd-signature-type">unsignedTX</a>, reason<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/promise.html" class="tsd-signature-type">Promise</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">_tx<wbr>Failed<span class="tsd-signature-symbol">(</span>unsignedTx<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">UnsignedTx</span>, reason<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, result<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/sologenic/sologenic-xrpl-stream-js/blob/2cf7f25/src/lib/sologenictxhandler.ts#L861">src/lib/sologenictxhandler.ts:861</a></li>
+									<li>Defined in <a href="https://github.com/okanaganrusty/sologenic-xrpl-stream-js/blob/cb64053/src/lib/sologenictxhandler.ts#L962">lib/sologenictxhandler.ts:962</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
-									<p>Handle failed transaction</p>
+									<p>Handle failed transaction and emit (failed) events to event listeners for</p>
 								</div>
 								<dl class="tsd-comment-tags">
-									<dt>description</dt>
-									<dd><p>Remove the failed transaction from the queue and emit a failed event</p>
+									<dt>throws</dt>
+									<dd><p>{SologenicError}</p>
 									</dd>
 								</dl>
 							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>unsignedTX: <a href="../interfaces/unsignedtx.html" class="tsd-signature-type">unsignedTX</a></h5>
+									<h5>unsignedTx: <span class="tsd-signature-type">UnsignedTx</span></h5>
 								</li>
 								<li>
 									<h5>reason: <span class="tsd-signature-type">string</span></h5>
 								</li>
+								<li>
+									<h5>result: <span class="tsd-signature-type">any</span></h5>
+								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="../interfaces/promise.html" class="tsd-signature-type">Promise</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">&gt;</span></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -827,22 +857,26 @@
 					<a name="_validatemissedtransactions" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagPrivate">Private</span> _validate<wbr>Missed<wbr>Transactions</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-private">
-						<li class="tsd-signature tsd-kind-icon">_validate<wbr>Missed<wbr>Transactions<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/promise.html" class="tsd-signature-type">Promise</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">_validate<wbr>Missed<wbr>Transactions<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/sologenic/sologenic-xrpl-stream-js/blob/2cf7f25/src/lib/sologenictxhandler.ts#L901">src/lib/sologenictxhandler.ts:901</a></li>
+									<li>Defined in <a href="https://github.com/okanaganrusty/sologenic-xrpl-stream-js/blob/cb64053/src/lib/sologenictxhandler.ts#L1008">lib/sologenictxhandler.ts:1008</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
 									<p>Validate missed transactions sitting on the dispatched queue</p>
 								</div>
+								<dl class="tsd-comment-tags">
+									<dt>throws</dt>
+									<dd><p>{SologenicError}</p>
+									</dd>
+								</dl>
 							</div>
-							<h4 class="tsd-returns-title">Returns <a href="../interfaces/promise.html" class="tsd-signature-type">Promise</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4>
-							<p>void or throws an Error if an error is caught</p>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -856,16 +890,53 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/sologenic/sologenic-xrpl-stream-js/blob/2cf7f25/src/lib/sologenictxhandler.ts#L919">src/lib/sologenictxhandler.ts:919</a></li>
+									<li>Defined in <a href="https://github.com/okanaganrusty/sologenic-xrpl-stream-js/blob/cb64053/src/lib/sologenictxhandler.ts#L1025">lib/sologenictxhandler.ts:1025</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
-									<p>Event Listener
-									Validate transaction that are added to the dispatched queue once they have been emitted</p>
+									<p>Event listener for dispatched events</p>
 								</div>
+								<dl class="tsd-comment-tags">
+									<dt>description</dt>
+									<dd><p>Validate transaction that are added to the dispatched queue once they have been emitted</p>
+									</dd>
+								</dl>
 							</div>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-private">
+					<a name="_validatetxonledger" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagPrivate">Private</span> _validate<wbr>TxOn<wbr>Ledger</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-private">
+						<li class="tsd-signature tsd-kind-icon">_validate<wbr>TxOn<wbr>Ledger<span class="tsd-signature-symbol">(</span>id<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, dispatchedTx<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">DispatchedTx</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/okanaganrusty/sologenic-xrpl-stream-js/blob/cb64053/src/lib/sologenictxhandler.ts#L1037">lib/sologenictxhandler.ts:1037</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Validate transactions on the XRP Ledger</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>id: <span class="tsd-signature-type">string</span></h5>
+								</li>
+								<li>
+									<h5>dispatchedTx: <span class="tsd-signature-type">DispatchedTx</span></h5>
+									<div class="tsd-comment tsd-typography">
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -873,15 +944,15 @@
 					<a name="addlistener" class="tsd-anchor"></a>
 					<h3>add<wbr>Listener</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-overwrite tsd-is-inherited">
-						<li class="tsd-signature tsd-kind-icon">add<wbr>Listener<span class="tsd-signature-symbol">(</span>event<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">symbol</span>, listener<span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">...</span>args<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">this</span></li>
+						<li class="tsd-signature tsd-kind-icon">add<wbr>Listener<span class="tsd-signature-symbol">(</span>event<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">symbol</span>, listener<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">function</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">this</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Inherited from <a href="../interfaces/isologenictxhandler.html">ISologenicTxHandler</a>.<a href="../interfaces/isologenictxhandler.html#addlistener">addListener</a></p>
-								<p>Overrides <a href="nodejs.eventemitter.html">EventEmitter</a>.<a href="nodejs.eventemitter.html#addlistener">addListener</a></p>
+								<p>Inherited from EventEmitter.addListener</p>
+								<p>Overrides EventEmitter.addListener</p>
 								<ul>
-									<li>Defined in node_modules/@types/node/events.d.ts:20</li>
+									<li>Defined in /Users/pmcconna/Development/sologenic/sologenic-xrpl-stream-js/node_modules/@types/node/events.d.ts:20</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -890,10 +961,10 @@
 									<h5>event: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">symbol</span></h5>
 								</li>
 								<li>
-									<h5>listener: <span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">...</span>args<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span></h5>
+									<h5>listener: <span class="tsd-signature-type">function</span></h5>
 									<ul class="tsd-parameters">
 										<li class="tsd-parameter-siganture">
-											<ul class="tsd-signatures tsd-kind-type-literal">
+											<ul class="tsd-signatures tsd-kind-type-literal tsd-is-not-exported">
 												<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">...</span>args<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
 											</ul>
 											<ul class="tsd-descriptions">
@@ -919,13 +990,13 @@
 					<a name="connect" class="tsd-anchor"></a>
 					<h3>connect</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">connect<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/promise.html" class="tsd-signature-type">Promise</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">this</span><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">connect<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">this</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/sologenic/sologenic-xrpl-stream-js/blob/2cf7f25/src/lib/sologenictxhandler.ts#L226">src/lib/sologenictxhandler.ts:226</a></li>
+									<li>Defined in <a href="https://github.com/okanaganrusty/sologenic-xrpl-stream-js/blob/cb64053/src/lib/sologenictxhandler.ts#L266">lib/sologenictxhandler.ts:266</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -933,8 +1004,7 @@
 									<p>Connect to various services: RippleAPI, fetch current ledger state.</p>
 								</div>
 							</div>
-							<h4 class="tsd-returns-title">Returns <a href="../interfaces/promise.html" class="tsd-signature-type">Promise</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">this</span><span class="tsd-signature-symbol">&gt;</span></h4>
-							<p>this  Return reference to itself or raises an exception.</p>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">this</span><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -947,10 +1017,10 @@
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Inherited from <a href="../interfaces/isologenictxhandler.html">ISologenicTxHandler</a>.<a href="../interfaces/isologenictxhandler.html#emit">emit</a></p>
-								<p>Overrides <a href="nodejs.eventemitter.html">EventEmitter</a>.<a href="nodejs.eventemitter.html#emit">emit</a></p>
+								<p>Inherited from EventEmitter.emit</p>
+								<p>Overrides EventEmitter.emit</p>
 								<ul>
-									<li>Defined in node_modules/@types/node/events.d.ts:32</li>
+									<li>Defined in /Users/pmcconna/Development/sologenic/sologenic-xrpl-stream-js/node_modules/@types/node/events.d.ts:32</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -970,18 +1040,18 @@
 					<a name="eventnames" class="tsd-anchor"></a>
 					<h3>event<wbr>Names</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-overwrite tsd-is-inherited">
-						<li class="tsd-signature tsd-kind-icon">event<wbr>Names<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/regexpmatcharray.html#array" class="tsd-signature-type">Array</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">symbol</span><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">event<wbr>Names<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Array</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">symbol</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Inherited from <a href="../interfaces/isologenictxhandler.html">ISologenicTxHandler</a>.<a href="../interfaces/isologenictxhandler.html#eventnames">eventNames</a></p>
-								<p>Overrides <a href="nodejs.eventemitter.html">EventEmitter</a>.<a href="nodejs.eventemitter.html#eventnames">eventNames</a></p>
+								<p>Inherited from EventEmitter.eventNames</p>
+								<p>Overrides EventEmitter.eventNames</p>
 								<ul>
-									<li>Defined in node_modules/@types/node/events.d.ts:33</li>
+									<li>Defined in /Users/pmcconna/Development/sologenic/sologenic-xrpl-stream-js/node_modules/@types/node/events.d.ts:33</li>
 								</ul>
 							</aside>
-							<h4 class="tsd-returns-title">Returns <a href="../interfaces/regexpmatcharray.html#array" class="tsd-signature-type">Array</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">symbol</span><span class="tsd-signature-symbol">&gt;</span></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Array</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">symbol</span><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -989,13 +1059,13 @@
 					<a name="fetchcurrentstate" class="tsd-anchor"></a>
 					<h3>fetch<wbr>Current<wbr>State</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">fetch<wbr>Current<wbr>State<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/promise.html" class="tsd-signature-type">Promise</a><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/number.html" class="tsd-signature-type">Number</a><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">fetch<wbr>Current<wbr>State<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">Number</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/sologenic/sologenic-xrpl-stream-js/blob/2cf7f25/src/lib/sologenictxhandler.ts#L425">src/lib/sologenictxhandler.ts:425</a></li>
+									<li>Defined in <a href="https://github.com/okanaganrusty/sologenic-xrpl-stream-js/blob/cb64053/src/lib/sologenictxhandler.ts#L512">lib/sologenictxhandler.ts:512</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -1003,8 +1073,7 @@
 									<p>Get the current state account state</p>
 								</div>
 							</div>
-							<h4 class="tsd-returns-title">Returns <a href="../interfaces/promise.html" class="tsd-signature-type">Promise</a><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/number.html" class="tsd-signature-type">Number</a><span class="tsd-signature-symbol">&gt;</span></h4>
-							<p>sequence</p>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">Number</span><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -1012,21 +1081,21 @@
 					<a name="getaccountsequence" class="tsd-anchor"></a>
 					<h3>get<wbr>Account<wbr>Sequence</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">get<wbr>Account<wbr>Sequence<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span></li>
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Account<wbr>Sequence<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/sologenic/sologenic-xrpl-stream-js/blob/2cf7f25/src/lib/sologenictxhandler.ts#L210">src/lib/sologenictxhandler.ts:210</a></li>
+									<li>Defined in <a href="https://github.com/okanaganrusty/sologenic-xrpl-stream-js/blob/cb64053/src/lib/sologenictxhandler.ts#L250">lib/sologenictxhandler.ts:250</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
-									<p>Getter returning the current account sequence</p>
+									<p>Get the current XRPL account sequence</p>
 								</div>
 							</div>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">number</span></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -1034,21 +1103,21 @@
 					<a name="getledgerbasefeexrp" class="tsd-anchor"></a>
 					<h3>get<wbr>Ledger<wbr>Base<wbr>FeeXRP</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">get<wbr>Ledger<wbr>Base<wbr>FeeXRP<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span></li>
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Ledger<wbr>Base<wbr>FeeXRP<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/sologenic/sologenic-xrpl-stream-js/blob/2cf7f25/src/lib/sologenictxhandler.ts#L175">src/lib/sologenictxhandler.ts:175</a></li>
+									<li>Defined in <a href="https://github.com/okanaganrusty/sologenic-xrpl-stream-js/blob/cb64053/src/lib/sologenictxhandler.ts#L201">lib/sologenictxhandler.ts:201</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
-									<p>Getter returning the XRPL base fee</p>
+									<p>Get XRPL base fee for transactions</p>
 								</div>
 							</div>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -1056,21 +1125,21 @@
 					<a name="getledgerversion" class="tsd-anchor"></a>
 					<h3>get<wbr>Ledger<wbr>Version</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">get<wbr>Ledger<wbr>Version<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span></li>
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Ledger<wbr>Version<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/sologenic/sologenic-xrpl-stream-js/blob/2cf7f25/src/lib/sologenictxhandler.ts#L192">src/lib/sologenictxhandler.ts:192</a></li>
+									<li>Defined in <a href="https://github.com/okanaganrusty/sologenic-xrpl-stream-js/blob/cb64053/src/lib/sologenictxhandler.ts#L220">lib/sologenictxhandler.ts:220</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
-									<p>Getter returning the XRPL ledger version</p>
+									<p>Get XRPL ledger version</p>
 								</div>
 							</div>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">number</span></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -1083,10 +1152,10 @@
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Inherited from <a href="../interfaces/isologenictxhandler.html">ISologenicTxHandler</a>.<a href="../interfaces/isologenictxhandler.html#getmaxlisteners">getMaxListeners</a></p>
-								<p>Overrides <a href="nodejs.eventemitter.html">EventEmitter</a>.<a href="nodejs.eventemitter.html#getmaxlisteners">getMaxListeners</a></p>
+								<p>Inherited from EventEmitter.getMaxListeners</p>
+								<p>Overrides EventEmitter.getMaxListeners</p>
 								<ul>
-									<li>Defined in node_modules/@types/node/events.d.ts:29</li>
+									<li>Defined in /Users/pmcconna/Development/sologenic/sologenic-xrpl-stream-js/node_modules/@types/node/events.d.ts:29</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">number</span></h4>
@@ -1097,22 +1166,96 @@
 					<a name="getrippleapi" class="tsd-anchor"></a>
 					<h3>get<wbr>Ripple<wbr>Api</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">get<wbr>Ripple<wbr>Api<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="rippleapi.html" class="tsd-signature-type">RippleAPI</a></li>
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Ripple<wbr>Api<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">RippleAPI</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/sologenic/sologenic-xrpl-stream-js/blob/2cf7f25/src/lib/sologenictxhandler.ts#L218">src/lib/sologenictxhandler.ts:218</a></li>
+									<li>Defined in <a href="https://github.com/okanaganrusty/sologenic-xrpl-stream-js/blob/cb64053/src/lib/sologenictxhandler.ts#L258">lib/sologenictxhandler.ts:258</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
-									<p>Expose the ripple API so that our tests can use it to check
-									transaction status and states.</p>
+									<p>Get access to the initialized Ripple API instance used by the Sologenic TX Handler</p>
 								</div>
 							</div>
-							<h4 class="tsd-returns-title">Returns <a href="rippleapi.html" class="tsd-signature-type">RippleAPI</a></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">RippleAPI</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="haskeypair" class="tsd-anchor"></a>
+					<h3>has<wbr>Keypair</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">has<wbr>Keypair<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/okanaganrusty/sologenic-xrpl-stream-js/blob/cb64053/src/lib/sologenictxhandler.ts#L299">lib/sologenictxhandler.ts:299</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Helper method to verify that the account has a keypair</p>
+								</div>
+							</div>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="hassecret" class="tsd-anchor"></a>
+					<h3>has<wbr>Secret</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">has<wbr>Secret<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/okanaganrusty/sologenic-xrpl-stream-js/blob/cb64053/src/lib/sologenictxhandler.ts#L313">lib/sologenictxhandler.ts:313</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Helper method to verify the account has a secret</p>
+								</div>
+							</div>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="incrementaccountsequenceby" class="tsd-anchor"></a>
+					<h3>increment<wbr>Account<wbr>Sequence<wbr>By</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">increment<wbr>Account<wbr>Sequence<wbr>By<span class="tsd-signature-symbol">(</span>steps<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">this</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/okanaganrusty/sologenic-xrpl-stream-js/blob/cb64053/src/lib/sologenictxhandler.ts#L240">lib/sologenictxhandler.ts:240</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Increment XRPL account sequence by</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>steps: <span class="tsd-signature-type">number</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>Increment by number of steps (signed; -1 to decrement by 1)</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">this</span><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -1125,10 +1268,10 @@
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Inherited from <a href="../interfaces/isologenictxhandler.html">ISologenicTxHandler</a>.<a href="../interfaces/isologenictxhandler.html#listenercount-1">listenerCount</a></p>
-								<p>Overrides <a href="nodejs.eventemitter.html">EventEmitter</a>.<a href="nodejs.eventemitter.html#listenercount">listenerCount</a></p>
+								<p>Inherited from EventEmitter.listenerCount</p>
+								<p>Overrides EventEmitter.listenerCount</p>
 								<ul>
-									<li>Defined in node_modules/@types/node/events.d.ts:34</li>
+									<li>Defined in /Users/pmcconna/Development/sologenic/sologenic-xrpl-stream-js/node_modules/@types/node/events.d.ts:34</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -1145,15 +1288,15 @@
 					<a name="listeners" class="tsd-anchor"></a>
 					<h3>listeners</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-overwrite tsd-is-inherited">
-						<li class="tsd-signature tsd-kind-icon">listeners<span class="tsd-signature-symbol">(</span>event<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">symbol</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/function.html" class="tsd-signature-type">Function</a><span class="tsd-signature-symbol">[]</span></li>
+						<li class="tsd-signature tsd-kind-icon">listeners<span class="tsd-signature-symbol">(</span>event<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">symbol</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Function</span><span class="tsd-signature-symbol">[]</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Inherited from <a href="../interfaces/isologenictxhandler.html">ISologenicTxHandler</a>.<a href="../interfaces/isologenictxhandler.html#listeners">listeners</a></p>
-								<p>Overrides <a href="nodejs.eventemitter.html">EventEmitter</a>.<a href="nodejs.eventemitter.html#listeners">listeners</a></p>
+								<p>Inherited from EventEmitter.listeners</p>
+								<p>Overrides EventEmitter.listeners</p>
 								<ul>
-									<li>Defined in node_modules/@types/node/events.d.ts:30</li>
+									<li>Defined in /Users/pmcconna/Development/sologenic/sologenic-xrpl-stream-js/node_modules/@types/node/events.d.ts:30</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -1162,7 +1305,7 @@
 									<h5>event: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">symbol</span></h5>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="../interfaces/function.html" class="tsd-signature-type">Function</a><span class="tsd-signature-symbol">[]</span></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Function</span><span class="tsd-signature-symbol">[]</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -1170,15 +1313,15 @@
 					<a name="off" class="tsd-anchor"></a>
 					<h3>off</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-overwrite tsd-is-inherited">
-						<li class="tsd-signature tsd-kind-icon">off<span class="tsd-signature-symbol">(</span>event<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">symbol</span>, listener<span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">...</span>args<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">this</span></li>
+						<li class="tsd-signature tsd-kind-icon">off<span class="tsd-signature-symbol">(</span>event<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">symbol</span>, listener<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">function</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">this</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Inherited from <a href="../interfaces/isologenictxhandler.html">ISologenicTxHandler</a>.<a href="../interfaces/isologenictxhandler.html#off">off</a></p>
-								<p>Overrides <a href="nodejs.eventemitter.html">EventEmitter</a>.<a href="nodejs.eventemitter.html#off">off</a></p>
+								<p>Inherited from EventEmitter.off</p>
+								<p>Overrides EventEmitter.off</p>
 								<ul>
-									<li>Defined in node_modules/@types/node/events.d.ts:26</li>
+									<li>Defined in /Users/pmcconna/Development/sologenic/sologenic-xrpl-stream-js/node_modules/@types/node/events.d.ts:26</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -1187,10 +1330,10 @@
 									<h5>event: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">symbol</span></h5>
 								</li>
 								<li>
-									<h5>listener: <span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">...</span>args<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span></h5>
+									<h5>listener: <span class="tsd-signature-type">function</span></h5>
 									<ul class="tsd-parameters">
 										<li class="tsd-parameter-siganture">
-											<ul class="tsd-signatures tsd-kind-type-literal">
+											<ul class="tsd-signatures tsd-kind-type-literal tsd-is-not-exported">
 												<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">...</span>args<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
 											</ul>
 											<ul class="tsd-descriptions">
@@ -1216,15 +1359,15 @@
 					<a name="on" class="tsd-anchor"></a>
 					<h3>on</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-overwrite tsd-is-inherited">
-						<li class="tsd-signature tsd-kind-icon">on<span class="tsd-signature-symbol">(</span>event<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">symbol</span>, listener<span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">...</span>args<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">this</span></li>
+						<li class="tsd-signature tsd-kind-icon">on<span class="tsd-signature-symbol">(</span>event<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">symbol</span>, listener<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">function</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">this</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Inherited from <a href="_domain_.domain.html">Domain</a>.<a href="_domain_.domain.html#on">on</a></p>
-								<p>Overrides <a href="nodejs.eventemitter.html">EventEmitter</a>.<a href="nodejs.eventemitter.html#on">on</a></p>
+								<p>Inherited from EventEmitter.on</p>
+								<p>Overrides EventEmitter.on</p>
 								<ul>
-									<li>Defined in node_modules/@types/node/events.d.ts:21</li>
+									<li>Defined in /Users/pmcconna/Development/sologenic/sologenic-xrpl-stream-js/node_modules/@types/node/events.d.ts:21</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -1233,10 +1376,10 @@
 									<h5>event: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">symbol</span></h5>
 								</li>
 								<li>
-									<h5>listener: <span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">...</span>args<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span></h5>
+									<h5>listener: <span class="tsd-signature-type">function</span></h5>
 									<ul class="tsd-parameters">
 										<li class="tsd-parameter-siganture">
-											<ul class="tsd-signatures tsd-kind-type-literal">
+											<ul class="tsd-signatures tsd-kind-type-literal tsd-is-not-exported">
 												<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">...</span>args<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
 											</ul>
 											<ul class="tsd-descriptions">
@@ -1262,15 +1405,15 @@
 					<a name="once" class="tsd-anchor"></a>
 					<h3>once</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-overwrite tsd-is-inherited">
-						<li class="tsd-signature tsd-kind-icon">once<span class="tsd-signature-symbol">(</span>event<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">symbol</span>, listener<span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">...</span>args<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">this</span></li>
+						<li class="tsd-signature tsd-kind-icon">once<span class="tsd-signature-symbol">(</span>event<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">symbol</span>, listener<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">function</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">this</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Inherited from <a href="../interfaces/isologenictxhandler.html">ISologenicTxHandler</a>.<a href="../interfaces/isologenictxhandler.html#once">once</a></p>
-								<p>Overrides <a href="nodejs.eventemitter.html">EventEmitter</a>.<a href="nodejs.eventemitter.html#once">once</a></p>
+								<p>Inherited from EventEmitter.once</p>
+								<p>Overrides EventEmitter.once</p>
 								<ul>
-									<li>Defined in node_modules/@types/node/events.d.ts:22</li>
+									<li>Defined in /Users/pmcconna/Development/sologenic/sologenic-xrpl-stream-js/node_modules/@types/node/events.d.ts:22</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -1279,10 +1422,10 @@
 									<h5>event: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">symbol</span></h5>
 								</li>
 								<li>
-									<h5>listener: <span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">...</span>args<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span></h5>
+									<h5>listener: <span class="tsd-signature-type">function</span></h5>
 									<ul class="tsd-parameters">
 										<li class="tsd-parameter-siganture">
-											<ul class="tsd-signatures tsd-kind-type-literal">
+											<ul class="tsd-signatures tsd-kind-type-literal tsd-is-not-exported">
 												<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">...</span>args<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
 											</ul>
 											<ul class="tsd-descriptions">
@@ -1308,15 +1451,15 @@
 					<a name="prependlistener" class="tsd-anchor"></a>
 					<h3>prepend<wbr>Listener</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-overwrite tsd-is-inherited">
-						<li class="tsd-signature tsd-kind-icon">prepend<wbr>Listener<span class="tsd-signature-symbol">(</span>event<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">symbol</span>, listener<span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">...</span>args<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">this</span></li>
+						<li class="tsd-signature tsd-kind-icon">prepend<wbr>Listener<span class="tsd-signature-symbol">(</span>event<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">symbol</span>, listener<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">function</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">this</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Inherited from <a href="../interfaces/isologenictxhandler.html">ISologenicTxHandler</a>.<a href="../interfaces/isologenictxhandler.html#prependlistener">prependListener</a></p>
-								<p>Overrides <a href="nodejs.eventemitter.html">EventEmitter</a>.<a href="nodejs.eventemitter.html#prependlistener">prependListener</a></p>
+								<p>Inherited from EventEmitter.prependListener</p>
+								<p>Overrides EventEmitter.prependListener</p>
 								<ul>
-									<li>Defined in node_modules/@types/node/events.d.ts:23</li>
+									<li>Defined in /Users/pmcconna/Development/sologenic/sologenic-xrpl-stream-js/node_modules/@types/node/events.d.ts:23</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -1325,10 +1468,10 @@
 									<h5>event: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">symbol</span></h5>
 								</li>
 								<li>
-									<h5>listener: <span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">...</span>args<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span></h5>
+									<h5>listener: <span class="tsd-signature-type">function</span></h5>
 									<ul class="tsd-parameters">
 										<li class="tsd-parameter-siganture">
-											<ul class="tsd-signatures tsd-kind-type-literal">
+											<ul class="tsd-signatures tsd-kind-type-literal tsd-is-not-exported">
 												<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">...</span>args<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
 											</ul>
 											<ul class="tsd-descriptions">
@@ -1354,15 +1497,15 @@
 					<a name="prependoncelistener" class="tsd-anchor"></a>
 					<h3>prepend<wbr>Once<wbr>Listener</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-overwrite tsd-is-inherited">
-						<li class="tsd-signature tsd-kind-icon">prepend<wbr>Once<wbr>Listener<span class="tsd-signature-symbol">(</span>event<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">symbol</span>, listener<span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">...</span>args<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">this</span></li>
+						<li class="tsd-signature tsd-kind-icon">prepend<wbr>Once<wbr>Listener<span class="tsd-signature-symbol">(</span>event<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">symbol</span>, listener<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">function</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">this</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Inherited from <a href="../interfaces/isologenictxhandler.html">ISologenicTxHandler</a>.<a href="../interfaces/isologenictxhandler.html#prependoncelistener">prependOnceListener</a></p>
-								<p>Overrides <a href="nodejs.eventemitter.html">EventEmitter</a>.<a href="nodejs.eventemitter.html#prependoncelistener">prependOnceListener</a></p>
+								<p>Inherited from EventEmitter.prependOnceListener</p>
+								<p>Overrides EventEmitter.prependOnceListener</p>
 								<ul>
-									<li>Defined in node_modules/@types/node/events.d.ts:24</li>
+									<li>Defined in /Users/pmcconna/Development/sologenic/sologenic-xrpl-stream-js/node_modules/@types/node/events.d.ts:24</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -1371,10 +1514,10 @@
 									<h5>event: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">symbol</span></h5>
 								</li>
 								<li>
-									<h5>listener: <span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">...</span>args<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span></h5>
+									<h5>listener: <span class="tsd-signature-type">function</span></h5>
 									<ul class="tsd-parameters">
 										<li class="tsd-parameter-siganture">
-											<ul class="tsd-signatures tsd-kind-type-literal">
+											<ul class="tsd-signatures tsd-kind-type-literal tsd-is-not-exported">
 												<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">...</span>args<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
 											</ul>
 											<ul class="tsd-descriptions">
@@ -1400,15 +1543,15 @@
 					<a name="rawlisteners" class="tsd-anchor"></a>
 					<h3>raw<wbr>Listeners</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-overwrite tsd-is-inherited">
-						<li class="tsd-signature tsd-kind-icon">raw<wbr>Listeners<span class="tsd-signature-symbol">(</span>event<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">symbol</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/function.html" class="tsd-signature-type">Function</a><span class="tsd-signature-symbol">[]</span></li>
+						<li class="tsd-signature tsd-kind-icon">raw<wbr>Listeners<span class="tsd-signature-symbol">(</span>event<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">symbol</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Function</span><span class="tsd-signature-symbol">[]</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Inherited from <a href="../interfaces/isologenictxhandler.html">ISologenicTxHandler</a>.<a href="../interfaces/isologenictxhandler.html#rawlisteners">rawListeners</a></p>
-								<p>Overrides <a href="nodejs.eventemitter.html">EventEmitter</a>.<a href="nodejs.eventemitter.html#rawlisteners">rawListeners</a></p>
+								<p>Inherited from EventEmitter.rawListeners</p>
+								<p>Overrides EventEmitter.rawListeners</p>
 								<ul>
-									<li>Defined in node_modules/@types/node/events.d.ts:31</li>
+									<li>Defined in /Users/pmcconna/Development/sologenic/sologenic-xrpl-stream-js/node_modules/@types/node/events.d.ts:31</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -1417,7 +1560,7 @@
 									<h5>event: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">symbol</span></h5>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="../interfaces/function.html" class="tsd-signature-type">Function</a><span class="tsd-signature-symbol">[]</span></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Function</span><span class="tsd-signature-symbol">[]</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -1430,10 +1573,10 @@
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Inherited from <a href="../interfaces/isologenictxhandler.html">ISologenicTxHandler</a>.<a href="../interfaces/isologenictxhandler.html#removealllisteners">removeAllListeners</a></p>
-								<p>Overrides <a href="nodejs.eventemitter.html">EventEmitter</a>.<a href="nodejs.eventemitter.html#removealllisteners">removeAllListeners</a></p>
+								<p>Inherited from EventEmitter.removeAllListeners</p>
+								<p>Overrides EventEmitter.removeAllListeners</p>
 								<ul>
-									<li>Defined in node_modules/@types/node/events.d.ts:27</li>
+									<li>Defined in /Users/pmcconna/Development/sologenic/sologenic-xrpl-stream-js/node_modules/@types/node/events.d.ts:27</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -1450,15 +1593,15 @@
 					<a name="removelistener" class="tsd-anchor"></a>
 					<h3>remove<wbr>Listener</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-overwrite tsd-is-inherited">
-						<li class="tsd-signature tsd-kind-icon">remove<wbr>Listener<span class="tsd-signature-symbol">(</span>event<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">symbol</span>, listener<span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">...</span>args<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">this</span></li>
+						<li class="tsd-signature tsd-kind-icon">remove<wbr>Listener<span class="tsd-signature-symbol">(</span>event<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">symbol</span>, listener<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">function</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">this</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Inherited from <a href="../interfaces/isologenictxhandler.html">ISologenicTxHandler</a>.<a href="../interfaces/isologenictxhandler.html#removelistener">removeListener</a></p>
-								<p>Overrides <a href="nodejs.eventemitter.html">EventEmitter</a>.<a href="nodejs.eventemitter.html#removelistener">removeListener</a></p>
+								<p>Inherited from EventEmitter.removeListener</p>
+								<p>Overrides EventEmitter.removeListener</p>
 								<ul>
-									<li>Defined in node_modules/@types/node/events.d.ts:25</li>
+									<li>Defined in /Users/pmcconna/Development/sologenic/sologenic-xrpl-stream-js/node_modules/@types/node/events.d.ts:25</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -1467,10 +1610,10 @@
 									<h5>event: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">symbol</span></h5>
 								</li>
 								<li>
-									<h5>listener: <span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">...</span>args<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span></h5>
+									<h5>listener: <span class="tsd-signature-type">function</span></h5>
 									<ul class="tsd-parameters">
 										<li class="tsd-parameter-siganture">
-											<ul class="tsd-signatures tsd-kind-type-literal">
+											<ul class="tsd-signatures tsd-kind-type-literal tsd-is-not-exported">
 												<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">...</span>args<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
 											</ul>
 											<ul class="tsd-descriptions">
@@ -1496,13 +1639,13 @@
 					<a name="setaccount" class="tsd-anchor"></a>
 					<h3>set<wbr>Account</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">set<wbr>Account<span class="tsd-signature-symbol">(</span>account<span class="tsd-signature-symbol">: </span><a href="../interfaces/account.html" class="tsd-signature-type">Account</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/promise.html" class="tsd-signature-type">Promise</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">set<wbr>Account<span class="tsd-signature-symbol">(</span>account<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Account</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/sologenic/sologenic-xrpl-stream-js/blob/2cf7f25/src/lib/sologenictxhandler.ts#L262">src/lib/sologenictxhandler.ts:262</a></li>
+									<li>Defined in <a href="https://github.com/okanaganrusty/sologenic-xrpl-stream-js/blob/cb64053/src/lib/sologenictxhandler.ts#L335">lib/sologenictxhandler.ts:335</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -1515,18 +1658,18 @@
 									current account state, including the sequence number and validate
 								any missed transactions.</p>
 								<dl class="tsd-comment-tags">
-									<dt>params</dt>
-									<dd><p>account  XRPL account address and secret, or address and a keypair</p>
+									<dt>throws</dt>
+									<dd><p>{SologenicError}</p>
 									</dd>
 								</dl>
 							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>account: <a href="../interfaces/account.html" class="tsd-signature-type">Account</a></h5>
+									<h5>account: <span class="tsd-signature-type">Account</span></h5>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="../interfaces/promise.html" class="tsd-signature-type">Promise</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -1534,32 +1677,30 @@
 					<a name="setaccountsequence" class="tsd-anchor"></a>
 					<h3>set<wbr>Account<wbr>Sequence</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">set<wbr>Account<wbr>Sequence<span class="tsd-signature-symbol">(</span>sequence<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">this</span></li>
+						<li class="tsd-signature tsd-kind-icon">set<wbr>Account<wbr>Sequence<span class="tsd-signature-symbol">(</span>sequence<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">this</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/sologenic/sologenic-xrpl-stream-js/blob/2cf7f25/src/lib/sologenictxhandler.ts#L201">src/lib/sologenictxhandler.ts:201</a></li>
+									<li>Defined in <a href="https://github.com/okanaganrusty/sologenic-xrpl-stream-js/blob/cb64053/src/lib/sologenictxhandler.ts#L229">lib/sologenictxhandler.ts:229</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
-									<p>Mutator for defining the current account sequence</p>
+									<p>Set XRPL account sequence</p>
 								</div>
-								<dl class="tsd-comment-tags">
-									<dt>params</dt>
-									<dd><p>sequence  Sequence number</p>
-									</dd>
-								</dl>
 							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
 									<h5>sequence: <span class="tsd-signature-type">number</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>XRPL account sequence</p>
+									</div>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">this</span></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">this</span><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -1567,32 +1708,30 @@
 					<a name="setledgerbasefeexrp" class="tsd-anchor"></a>
 					<h3>set<wbr>Ledger<wbr>Base<wbr>FeeXRP</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">set<wbr>Ledger<wbr>Base<wbr>FeeXRP<span class="tsd-signature-symbol">(</span>fee<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">this</span></li>
+						<li class="tsd-signature tsd-kind-icon">set<wbr>Ledger<wbr>Base<wbr>FeeXRP<span class="tsd-signature-symbol">(</span>fee<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">this</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/sologenic/sologenic-xrpl-stream-js/blob/2cf7f25/src/lib/sologenictxhandler.ts#L166">src/lib/sologenictxhandler.ts:166</a></li>
+									<li>Defined in <a href="https://github.com/okanaganrusty/sologenic-xrpl-stream-js/blob/cb64053/src/lib/sologenictxhandler.ts#L190">lib/sologenictxhandler.ts:190</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
-									<p>Mutator for defining the XRPL base fee</p>
+									<p>Set XRPL base fee for transactions, the ledger object is updated by ledger streaming event updates</p>
 								</div>
-								<dl class="tsd-comment-tags">
-									<dt>params</dt>
-									<dd><p>fee  XRPL fee</p>
-									</dd>
-								</dl>
 							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
 									<h5>fee: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>Fee in XRP (not drops), this will be converted when constructing the TX</p>
+									</div>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">this</span></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">this</span><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -1600,32 +1739,30 @@
 					<a name="setledgerversion" class="tsd-anchor"></a>
 					<h3>set<wbr>Ledger<wbr>Version</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">set<wbr>Ledger<wbr>Version<span class="tsd-signature-symbol">(</span>version<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">this</span></li>
+						<li class="tsd-signature tsd-kind-icon">set<wbr>Ledger<wbr>Version<span class="tsd-signature-symbol">(</span>version<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">this</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/sologenic/sologenic-xrpl-stream-js/blob/2cf7f25/src/lib/sologenictxhandler.ts#L183">src/lib/sologenictxhandler.ts:183</a></li>
+									<li>Defined in <a href="https://github.com/okanaganrusty/sologenic-xrpl-stream-js/blob/cb64053/src/lib/sologenictxhandler.ts#L210">lib/sologenictxhandler.ts:210</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
-									<p>Mutator for defining the XRPL ledger version</p>
+									<p>Set XRPL ledger version, the ledger object is updated by ledger streaming event updates</p>
 								</div>
-								<dl class="tsd-comment-tags">
-									<dt>params</dt>
-									<dd><p>version  Set the current ledger version</p>
-									</dd>
-								</dl>
 							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
 									<h5>version: <span class="tsd-signature-type">number</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>XRPL ledger version</p>
+									</div>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">this</span></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">this</span><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -1638,10 +1775,10 @@
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Inherited from <a href="../interfaces/isologenictxhandler.html">ISologenicTxHandler</a>.<a href="../interfaces/isologenictxhandler.html#setmaxlisteners">setMaxListeners</a></p>
-								<p>Overrides <a href="nodejs.eventemitter.html">EventEmitter</a>.<a href="nodejs.eventemitter.html#setmaxlisteners">setMaxListeners</a></p>
+								<p>Inherited from EventEmitter.setMaxListeners</p>
+								<p>Overrides EventEmitter.setMaxListeners</p>
 								<ul>
-									<li>Defined in node_modules/@types/node/events.d.ts:28</li>
+									<li>Defined in /Users/pmcconna/Development/sologenic/sologenic-xrpl-stream-js/node_modules/@types/node/events.d.ts:28</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -1658,13 +1795,13 @@
 					<a name="submit" class="tsd-anchor"></a>
 					<h3>submit</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">submit<span class="tsd-signature-symbol">(</span>tx<span class="tsd-signature-symbol">: </span><a href="../interfaces/tx.html" class="tsd-signature-type">TX</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/transactionobject.html" class="tsd-signature-type">TransactionObject</a></li>
+						<li class="tsd-signature tsd-kind-icon">submit<span class="tsd-signature-symbol">(</span>tx<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">TX</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">TransactionObject</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/sologenic/sologenic-xrpl-stream-js/blob/2cf7f25/src/lib/sologenictxhandler.ts#L328">src/lib/sologenictxhandler.ts:328</a></li>
+									<li>Defined in <a href="https://github.com/okanaganrusty/sologenic-xrpl-stream-js/blob/cb64053/src/lib/sologenictxhandler.ts#L412">lib/sologenictxhandler.ts:412</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -1681,25 +1818,25 @@
 										submit() is non-blocking, but returns an object with three properties
 									explain in the return.</p>
 								</div>
-							</div>
-							<h4 class="tsd-parameters-title">Parameters</h4>
-							<ul class="tsd-parameters">
-								<li>
-									<h5>tx: <a href="../interfaces/tx.html" class="tsd-signature-type">TX</a></h5>
-									<div class="tsd-comment tsd-typography">
-										<p>Transaction Object e.g.:</p>
-										<pre><code class="language-typescript"> {
+								<dl class="tsd-comment-tags">
+									<dt>example</dt>
+									<dd><pre><code class="language-typescript"> {
    TransactionType: <span class="hljs-string">"AccountSet"</span>,
    Account: <span class="hljs-string">"rEzaLebaTBXNy7C4s8Ru7yxxkE65bDAAkF"</span>,
    SetFlag: <span class="hljs-number">5</span>
  }</code></pre>
 										<p> It is important to note that certain properties such as Fee, Sequence, Flags, LastLedgerSequence are inserted by this class
 										and are overridden if provided.</p>
-									</div>
+									</dd>
+								</dl>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>tx: <span class="tsd-signature-type">TX</span></h5>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="../interfaces/transactionobject.html" class="tsd-signature-type">TransactionObject</a></h4>
-							<p>TransactionObject or throws an Error</p>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">TransactionObject</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -1707,14 +1844,14 @@
 					<a name="listenercount-1" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagStatic">Static</span> listener<wbr>Count</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-inherited tsd-is-static">
-						<li class="tsd-signature tsd-kind-icon">listener<wbr>Count<span class="tsd-signature-symbol">(</span>emitter<span class="tsd-signature-symbol">: </span><a href="_events_.internal.eventemitter.html" class="tsd-signature-type">EventEmitter</a>, event<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">symbol</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span></li>
+						<li class="tsd-signature tsd-kind-icon">listener<wbr>Count<span class="tsd-signature-symbol">(</span>emitter<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">EventEmitter</span>, event<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">symbol</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Inherited from <a href="../interfaces/isologenictxhandler.html">ISologenicTxHandler</a>.<a href="../interfaces/isologenictxhandler.html#listenercount-1">listenerCount</a></p>
+								<p>Inherited from EventEmitter.listenerCount</p>
 								<ul>
-									<li>Defined in node_modules/@types/node/events.d.ts:17</li>
+									<li>Defined in /Users/pmcconna/Development/sologenic/sologenic-xrpl-stream-js/node_modules/@types/node/events.d.ts:17</li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -1727,7 +1864,7 @@
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>emitter: <a href="_events_.internal.eventemitter.html" class="tsd-signature-type">EventEmitter</a></h5>
+									<h5>emitter: <span class="tsd-signature-type">EventEmitter</span></h5>
 								</li>
 								<li>
 									<h5>event: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">symbol</span></h5>
@@ -1746,33 +1883,34 @@
 					<div class="tsd-signature tsd-kind-icon">keypair<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/sologenic/sologenic-xrpl-stream-js/blob/2cf7f25/src/lib/sologenictxhandler.ts#L50">src/lib/sologenictxhandler.ts:50</a></li>
+							<li>Defined in <a href="https://github.com/okanaganrusty/sologenic-xrpl-stream-js/blob/cb64053/src/lib/sologenictxhandler.ts#L70">lib/sologenictxhandler.ts:70</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
 						<div class="lead">
-							<p>XRPL Keypair.  See <a href="https://xrpl.org/cryptographic-keys.html#master-key-pair">https://xrpl.org/cryptographic-keys.html#master-key-pair</a>
-								and <a href="https://xrpl.org/cryptographic-keys.html#regular-key-pair">https://xrpl.org/cryptographic-keys.html#regular-key-pair</a> for more details
-							on the difference between the account seed and key pairs</p>
+							<p>XRPL Keypair.  Reference <a href="https://xrpl.org/cryptographic-keys.html#master-key-pair">https://xrpl.org/cryptographic-keys.html#master-key-pair</a>
+								and <a href="https://xrpl.org/cryptographic-keys.html#regular-key-pair">https://xrpl.org/cryptographic-keys.html#regular-key-pair</a> for more details on
+								on the difference between the account seed and key pairs and how to disable the
+							master key on your account</p>
 						</div>
 					</div>
 					<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
 						<a name="keypair.privatekey" class="tsd-anchor"></a>
 						<h3>private<wbr>Key</h3>
-						<div class="tsd-signature tsd-kind-icon">private<wbr>Key<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> = &quot;&quot;</span></div>
+						<div class="tsd-signature tsd-kind-icon">private<wbr>Key<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;&quot;</span></div>
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/sologenic/sologenic-xrpl-stream-js/blob/2cf7f25/src/lib/sologenictxhandler.ts#L50">src/lib/sologenictxhandler.ts:50</a></li>
+								<li>Defined in <a href="https://github.com/okanaganrusty/sologenic-xrpl-stream-js/blob/cb64053/src/lib/sologenictxhandler.ts#L70">lib/sologenictxhandler.ts:70</a></li>
 							</ul>
 						</aside>
 					</section>
 					<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal">
 						<a name="keypair.publickey" class="tsd-anchor"></a>
 						<h3>public<wbr>Key</h3>
-						<div class="tsd-signature tsd-kind-icon">public<wbr>Key<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> = &quot;&quot;</span></div>
+						<div class="tsd-signature tsd-kind-icon">public<wbr>Key<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;&quot;</span></div>
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/sologenic/sologenic-xrpl-stream-js/blob/2cf7f25/src/lib/sologenictxhandler.ts#L50">src/lib/sologenictxhandler.ts:50</a></li>
+								<li>Defined in <a href="https://github.com/okanaganrusty/sologenic-xrpl-stream-js/blob/cb64053/src/lib/sologenictxhandler.ts#L70">lib/sologenictxhandler.ts:70</a></li>
 							</ul>
 						</aside>
 					</section>
@@ -1789,6 +1927,15 @@
 			</nav>
 			<nav class="tsd-navigation secondary menu-sticky">
 				<ul class="before-current">
+					<li class=" tsd-kind-class">
+						<a href="hashqueue.html" class="tsd-kind-icon">Hash<wbr>Queue</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="redisqueue.html" class="tsd-kind-icon">Redis<wbr>Queue</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="sologenicerror.html" class="tsd-kind-icon">Sologenic<wbr>Error</a>
+					</li>
 				</ul>
 				<ul class="current">
 					<li class="current tsd-kind-class">
@@ -1799,6 +1946,12 @@
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-protected">
 								<a href="sologenictxhandler.html#account" class="tsd-kind-icon">account</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-protected">
+								<a href="sologenictxhandler.html#clearcache" class="tsd-kind-icon">clear<wbr>Cache</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-protected">
+								<a href="sologenictxhandler.html#dispatchlistener" class="tsd-kind-icon">dispatch<wbr>Listener</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-protected">
 								<a href="sologenictxhandler.html#feecushion" class="tsd-kind-icon">fee<wbr>Cushion</a>
@@ -1828,13 +1981,10 @@
 								<a href="sologenictxhandler.html#defaultmaxlisteners" class="tsd-kind-icon">default<wbr>Max<wbr>Listeners</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-private">
-								<a href="sologenictxhandler.html#_validatetxonledger" class="tsd-kind-icon">_<wbr>Validate<wbr>TxOn<wbr>Ledger</a>
-							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-private">
 								<a href="sologenictxhandler.html#_addmemo" class="tsd-kind-icon">_add<wbr>Memo</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-private">
-								<a href="sologenictxhandler.html#_addrawtxtoqueue" class="tsd-kind-icon">_add<wbr>RawTXto<wbr>Queue</a>
+								<a href="sologenictxhandler.html#_addrawtxtoqueue" class="tsd-kind-icon">_add<wbr>Raw<wbr>TxTo<wbr>Queue</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-private">
 								<a href="sologenictxhandler.html#_connected" class="tsd-kind-icon">_connected</a>
@@ -1875,6 +2025,9 @@
 							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-private">
 								<a href="sologenictxhandler.html#_validateonledger" class="tsd-kind-icon">_validate<wbr>OnLedger</a>
 							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-private">
+								<a href="sologenictxhandler.html#_validatetxonledger" class="tsd-kind-icon">_validate<wbr>TxOn<wbr>Ledger</a>
+							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-overwrite tsd-is-inherited">
 								<a href="sologenictxhandler.html#addlistener" class="tsd-kind-icon">add<wbr>Listener</a>
 							</li>
@@ -1904,6 +2057,15 @@
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
 								<a href="sologenictxhandler.html#getrippleapi" class="tsd-kind-icon">get<wbr>Ripple<wbr>Api</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="sologenictxhandler.html#haskeypair" class="tsd-kind-icon">has<wbr>Keypair</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="sologenictxhandler.html#hassecret" class="tsd-kind-icon">has<wbr>Secret</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="sologenictxhandler.html#incrementaccountsequenceby" class="tsd-kind-icon">increment<wbr>Account<wbr>Sequence<wbr>By</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-overwrite tsd-is-inherited">
 								<a href="sologenictxhandler.html#listenercount" class="tsd-kind-icon">listener<wbr>Count</a>
@@ -1963,6 +2125,27 @@
 					</li>
 				</ul>
 				<ul class="after-current">
+					<li class=" tsd-kind-class">
+						<a href="txmq_.html" class="tsd-kind-icon">TXMQƨ</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="../interfaces/ifaucet.html" class="tsd-kind-icon">IFaucet</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="../interfaces/ifaucetaccount.html" class="tsd-kind-icon">IFaucet<wbr>Account</a>
+					</li>
+					<li class=" tsd-kind-variable">
+						<a href="../globals.html#queue_type_stxmq_hash" class="tsd-kind-icon">QUEUE_<wbr>TYPE_<wbr>STXMQ_<wbr>HASH</a>
+					</li>
+					<li class=" tsd-kind-variable">
+						<a href="../globals.html#queue_type_stxmq_redis" class="tsd-kind-icon">QUEUE_<wbr>TYPE_<wbr>STXMQ_<wbr>REDIS</a>
+					</li>
+					<li class=" tsd-kind-function tsd-has-type-parameter">
+						<a href="../globals.html#http" class="tsd-kind-icon">http</a>
+					</li>
+					<li class=" tsd-kind-function tsd-is-not-exported">
+						<a href="../globals.html#wait" class="tsd-kind-icon">wait</a>
+					</li>
 				</ul>
 			</nav>
 		</div>
