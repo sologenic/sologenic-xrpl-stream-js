@@ -8,16 +8,7 @@ import { all as mathAll, create as mathCreate } from 'mathjs';
 import { TXMQƨ } from './stxmq';
 import { EventEmitter } from 'events';
 import { v4 as uuid } from 'uuid';
-
-/**
- * Pause execution for X milliseconds
- *
- * @param milliseconds Number of milliseconds to wait before resolving the promise.
- * @returns {Promise}
- */
-const wait = (milliseconds: number) => {
-  return new Promise(resolve => setTimeout(resolve, milliseconds));
-};
+import { wait } from './soloutils';
 
 /**
  * The [[SologenicTxHandler]] maintains state of a transaction from

@@ -1,26 +1,6 @@
 import fetch, { RequestInfo } from 'node-fetch'
 
 /**
- * Supporting interface for our faucet account so that we can
- * cast (deserialize) the JSON response to an object in our tests.
- */
-export interface IFaucetAccount {
-  xAddress: string;
-  classicAddress: string;
-  address: string;
-  secret: string;
-}
-
-/**
- * Supporting interface for our faucet account so that we can
- * cast (deserialize) the JSON response to an object in our tests.
- */
-export interface IFaucet {
-  account: IFaucetAccount;
-  balance: number;
-}
-
-/**
  * Perform a asynchronous request and cast the result back to a
  * type.  In our case, we're using this to cast to [[IFaucet]].
  */
@@ -33,6 +13,12 @@ export async function http<T>(
   return body;
 }
 
-export function wait(milliseconds: number) {
+/**
+ * Pause execution for X milliseconds
+ *
+ * @param milliseconds Number of milliseconds to wait before resolving the promise.
+ * @returns {Promise}
+ */
+export const wait = (milliseconds: number) => {
   return new Promise(resolve => setTimeout(resolve, milliseconds));
 };

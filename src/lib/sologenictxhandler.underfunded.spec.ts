@@ -8,7 +8,8 @@ $ NODE_TLS_REJECT_UNAUTHORIZED=0 npm run watch
 
 import anyTest, {TestInterface} from 'ava';
 
-import { http, IFaucet } from './soloutils';
+import { http } from './soloutils';
+import { IFaucet } from '../types';
 
 const test = anyTest as TestInterface<{
   handler: any,
@@ -22,7 +23,6 @@ const test = anyTest as TestInterface<{
 import * as SologenicTypes from '../types';
 
 import { SologenicTxHandler } from './sologenictxhandler';
-import { SologenicError } from './error';
 
 const NETWORK_LIST = {
   dev: {

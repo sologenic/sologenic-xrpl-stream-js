@@ -10,7 +10,8 @@
 
 import anyTest, {TestInterface} from 'ava';
 
-import { http, IFaucet } from './soloutils';
+import { http } from './soloutils';
+import { IFaucet } from '../types';
 
 const test = anyTest as TestInterface<{
   handler: any,
