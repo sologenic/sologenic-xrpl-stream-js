@@ -1,12 +1,12 @@
 import Redis from 'ioredis';
-import { MQTX, IQueue } from '../../types';
+import { MQTX, IQueue, RedisTransactionHandlerOptions } from '../../types';
 
 import { v4 as uuid } from 'uuid';
 
 export default class RedisQueue implements IQueue {
     private redis: any;
 
-    constructor(options: any) {
+    constructor(options: RedisTransactionHandlerOptions) {
       try {
         this.redis = new Redis(options);
       } catch (error) {
@@ -82,7 +82,7 @@ export default class RedisQueue implements IQueue {
      *
      * @param queue
      */
-    public async pop(queue: string): Promise<MQTX | boolean> {
+    public async pop(queue: string): Promise<MQTX | undefined> {
       try {
         const element = await this.redis.blpop(queue, 1);
 
@@ -91,7 +91,7 @@ export default class RedisQueue implements IQueue {
         and its length is greater than 0, return the object
         */
 
-        return (element && element.length > 0) ? JSON.parse(element[1]) : false;
+        return (element && element.length > 0) ? JSON.parse(element[1]) : undefined;
 
         } catch (error) {
         throw new Error("Can't get TX from Redis");

@@ -2,21 +2,21 @@
 
 # [&#x1a8; Sologenic Ecosystem](https://www.sologenic.com)
 
-*&#x1a8;* _sologenic_ is a sophisticated ecosystem that facilitates investing and trading of on-demand tokenized assets, including Stocks and ETFs from 25+ global exchanges on top of the XRP Ledger.
+_&#x1a8;_ _sologenic_ is a sophisticated ecosystem that facilitates investing and trading of on-demand tokenized assets, including Stocks and ETFs from 25+ global exchanges on top of the XRP Ledger.
 
-* [White Paper](https://www.sologenic.com/downloads/sologenic-whitepaper.pdf)
+- [White Paper](https://www.sologenic.com/downloads/sologenic-whitepaper.pdf)
 
-* [One Pager](https://www.sologenic.com/downloads/sologenic-onepage.pdf)
+- [One Pager](https://www.sologenic.com/downloads/sologenic-onepage.pdf)
 
 # [&#x1a8; Sologenic XRPL Stream](https://github.com/sologenic/sologenic-xrpl-stream-js)
 
 ## How to Participate
 
-We have a community for questions and support at [sologenic-dev.slack.com](https://sologenic-dev.slack.com).  To receive an invite for the community please fill out the [form](https://docs.google.com/forms/d/e/1FAIpQLSdcpIL-u2FsqBZj0ikG7UyJe3l9If7sVr7MdTpVnINQJJbsQg/viewform) and we'll send you your invite link.
+We have a community for questions and support at [sologenic-dev.slack.com](https://sologenic-dev.slack.com). To receive an invite for the community please fill out the [form](https://docs.google.com/forms/d/e/1FAIpQLSdcpIL-u2FsqBZj0ikG7UyJe3l9If7sVr7MdTpVnINQJJbsQg/viewform) and we'll send you your invite link.
 
 ## Install
 
-```
+```bash
 $ npm install sologenic-xrpl-stream-js
 ```
 
@@ -35,6 +35,7 @@ const ƨ = require('sologenic-xrpl-stream-js');
       },
       // Sologenic Options, hash or redis
       {
+        clearCache: true,
         // queueType: "hash",
         // hash: {}
 
@@ -42,28 +43,28 @@ const ƨ = require('sologenic-xrpl-stream-js');
         redis: {
           host: '127.0.0.1',
           port: 6379
-        },
-        verbose: true
+        }
       }
     ).connect();
-
-    sologenic.on('queued', (id, tx) => {
-      console.log('GLOBAL QUEUED: ', id, tx);
+   
+    // Events have their own types now.
+    sologenic.on('queued', (event: SologenicTypes.QueuedEvent) => {
+      console.log('GLOBAL QUEUED: ', event);
     });
-    sologenic.on('dispatched', (id, tx) => {
-      console.log('GLOBAL DISPATCHED:', id, tx);
+    sologenic.on('dispatched', (event: SologenicTypes.DispatchedEvent) => {
+      console.log('GLOBAL DISPATCHED:', event);
     });
-    sologenic.on('requeued', id => {
-      console.log('GLOBAL REQUEUED:', id);
+    sologenic.on('requeued', (event: SologenicTypes.RequeuedEvent) => {
+      console.log('GLOBAL REQUEUED:', event);
     });
-    sologenic.on('warning', (id, type, reason) => {
-      console.log('GLOBAL WARNING:', id, type, reason);
+    sologenic.on('warning', (event: SologenicTypes.WarningEvent) => {
+      console.log('GLOBAL WARNING:', event);
     });
-    sologenic.on('validated', (id, result) => {
-      console.log('GLOBAL VALIDATED:', id, result);
+    sologenic.on('validated', (event: SologenicTypes.ValidatedEvent) => {
+      console.log('GLOBAL VALIDATED:', event);
     });
-    sologenic.on('failed', (id, type, reason) => {
-      console.log('GLOBAL FAILED:', id, type, reason);
+    sologenic.on('failed', (event: SologenicTypes.FailedEvent) => {
+      console.log('GLOBAL FAILED:', event);
     });
 
     await sologenic.setAccount({
@@ -82,25 +83,20 @@ const ƨ = require('sologenic-xrpl-stream-js');
       }
     });
 
-    tx.events
-      .on('queued', tx => {
-        console.log('QUEUED', tx);
-      })
-      .on('dispatched', (tx, dispatched) => {
-        console.log('DISPATCHED', tx, dispatched);
-      })
-      .on('requeued', (tx, result) => {
-        console.log('REQUEUED', tx, result);
-      })
-      .on('warning', (type, code) => {
-        console.log('warning:', type, code);
-      })
-      .on('validated', (dispatched, result) => {
-        console.log('VALIDATED', dispatched, result);
-      })
-      .on('failed', (type, code) => {
-        console.log('failed:', type, code);
-      });
+    // Events have their own types now.
+    tx.events.on('queued', (event: SologenicTypes.QueuedEvent) => {
+      console.log('TX QUEUED: ', event);
+    }).on('dispatched', (event: SologenicTypes.DispatchedEvent) => {
+      console.log('TX DISPATCHED:', event);
+    }).on('requeued', (event: SologenicTypes.RequeuedEvent) => {
+      console.log('TX REQUEUED:', event);
+    }).on('warning', (event: SologenicTypes.WarningEvent) => {
+      console.log('TX WARNING:', event);
+    }).on('validated', (event: SologenicTypes.ValidatedEvent) => {
+      console.log('TX VALIDATED:', event);
+    });.on('failed', (event: SologenicTypes.FailedEvent) => {
+      console.log('TX FAILED:', event);
+    });
 
     console.log(await tx.promise);
   } catch (error) {

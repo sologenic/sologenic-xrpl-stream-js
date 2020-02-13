@@ -1,29 +1,27 @@
-import test from 'ava';
-
+import anyTest, {TestInterface} from 'ava';
 import HashQueue from './hash';
 
-const _ = require('underscore');
+const test = anyTest as TestInterface<{
+  session: any,
+  data: any
+}>;
 
 test.before(async t => {
-  _.extend(t.context, {
-    data: {
-      message: "Hello, World"
-    },
-    session: new HashQueue({})
-  });
+  t.context.data = { message: "Hello, World" }
+  t.context.session = new HashQueue({})
 });
 
-test.serial("add to the queue", async t => {
-  var session = (<any>t.context).session;
-  var queue = "add_to_queue";
-  var data = (<any>t.context).data;
+test.serial('add to the queue', async t => {
+  var session = t.context.session;
+  var data = t.context.data;
+  var queue = 'add_to_queue';
 
   var result = await session.add(queue, data);
 
-  t.true(typeof(result.id) === 'string');
-  t.true(typeof(result.data) === 'object');
+  t.true(typeof result.id === 'string');
+  t.true(typeof result.data === 'object');
 
-  var response = await session.get(queue, result.id) || {
+  var response = (await session.get(queue, result.id)) || {
     id: undefined
   };
 
@@ -31,10 +29,12 @@ test.serial("add to the queue", async t => {
 });
 
 test.serial("add to the queue with custom id", async t => {
-  var session = (<any>t.context).session;
+  var session = t.context.session;
+  var data = t.context.data;
   var queue = "add_to_queue_with_hash_custom_id";
-  var data = (<any>t.context).data;
   var custom_id = 'foobar';
+
+  await session.del(queue, custom_id);
 
   var result = await session.add(queue, data, custom_id);
 
@@ -46,45 +46,35 @@ test.serial("add to the queue with custom id", async t => {
   };
 
   t.true(response.id === custom_id);
-
-  await session.appendEvent(queue, custom_id, "foo");
-  await session.appendEvent(queue, custom_id, "bar");
-  await session.appendEvent(queue, custom_id, "baz");
-
-  let results = await session.get(queue, custom_id) || {
-    events: []
-  };
-
-  t.true(results.data.events.length == 3);
 });
 
 test.serial('validate retrieve with an invalid object identifier is undefined', async t => {
-  var session = (<any>t.context).session;
-  var queue = "invalid_object_identifier";
+  var session = t.context.session;
+  var queue = 'invalid_object_identifier';
 
-  t.true(await session.get(queue, "barfoo") === undefined);
+  t.true((await session.get(queue, 'barfoo')) === undefined);
 });
 
 test.serial('store and retrieve objects', async t => {
   try {
-    var session = (<any>t.context).session;
-    var queue = "store_and_retrieve";
+    var session = t.context.session;
+    var queue = 'store_and_retrieve';
 
     await session.delAll(queue);
 
     var objects = [
-      { message: "Message 1" },
-      { message: "Message 2" },
-      { message: "Message 3" },
-      { message: "Message 4" }
+      { message: 'Message 1' },
+      { message: 'Message 2' },
+      { message: 'Message 3' },
+      { message: 'Message 4' }
     ];
 
     for (var index in objects) {
       let result = await session.add(queue, objects[index]);
       let response = await session.get(queue, result.id);
 
-      t.true(typeof(result.id) === 'string');
-      t.true(typeof(response.id) === 'string');
+      t.true(typeof result.id === 'string');
+      t.true(typeof response.id === 'string');
 
       t.is(result.id, response.id);
     }
@@ -94,21 +84,21 @@ test.serial('store and retrieve objects', async t => {
     if (items) {
       t.true(items.length === objects.length);
     }
-  } catch(error) {
+  } catch (error) {
     t.fail(`Failing test, caught an exception = ${error}`);
   }
 });
 
 test.serial('delete objects from queue', async t => {
   try {
-    var session = (<any>t.context).session;
-    var queue = "delete_all_objects_from_queue";
+    var session = t.context.session;
+    var queue = 'delete_all_objects_from_queue';
 
     var objects = [
-      { id: '1', message: "Message 1" },
-      { id: '2', message: "Message 2" },
-      { id: '3', message: "Message 3" },
-      { id: '4', message: "Message 4" }
+      { message: 'Message 1' },
+      { message: 'Message 2' },
+      { message: 'Message 3' },
+      { message: 'Message 4' }
     ];
 
     // Empty the queue first
@@ -128,28 +118,40 @@ test.serial('delete objects from queue', async t => {
 
     let items = await session.getAll(queue);
 
-    if (typeof items !== 'undefined')
-      t.true(items.length === objects.length, "Checking that items.length === objects.length");
-    else
-      t.fail("Failing test because the items.length !== objects.length");
+    if (items)
+      t.true(
+        items.length === objects.length,
+        'Checking that items.length === objects.length'
+      );
+    else t.fail('Failing test because the items.length !== objects.length');
 
     /* Pop an item off the queue */
-    t.true(typeof(await session.pop(queue)) === 'object', "Verify that the returned element is of type 'object'");
+    t.true(
+      typeof (await session.pop(queue)) === 'object',
+      "Verify that the returned element is of type 'object'"
+    );
 
     /* Delete an item */
-    t.true(await session.del(queue, items[0].id), "Delete the first item");
+    t.true(await session.del(queue, items[0].id), 'Delete the first item');
 
     /* Delete the remaining items */
     t.true(await session.delAll(queue));
 
     /* Delete an item */
-    t.false(await session.del(queue, items[0].id), "Verify return type is false because there are no more elements to delete");
+    t.false(
+      await session.del(queue, items[0].id),
+      'Verify return type is false because there are no more elements to delete'
+    );
 
     /* Pop an item off the queue */
-    t.false(await session.pop(queue), "Verify return type is false because there are no more elements left to pop");
+    t.is(
+      await session.pop(queue), undefined,
+      'Verify return type is false because there are no more elements left to pop'
+    );
 
     items = await session.getAll(queue);
-    items && t.true(items.length === 0, "Checking that items.length === 0");
+
+    t.true(items!.length === 0, 'Checking that items.length === 0');
   } catch (error) {
     t.fail(`Failing test, caught an exception = ${error}`);
   }

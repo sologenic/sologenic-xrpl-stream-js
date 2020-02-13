@@ -8,21 +8,23 @@
  * https://github.com/ripple/ripple-lib/issues/1191
  */
 
-import test from 'ava';
+import anyTest, {TestInterface} from 'ava';
+
+import { http, IFaucet } from './soloutils';
+
+const test = anyTest as TestInterface<{
+  handler: any,
+  server: string,
+  faucet: string,
+  validAccount: any,
+  invalidAccount: any,
+  emptyAccount: any
+}>;
 
 import * as SologenicTypes from '../types';
+
 import { SologenicTxHandler } from './sologenictxhandler';
 import { SologenicError } from './error';
-import { TXMQƨ } from './stxmq';
-
-const pEvent = require('p-event');
-
-const axios = require('axios');
-const _ = require('underscore');
-
-const wait = (milliseconds: number) => {
-  return new Promise(resolve => setTimeout(resolve, milliseconds));
-};
 
 const NETWORK_LIST = {
   dev: {
@@ -170,84 +172,58 @@ const NETWORK = NETWORK_LIST.dev;
 
 /* Use before each so we use a different address for each request */
 test.before(async t => {
-  _.extend(t.context, {
-    server: NETWORK.wss,
-    faucet: NETWORK.faucet
-  });
+  t.context.server = NETWORK.wss;
+  t.context.faucet = NETWORK.faucet;
 
-  let accounts = await Promise.all([
-    axios.post((<any>t.context).faucet),
-    axios.post((<any>t.context).faucet),
-    axios.post((<any>t.context).faucet)
+  const accounts = await Promise.all([
+    http<IFaucet>(NETWORK.faucet),
+    http<IFaucet>(NETWORK.faucet),
+    http<IFaucet>(NETWORK.faucet)
   ]);
 
-  await wait(2500);
-
-  _.extend(t.context, {
-    invalid_account: <SologenicTypes.Account> {
-      address: accounts[0].data.account.address,
-      secret: accounts[0].data.account.secret,
-      keypair: {
-        publicKey: '',
-        privateKey: ''
-      }
-    },
-    valid_account: <SologenicTypes.Account> {
-      address: accounts[1].data.account.address,
-      secret: accounts[1].data.account.secret,
-      keypair: {
-        publicKey: '',
-        privateKey: ''
-      }
-    },
-    empty_account: <SologenicTypes.Account> {
-      address: accounts[2].data.account.address,
-      secret: accounts[2].data.account.secret,
-      keypair: {
-        publicKey: '',
-        privateKey: ''
-      }
+  t.context.invalidAccount = {
+    address: accounts[0].account.address,
+    secret: accounts[0].account.secret,
+    keypair: {
+      publicKey: '',
+      privateKey: ''
     }
-  });
+  };
 
-  let rippleOptions: SologenicTypes.RippleAPIOptions = {
-    server: (<any>t.context).server,
+  t.context.validAccount = {
+    address: accounts[1].account.address,
+    secret: accounts[1].account.secret,
+    keypair: {
+      publicKey: '',
+      privateKey: ''
+    }
+  };
+
+  t.context.emptyAccount = {
+    address: accounts[2].account.address,
+    secret: accounts[2].account.secret,
+    keypair: {
+      publicKey: '',
+      privateKey: ''
+    }
+  };
+
+  const rippleOptions: SologenicTypes.RippleAPIOptions = {
+    server: t.context.server,
     trustedCertificates: NETWORK.certificates,
     trace: false
   };
 
-  let thOptions: SologenicTypes.TransactionHandlerOptions = {
-    queueType: SologenicTypes.QUEUE_TYPE_STXMQ_HASH
+  const thOptions: SologenicTypes.TransactionHandlerOptions = {
+    queueType: SologenicTypes.QUEUE_TYPE_STXMQ_HASH,
+    hash: {}
   };
 
-  _.extend(t.context, {
-    handler: await (new SologenicTxHandler(rippleOptions, thOptions).connect())
-  });
-});
-
-test.after(async t => {
-  let handler: SologenicTxHandler = (<any>t.context)!.handler;
-
-  if (handler.getRippleApi().isConnected())
-    await handler.getRippleApi().disconnect();
-});
-
-test.serial('sologenic stxmq initialization', t => {
-  t.notThrows(() => {
-    new TXMQƨ({
-      queueType: SologenicTypes.QUEUE_TYPE_STXMQ_HASH
-    });
-  });
+  t.context.handler = new SologenicTxHandler(rippleOptions, thOptions);
 });
 
 test.serial('sologenic tx hash initialization', async t => {
-  let handler: SologenicTxHandler = (<any>t.context)!.handler;
-
-  let valid_account: SologenicTypes.Account = {
-    ...(<any>t.context).valid_account
-  };
-
-  await t.throwsAsync<SologenicError>(handler.setAccount(<SologenicTypes.Account>{
+  await t.throwsAsync<SologenicError>(t.context.handler.setAccount({
     address: 'foobar',
     secret: 'barbaz',
     keypair: {
@@ -256,78 +232,67 @@ test.serial('sologenic tx hash initialization', async t => {
     }
   }));
 
-  await t.throwsAsync<SologenicError>(handler.setAccount(<SologenicTypes.Account>{
+  await t.throwsAsync<SologenicError>(t.context.handler.setAccount({
     address: 'foobar',
-    secret: 'barbaz'
-  }));
-
-  await t.throwsAsync<SologenicError>(handler.setAccount(<SologenicTypes.Account>{
+    secret: '',
     keypair: {
       publicKey: 'foobar',
       privateKey: 'barbaz'
     }
   }));
 
-  await t.notThrowsAsync(handler.setAccount(valid_account));
+  await t.notThrowsAsync(t.context.handler.setAccount(t.context.validAccount));
 });
 
 test.serial('transaction to sologenic xrpl stream', async t => {
   try {
-    let handler: SologenicTxHandler = (<any>t.context)!.handler;
-    let eventsReceived: Array<string> = [];
+    const handler: SologenicTxHandler = t.context!.handler;
+    const eventsReceived: Array<string> = [];
 
-    await handler.setAccount(<any>(<any>t.context).valid_account);
+    await handler.setAccount(t.context.validAccount);
 
     // Make sure we're actually performing an operation (setflags: 5)
-    let tx: SologenicTypes.TX = {
-      Account: <any>(<any>t.context).valid_account.address,
+    const tx: SologenicTypes.TX = {
+      Account: t.context.validAccount.address,
       TransactionType: 'AccountSet',
       SetFlag: 5
     };
 
-    let transaction: SologenicTypes.TransactionObject = handler.submit(tx);
+    const transaction: SologenicTypes.TransactionObject = handler.submit(tx);
 
     // noUnusedLocals is enabled in the tsconfig, so we access the object at least once
     transaction.events
-      .on('queued', tx => {
-        tx;
-
+      .on('queued', () => {
         eventsReceived.push('queued');
       })
-      .on('dispatched', (tx, dispatched) => {
-        tx; dispatched;
-
+      .on('dispatched', () => {
         eventsReceived.push('dispatched');
       })
-      .on('requeued', (tx, result) => {
-        tx; result;
-
+      .on('requeued', () => {
         eventsReceived.push('requeued');
       })
-      .on('warning', (type, code) => {
-        type; code;
-
+      .on('warning', () => {
         eventsReceived.push('warning');
       })
-      .on('validated', (dispatched, result) => {
-        dispatched; result;
-
+      .on('validated', (event: SologenicTypes.ValidatedEvent) => {
         eventsReceived.push('validated');
-      })
-      .on('failed', (type, code) => {
-        type; code;
 
+        t.is(event.reason, 'tesSUCCESS');
+      })
+      .on('failed', (event: SologenicTypes.FailedEvent) => {
         eventsReceived.push('failed');
+
+        t.fail(event.reason);
       });
 
-    let resolvedTx = await transaction.promise;
+    await transaction.promise;
 
-    t.true(typeof resolvedTx.accountSequence !== undefined);
-    t.true(typeof resolvedTx.fee === 'string');
-    t.true(typeof resolvedTx.ledgerVersion === 'number', 'Verify ledger version');
-    t.true(typeof resolvedTx.timestamp === 'string', 'Verify timestamp');
-    t.true(typeof resolvedTx.hash === 'string');
-    t.true(resolvedTx.hash.length === 64);
+    transaction.events.removeAllListeners('queued');
+    transaction.events.removeAllListeners('dispatched');
+    transaction.events.removeAllListeners('requeued');
+    transaction.events.removeAllListeners('warning');
+    transaction.events.removeAllListeners('validated');
+    transaction.events.removeAllListeners('failed');
 
     t.false(eventsReceived.includes('failed'))
     t.true(eventsReceived.includes('queued'));
@@ -339,28 +304,31 @@ test.serial('transaction to sologenic xrpl stream', async t => {
   }
 });
 
-// https://xrpl.org/transaction-results.html
 test.serial('transaction should fail immediately (invalid flags)', async t => {
   try {
-    let handler: SologenicTxHandler = (<any>t.context)!.handler;
-    await handler.setAccount(<any>(<any>t.context).valid_account);
+    const handler: SologenicTxHandler = t.context!.handler;
+    await handler.setAccount(t.context.validAccount);
 
     // See flags at https://xrpl.org/accountset.html
-    let tx: SologenicTypes.TX = {
-      Account: <any>(<any>t.context).valid_account.address,
+    const tx: SologenicTypes.TX = {
+      Account: t.context.validAccount.address,
       TransactionType: 'AccountSet',
       SetFlag: -1
     };
 
-    let transaction: SologenicTypes.TransactionObject = handler.submit(tx);
+    const transaction: SologenicTypes.TransactionObject = handler.submit(tx);
 
-    transaction.events
-      .on('failed', (type: any, code: any) => {
-        t.is(code, '-1 not in range 0 <= $val <= 4294967295');
-        t.is(type, 'dispatch');
-      });
+    let txFailed = false;
+
+    transaction.events.on('failed', (failedTx: SologenicTypes.FailedEvent) => {
+      txFailed = true;
+
+      t.is(failedTx.reason, "-1 not in range 0 <= $val <= 4294967295");
+    });
 
     await transaction.promise;
+
+    t.true(txFailed);
   } catch (error) {
     t.fail();
   }
@@ -368,54 +336,27 @@ test.serial('transaction should fail immediately (invalid flags)', async t => {
 
 test.serial('transaction should be successful', async t => {
   try {
-    let handler: SologenicTxHandler = (<any>t.context)!.handler;
+    const handler: SologenicTxHandler = t.context!.handler;
 
-    await handler.setAccount(<any>(<any>t.context).valid_account);
+    await handler.setAccount(t.context.validAccount);
 
     // See flags at https://xrpl.org/accountset.html
-    let tx: SologenicTypes.TX = {
-      Account: <any>(<any>t.context).valid_account.address,
+    const tx: SologenicTypes.TX = {
+      Account: t.context.validAccount.address,
       TransactionType: 'AccountSet',
       SetFlag: 5
     };
 
-    let transaction: SologenicTypes.TransactionObject = handler.submit(tx);
+    const transaction: SologenicTypes.TransactionObject = handler.submit(tx);
 
     transaction.events
-      .on('validated', (dispatched: SologenicTypes.dispatchedTX, result: SologenicTypes.txResult) => {
-        t.true(dispatched != null);
-        t.is(result.status, 'tesSUCCESS');
+      .on('validated', (event: SologenicTypes.ValidatedEvent) => {
+        t.true(typeof event !== 'undefined');
+        t.is(event.reason, 'tesSUCCESS');
       })
-      .on('failed', (type: any, code: any) => {
-        t.fail(type);
-        t.fail(code);
-      });
-
-    await transaction.promise;
-  } catch (error) {
-    t.fail(error);
-  }
-});
-
-test.serial('transaction should fail with invalid_xrp_address', async t => {
-  try {
-    let handler: SologenicTxHandler = (<any>t.context)!.handler;
-
-    await handler.setAccount(<any>(<any>t.context).invalid_account);
-
-    // See flags at https://xrpl.org/accountset.html
-    let tx: SologenicTypes.TX = {
-      Account: <any>(<any>t.context).valid_account.address,
-      TransactionType: 'AccountSet',
-      SetFlag: 5
-    };
-
-    let transaction: SologenicTypes.TransactionObject = handler.submit(tx);
-
-    transaction.events
-      .on('failed', (type: any, code: any) => {
-        t.is(code, 'invalid_xrp_address');
-        t.is(type, 'dispatch');
+      .on('failed', (event: SologenicTypes.FailedEvent) => {
+        t.true(typeof event !== 'undefined');
+        t.fail(event.reason);
       });
 
     await transaction.promise;
@@ -426,141 +367,108 @@ test.serial('transaction should fail with invalid_xrp_address', async t => {
 
 test.serial('transaction send multiple transactions', async t => {
   try {
-    let handler: SologenicTxHandler = (<any>t.context)!.handler;
+    const handler: SologenicTxHandler = t.context!.handler;
 
-    await handler.setAccount(<any>(<any>t.context).valid_account);
+    await handler.setAccount(t.context.validAccount);
 
     // See flags at https://xrpl.org/accountset.html
-    let tx1: SologenicTypes.TX = {
-      Account: <any>(<any>t.context).valid_account.address,
+    const tx1: SologenicTypes.TX = {
+      Account: t.context.validAccount.address,
       TransactionType: 'AccountSet',
       SetFlag: 5
     };
 
     // See flags at https://xrpl.org/accountset.html
-    let tx2: SologenicTypes.TX = {
-      Account: <any>(<any>t.context).valid_account.address,
+    const tx2: SologenicTypes.TX = {
+      Account: t.context.validAccount.address,
       TransactionType: 'AccountSet',
       SetFlag: 5
     };
 
     // See flags at https://xrpl.org/accountset.html
-    let tx3: SologenicTypes.TX = {
-      Account: <any>(<any>t.context).valid_account.address,
+    const tx3: SologenicTypes.TX = {
+      Account: t.context.validAccount.address,
       TransactionType: 'AccountSet',
       SetFlag: 6
     };
 
-    let promises = await Promise.all([
+    const promises = await Promise.all([
       handler.submit(tx1).promise,
       handler.submit(tx2).promise,
       handler.submit(tx3).promise
     ]);
 
-    for (var transaction in promises) {
-      t.true(typeof promises[transaction] === 'object');
-      t.true(typeof promises[transaction].hash === 'string');
+    for (const transaction in promises) {
+      if (promises[transaction].hasOwnProperty("hash")) {
+        t.true(typeof promises[transaction] === 'object');
+        t.true(typeof promises[transaction].hash === 'string');
+      } else {
+        t.fail();
+      }
     }
   } catch (error) {
     t.fail(error);
   }
 });
 
-
 test.serial('transaction should fail with insufficient fee', async t => {
   try {
-    let handler: SologenicTxHandler = (<any>t.context)!.handler;
+    const handler: SologenicTxHandler = t.context!.handler;
 
-    await handler.setAccount(<any>(<any>t.context).valid_account);
+    await handler.setAccount(t.context.validAccount);
+    await handler.fetchCurrentState();
 
-    handler.fetchCurrentState();
-    handler.setLedgerBaseFeeXRP('0');
+    await handler.setLedgerBaseFeeXRP('0');
 
     // See flags at https://xrpl.org/accountset.html
-    let tx: SologenicTypes.TX = {
-      Account: <any>(<any>t.context).valid_account.address,
+    const tx: SologenicTypes.TX = {
+      Account: t.context.validAccount.address,
       TransactionType: 'AccountSet',
       SetFlag: 5
     };
 
-    let transaction: SologenicTypes.TransactionObject = handler.submit(tx);
+    let txQueued = false;
+    let txDispatched = false;
+    let txRequeued = false;
+    let txWarning: boolean = false;
+    let txValidated: boolean = false;
+    let txFailed = false;
 
-    let [, code] = await pEvent(transaction.events, 'requeued', { multiArgs: true });
-    t.is(code.result.status, 'telINSUF_FEE_P');
+    const transaction: SologenicTypes.TransactionObject = handler.submit(tx);
 
-    let [, fcode] = await pEvent(transaction.events, 'failed', { multiArgs: true });
-    t.is(fcode, 'invalid_xrp_address');
+    transaction.events
+      .on('queued', () => {
+        txQueued = true;
+      })
+      .on('dispatched', () => {
+        txDispatched = true;
+      })
+      .on('requeued', () => {
+        txRequeued = true;
+      })
+      .on('warning', (event: SologenicTypes.WarningEvent) => {
+        if (!txWarning) {
+          // TODO: Clean up the reason to only contain telINSUF_FEE_P
+          t.is(event.reason, 'telINSUF_FEE_P: Fee insufficient.');
+          txWarning = true;
+        }
+      })
+      .on('validated', () => {
+        // Our transaction has been validated
+        txValidated = true;
+      })
+      .on('failed', () => {
+        txFailed = true;
+      });
 
-  } catch (error) {
-    t.fail(error);
-  }
-});
+    await transaction.promise;
 
-test.serial('transaction should fail because not enough funds are available', async t => {
-  try {
-    let handler: SologenicTxHandler = (<any>t.context)!.handler;
-
-    await handler.setAccount(<any>(<any>t.context).empty_account);
-
-    // See flags at https://xrpl.org/accountset.html
-    let tx1: SologenicTypes.TX = {
-      Account: <any>(<any>t.context).empty_account.address,
-      TransactionType: 'Payment',
-      Amount: handler.getRippleApi().xrpToDrops('99999'),
-      Destination: <any>(<any>t.context).valid_account.address
-    };
-
-    // Send all funds out of this account to our valid_account, then
-    // we'll send another transaction which will not be successful
-    // because we'll be out of funds.
-
-    let transaction1: SologenicTypes.TransactionObject = handler.submit(tx1);
-    let [, code] = await pEvent(transaction1.events, 'failed', { multiArgs: true });
-
-    t.is(code, 'tecUNFUNDED_PAYMENT');
-
-  } catch (error) {
-    t.fail(error);
-  }
-});
-
-test.serial('transaction should fail because account is not funded', async t => {
-  try {
-    let handler: SologenicTxHandler = (<any>t.context)!.handler;
-
-    let xrplAddress = handler.getRippleApi().generateAddress();
-
-    await handler.setAccount(<any>(<any>t.context).valid_account);
-
-    // Activate the new account
-    let tx1: SologenicTypes.TX = {
-      Account: <any>(<any>t.context).valid_account.address,
-      TransactionType: 'Payment',
-      Amount: handler.getRippleApi().xrpToDrops('20'),
-      Destination: xrplAddress.address
-    };
-
-    let transaction1: SologenicTypes.TransactionObject = handler.submit(tx1);
-    await pEvent(transaction1.events, 'validated');
-
-    // With the newly activated account perform an underfunded transaction
-    await handler.setAccount(<SologenicTypes.Account>{
-      'address': xrplAddress.address,
-      'secret': xrplAddress.secret
-    });
-
-    // See flags at https://xrpl.org/accountset.html
-    let tx2: SologenicTypes.TX = {
-      Account: xrplAddress.address,
-      TransactionType: 'Payment',
-      Amount: handler.getRippleApi().xrpToDrops('100'),
-      Destination: <any>(<any>t.context).valid_account.address
-    };
-
-    let transaction2: SologenicTypes.TransactionObject = handler.submit(tx2);
-
-    let tx2Promise = <any> await transaction2.promise;
-    t.is(tx2Promise.result.reason, 'tecUNFUNDED_PAYMENT');
+    t.true(txQueued);
+    t.true(txDispatched);
+    t.true(txRequeued);
+    t.true(txValidated);
+    t.true(txWarning);
+    t.false(txFailed);
 
   } catch (error) {
     t.fail(error);
@@ -569,14 +477,132 @@ test.serial('transaction should fail because account is not funded', async t => 
 
 test.serial('transaction should return next sequence', async t => {
   try {
-    let handler: SologenicTxHandler = (<any>t.context)!.handler;
+    const handler: SologenicTxHandler = t.context.handler;
 
-    await handler.setAccount(<any>(<any>t.context).valid_account);
+    await handler.setAccount(t.context.validAccount);
     handler.setAccountSequence(0);
 
-    let sequence = <Number> await handler.fetchCurrentState();
-    t.true(sequence != 0);
+    const sequence = await handler.fetchCurrentState();
+    t.true(sequence !== 0);
 
+  } catch (error) {
+    t.fail(error);
+  }
+});
+
+test.serial('transaction will fail with tefBAD_AUTH (invalid account cannot send on behalf of valid account)', async t => {
+  try {
+    const handler: SologenicTxHandler = t.context!.handler;
+
+    await handler.setAccount(t.context.validAccount);
+
+    // Get the sequence number
+    const sequenceNumber = await handler.getAccountSequence();
+
+    // Set an invalid account and set the sequence number to the valid accounts
+    // sequence.
+    await handler.setAccount(t.context.invalidAccount);
+    await handler.setAccountSequence(sequenceNumber);
+
+    // See flags at https://xrpl.org/accountset.html
+    const tx: SologenicTypes.TX = {
+      Account: t.context.validAccount.address,
+      TransactionType: 'AccountSet',
+      SetFlag: 5
+    };
+
+    /*
+    handler.on('queued', (event: SologenicTypes.QueuedEvent) => {
+      console.log('GLOBAL QUEUED: ', event);
+    });
+    handler.on('dispatched', (event: SologenicTypes.DispatchedEvent) => {
+      console.log('GLOBAL DISPATCHED:', event);
+    });
+    handler.on('requeued', (event: SologenicTypes.RequeuedEvent) => {
+      console.log('GLOBAL REQUEUED:', event);
+    });
+    handler.on('warning', (event: SologenicTypes.WarningEvent) => {
+      console.log('GLOBAL WARNING:', event);
+    });
+    handler.on('validated', (event: SologenicTypes.ValidatedEvent) => {
+      console.log('GLOBAL VALIDATED:', event);
+    });
+    handler.on('failed', (event: SologenicTypes.FailedEvent) => {
+      console.log('GLOBAL FAILED:', event);
+    });
+    */
+
+    const transaction: SologenicTypes.TransactionObject = handler.submit(tx);
+
+    let txFailed = false;
+
+    transaction.events.on('failed', (failedTx: SologenicTypes.FailedEvent) => {
+      t.is(failedTx.reason, "tefBAD_AUTH");
+      txFailed = true;
+    });
+
+    await transaction.promise;
+
+    t.true(txFailed);
+  } catch (error) {
+    t.fail(error);
+  }
+});
+
+test.serial('transaction will fail with tefPAST_SEQ (invalid account sequence is less than valid account)', async t => {
+  try {
+    const handler: SologenicTxHandler = t.context!.handler;
+
+    await handler.setAccount(t.context.validAccount);
+
+    // Get the sequence number
+    const sequenceNumber = await handler.getAccountSequence();
+
+    // Set an invalid account and set the sequence number to the valid accounts
+    // sequence.
+    await handler.setAccount(t.context.invalidAccount);
+    await handler.setAccountSequence(sequenceNumber - 1);
+
+    // See flags at https://xrpl.org/accountset.html
+    const tx: SologenicTypes.TX = {
+      Account: t.context.validAccount.address,
+      TransactionType: 'AccountSet',
+      SetFlag: 5
+    };
+
+    /*
+    handler.on('queued', (event: SologenicTypes.QueuedEvent) => {
+      console.log('GLOBAL QUEUED: ', event);
+    });
+    handler.on('dispatched', (event: SologenicTypes.DispatchedEvent) => {
+      console.log('GLOBAL DISPATCHED:', event);
+    });
+    handler.on('requeued', (event: SologenicTypes.RequeuedEvent) => {
+      console.log('GLOBAL REQUEUED:', event);
+    });
+    handler.on('warning', (event: SologenicTypes.WarningEvent) => {
+      console.log('GLOBAL WARNING:', event);
+    });
+    handler.on('validated', (event: SologenicTypes.ValidatedEvent) => {
+      console.log('GLOBAL VALIDATED:', event);
+    });
+    handler.on('failed', (event: SologenicTypes.FailedEvent) => {
+      console.log('GLOBAL FAILED:', event);
+    });
+    */
+
+    const transaction: SologenicTypes.TransactionObject = handler.submit(tx);
+
+    let txFailed = false;
+
+    transaction.events.on('failed', (failedTx: SologenicTypes.FailedEvent) => {
+      t.is(failedTx.reason, "tefPAST_SEQ");
+      txFailed = true;
+    });
+
+    await transaction.promise;
+
+    t.true(txFailed);
   } catch (error) {
     t.fail(error);
   }
