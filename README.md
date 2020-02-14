@@ -25,6 +25,10 @@
 
 # [&#x1a8; Sologenic Ecosystem](https://www.sologenic.com)
 
+![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/sologenic/sologenic-xrpl-stream-js)
+![GitHub contributors](https://img.shields.io/github/contributors/sologenic/sologenic-xrpl-stream-js)
+![GitHub commit activity](https://img.shields.io/github/commit-activity/w/sologenic/sologenic-xrpl-stream-js)
+
 _&#x1a8;_ _sologenic_ is a sophisticated ecosystem that facilitates investing and trading of on-demand tokenized assets, including Stocks and ETFs from 25+ global exchanges on top of the XRP Ledger.
 
 - [White Paper](https://www.sologenic.com/downloads/sologenic-whitepaper.pdf)
@@ -87,6 +91,8 @@ The following command will generate markdown only documentation.
 `npm run-s doc:markdown`
 
 ## Typescript Example
+
+When using the `sologenic-xrpl-stream-js` library on the server side, we recommend using `redis` as the queue storage mechanism, whereas when using the library on the client side, we recommend using `hash` as on the client side you will most likely not have a `redis` server accessible to you.
 
 ### Intializing the Sologenic XRPL stream with a hash-based queue
 
@@ -313,3 +319,33 @@ const ƨ = require('sologenic-xrpl-stream-js');
   }
 })();
 ```
+
+### Event Emitter and Listeners
+
+There are 6 different events that you'll receive while a transaction is being processed by the library.  Each event has its own type associated with it as you can see in the `src/types/sologenicoptions.d.ts`.  See below for a list of events and the emitted objects.
+
+* validated: ValidatedEvent
+* warning: WarningEvent
+* requeued: RequeuedEvent
+* queued: QueuedEvent
+* failed: FailedEvent
+* dispatched: DispatchedEvent
+
+### Transactions
+
+Each transaction that is created by the `sologenic-xrpl-stream-js` library will have a unique `uuidv4` that is used for tracking purposes in the queue system.  The `tx.id` is not the same as the XRPL ledger hash.
+
+Example snippet from `src/lib/sologenictxhandler.ts`
+
+```typescript
+ 403   public submit(tx: SologenicTypes.TX): SologenicTypes.TransactionObject {
+ 404     try {
+ 405       // Generate a unique ID using the uuid library
+ 406       const id = uuid();
+ 407
+ 408       // Add a new EventEmitter to txEvents array identifiable with the generated id.
+ 409       this.txEvents![id] = new EventEmitter();
+ 410       this._initiateTx(id, tx);
+ ```
+
+ When you are receiving events while the transaction is undergoing processing in the XRPL, you'll receive your transaction ID which can be then used to verify your transaction has been completed.  In addition, once the transaction has been validated in the XRPL, you will notice that the `tx.id` is appended to a memo-field within the transaction itself.
