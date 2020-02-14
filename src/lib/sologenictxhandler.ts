@@ -1,113 +1,147 @@
 import { RippleAPI } from 'ripple-lib';
 import * as SologenicTypes from '../types/';
 import * as RippleError from 'ripple-lib/dist/npm/common/errors';
+
 import { SologenicError } from './error';
+
 import { all as mathAll, create as mathCreate } from 'mathjs';
 import { TXMQƨ } from './stxmq';
 import { EventEmitter } from 'events';
 import { v4 as uuid } from 'uuid';
+import { wait } from './soloutils';
 
-const wait = (milliseconds: number) => {
-  return new Promise(resolve => setTimeout(resolve, milliseconds));
-};
-
+/**
+ * The [[SologenicTxHandler]] maintains state of a transaction from
+ * its inception until it has been validated in the XRPL.
+ *
+ * The Sologenic TX handler can use two different queues at the
+ * current point in time, one which is called [[HashQueue]] and
+ * the other [[RedisQueue]] where the hash queue is ephemeral and
+ * the redis queue can persist events between process restarts.
+ * @packageDocumentation
+ */
 export class SologenicTxHandler extends EventEmitter {
+  /**
+   * Queue mutator/getter for create, replace, update, and delete type queue based operations
+   */
   protected txmq: any;
+
+  /**
+   * Clear cache of sologenic tx handler when the queue is initialized
+   */
   protected clearCache: boolean = false;
+
+  /**
+   * Ripple API of Sologenic TX Handler.  See [[RippleAPI]] for more documentation
+   */
   protected rippleApi!: RippleAPI;
+
+  /**
+   * Dispatch listener boolean flag for Sologenic TX Handler.  This is to ensure we're only
+   * running a single dispatcher thread at a time.
+   */
   protected dispatchListener: boolean = false;
+
+  /**
+   * XRPL Account
+   */
   protected account: string = '';
+
+  /**
+   * XRPL Account Secret
+   */
   protected secret: string = '';
+
+  /**
+   * XRPL Keypair.  Reference https://xrpl.org/cryptographic-keys.html#master-key-pair
+   * and https://xrpl.org/cryptographic-keys.html#regular-key-pair for more details on
+   * on the difference between the account seed and key pairs and how to disable the
+   * master key on your account
+   */
   protected keypair: SologenicTypes.KeyPair = { publicKey: '', privateKey: '' };
+
+  /**
+   * Internal queue for transaction events occuring on a specific transaction.
+   * Events are emitted globally to the [[SologenicTxHandler]] instance and the
+   * txEvents queue
+   */
   protected txEvents: { [key: string]: EventEmitter } = {};
+
+  /**
+   * The ledger class member is for tracking the current state of the ledger
+   * by tracking the base XRP fee, ledger hash, version, timestamp and so on.
+   * Please refer to the interface definition to see the fields received by
+   * the XRPL stream ledger updates in [[SologenicTypes.Ledger]]
+   */
   protected ledger: SologenicTypes.Ledger;
+
+  /**
+   * Our fee cushion to make sure that all fees are multiplied by
+   * 1.2 so that we ensure that we're not being rejected by the
+   * XRPL for too small of a txFee.
+   */
   protected feeCushion: number = 1.2;
+
+  /**
+   * Current sequence number of the XRPL
+   */
   protected sequence: number = 0;
+
+  /**
+   * Our math library used to calculate fees
+   */
   protected math: any;
 
-  protected validatingInstances: Map<string, object> = new Map<string, object>();
   /**
-   * Constructor
+   * Constructor for an instance of sologenic tx handler.
    *
-   * @param rippleApiOptions This parameter is used to construct ripple-lib and takes in:
-          server?: string;
-          feeCushion?: number; // This property is overridden by Sologenic to 1
-          maxFeeXRP?: string;
-          trace?: boolean;
-          proxy?: string;
-          timeout?: number; // This property is overridden by Sologenic to 1000000
-
-   * @param sologenicOptions
-        {
-          queueType?: QueueType;
-
-          redis?: {
-            port?: number;
-            host?: string;
-            family?: number;
-            password?: string;
-            db?: number;
-          };
-        }
-
-    @example sologenicOptions: {
-
-          // Clear queues before initilizing, default to false
-          clearCache: true,
-
-          // When using in-memory hashes
-          queueType: 'hash',
-          hash: {}
-
-          // When using redis
-          queueType: 'redis',
-          redis: {
-            host: 'localhost',
-            port: 6379,
-            family: 'redis5.0',
-            password: 'password',
-            db: '1',
-          }
-        }
+   * @param rippleApiOptions     This parameter is used to construct ripple-lib and takes in:
+   * @param server               XRPL server to connect (eg. wss://s1.ripple.com)
+   * @param feeCushion?          This property is overridden by Sologenic to 1.2
+   * @param maxFeeXRP?           Maximum fee that we'll use when sending a transaction to the XRPL
+   * @param trace                Enable tracing on the XRPL
+   * @param proxy                Use a proxy server
+   * @param timeout              Overridden by Sologenic to 1000000
+   * @param sologenicOptions     Sologenic queue option.  See [[QUEUE_TYPE_STXMQ_HASH]] or [[QUEUE_TYPE_STXMQ_REDIS]]
+   *
+   * @throws SologenicError      Sologenic exception
+   *
+   * Please see the [[README.md]] for an example and more details on using this library and the initialization parameters.
    */
-
-  constructor(
+constructor(
     rippleApiOptions: SologenicTypes.RippleAPIOptions,
     sologenicOptions: SologenicTypes.TransactionHandlerOptions
   ) {
+    /**
+     * Event emitter constructor
+     */
     super();
+
     try {
-      /* Initialize RippleAPI driven from the ripple-lib. Sologenic uses the following methods from this library:
-      connect()
-      on()
-      isValidAddress()
-      isConnected()
-      getLedgerVersion()
-      getFee()
-      request()
-      xrpToDrops()
-      sign()
-      submit()
-      getTransaction()
-      txFlags
-      */
+      /**
+       * Construct a new Ripple API instance
+       */
       this.rippleApi = new RippleAPI({
         feeCushion: 1,
         timeout: 1000000,
         ...rippleApiOptions
       });
 
-      // Subscribe to ripple-lib on("") events
+      /**
+       * Subscribe to ripple-lib on("") events
+       */
       this._subscribeWS();
 
-      // Init ledger object
+      /**
+       * Initialize ledger object
+       */
       this.ledger = {
         baseFeeXRP: '0.00001',
         ledgerTimestamp: '0',
         ledgerVersion: 0
       };
 
-      /*
+      /**
         Initialize TXMQƨ (Sologenic Transaction Message Queue)
       */
       try {
@@ -116,7 +150,9 @@ export class SologenicTxHandler extends EventEmitter {
         throw new SologenicError('1002', error);
       }
 
-      // Set clearCache to true if the client needs to ignore and clean the queue before starting
+      /**
+       * Set clearCache to true if the client needs to ignore and clean the queue before starting
+       */
       if (
         typeof sologenicOptions.clearCache !== 'undefined' &&
         sologenicOptions.clearCache
@@ -124,7 +160,7 @@ export class SologenicTxHandler extends EventEmitter {
         this.clearCache = true;
       }
 
-      /*
+      /**
         Initialize BigNumber
       */
       this.math = mathCreate(mathAll, {
@@ -137,55 +173,86 @@ export class SologenicTxHandler extends EventEmitter {
     }
   }
 
-  /* Added for testing support to be able to override base fee */
+  /**
+   * Set XRPL base fee for transactions, the ledger object is updated by ledger streaming event updates
+   * @param fee Fee in XRP (not drops), this will be converted when constructing the TX
+   * @returns {Promise.<this>}
+   */
   public async setLedgerBaseFeeXRP(fee: string): Promise<this> {
     this.ledger.baseFeeXRP = fee;
 
     return this;
   }
 
+  /**
+   * Get XRPL base fee for transactions
+   * @param fee Fee in XRP (not drops), this will be converted when constructing the TX
+   * @returns {Promise.<string>}
+   */
   public async getLedgerBaseFeeXRP(): Promise<string> {
     return this.ledger.baseFeeXRP;
   }
 
-  /* Added for testing support to set ledger version */
+  /**
+   * Set XRPL ledger version, the ledger object is updated by ledger streaming event updates
+   * @param version XRPL ledger version
+   * @returns {Promise.<this>}
+   */
   public async setLedgerVersion(version: number): Promise<this> {
     this.ledger.ledgerVersion = version;
 
     return this;
   }
 
+  /**
+   * Get XRPL ledger version
+   * @returns {Promise.<number>}
+   */
   public async getLedgerVersion(): Promise<number> {
     return this.ledger.ledgerVersion;
   }
 
+  /**
+   * Set XRPL account sequence
+   * @param sequence XRPL account sequence
+   * @returns {Promise.<this>}
+   */
   public async setAccountSequence(sequence: number): Promise<this> {
     this.sequence = sequence;
 
     return this;
   }
 
+  /**
+   * Increment XRPL account sequence by
+   * @param steps Increment by number of steps (signed; -1 to decrement by 1)
+   * @returns {Promise.<this>}
+   */
   public async incrementAccountSequenceBy(steps: number): Promise<this> {
     this.sequence = this.sequence + steps;
 
     return this;
   }
 
+  /**
+   * Get the current XRPL account sequence
+   * @returns {Promise.<number>}
+   */
   public async getAccountSequence(): Promise<number> {
     return this.sequence;
   }
 
   /**
-   * Expose the ripple API so that our tests can use it to check
-   * transaction status and states.
+   * Get access to the initialized Ripple API instance used by the Sologenic TX Handler
+   * @returns {RippleAPI}
    */
-
   public getRippleApi(): RippleAPI {
     return this.rippleApi;
   }
 
   /**
    * Connect to various services: RippleAPI, fetch current ledger state.
+   * @returns {Promise.<this>}
    */
   public async connect(): Promise<this> {
     try {
@@ -216,6 +283,10 @@ export class SologenicTxHandler extends EventEmitter {
     }
   }
 
+  /**
+   * Helper method to verify that the account has a keypair
+   * @returns {boolean}
+   */
   public hasKeypair(): boolean {
     if ((typeof this.account !== 'undefined' && this.account !== '') &&
       (typeof this.keypair.publicKey !== 'undefined' && this.keypair.publicKey !== '') &&
@@ -226,6 +297,10 @@ export class SologenicTxHandler extends EventEmitter {
       return false;
   }
 
+  /**
+   * Helper method to verify the account has a secret
+   * @returns {boolean}
+   */
   public hasSecret(): boolean {
     if ((typeof this.account !== 'undefined' && this.account !== '') &&
       (typeof this.secret !== 'undefined' && this.secret !== '')) {
@@ -235,6 +310,19 @@ export class SologenicTxHandler extends EventEmitter {
       return false;
   }
 
+  /**
+   * Set the current account to use on the XRPL for transactions or use
+   * a keypair.  See the [[SologenicTypes.Account]] interface for more
+   * details.
+   *
+   * Once an account has been set, connect to the XRPL and fetch the
+   * current account state, including the sequence number and validate
+   * any missed transactions.
+   *
+   * @param {account}           XRPL account address and secret, or address and a keypair
+   * @returns {Promise.<void>}
+   * @throws {SologenicError}
+   */
   public async setAccount(account: SologenicTypes.Account): Promise<void> {
     try {
       await this.connect();
@@ -253,7 +341,10 @@ export class SologenicTxHandler extends EventEmitter {
       if (!this.hasKeypair()) {
         if (this.getRippleApi().isValidSecret(account.secret)) {
           this.secret = account.secret;
-          this.keypair = { publicKey: '', privateKey: '' };
+          this.keypair = {
+            publicKey: '',
+            privateKey: ''
+          };
         } else {
           throw new SologenicError('2001', new RippleError.ValidationError());
         }
@@ -262,16 +353,18 @@ export class SologenicTxHandler extends EventEmitter {
         this.secret = '';
       }
 
-      // Fetch the current state of the ledger and account sequence, if the tx returns tefPAST_SEQ
-      // we'll re-submit after refetching the account state
       await this._fetchCurrentState();
 
       if (this.clearCache) {
+        /**
+         * Clear the cache
+        */
         await this.txmq.delAll();
       } else {
-        // proccess missed transactions before continuing.
-        // Transactions can be missed if they are in the dispatched state. This function processes previous
-        // transactions left in the queue, if any.
+        /**
+         * Process any missed transactions before continuing
+         * Transactions can be missed if they are in the dispatched state. This function processes previous transactions left in the queue, if any.
+         */
         await this._validateMissedTransactions();
       }
     } catch (error) {
@@ -280,35 +373,38 @@ export class SologenicTxHandler extends EventEmitter {
   }
 
   /**
-   * Submit transaction to system. This transaction will then be move to persistent data storage(Redis) or hash store and will be handeled.
-   * Each transaction is assigned an id (uuid) to be tracked in the system. Assigned IDs remain with the transaction until validated.
-   * Since the transactions are not final until validated, the only way to track transactions in the system is to track them with
-   * ids across different channels in the system (e.g. message queue). This ID is also submitted as a refference withing the transaction
+   * Submit transaction to system. This transaction will then be move to persistent
+   * data storage(Redis) or hash store and will be handeled.
+   * Each transaction is assigned an id (uuid) to be tracked in the system.
+   * Assigned IDs remain with the transaction until validated.
+   * Since the transactions are not final until validated, the only way to track
+   * transactions in the system is to track them with
+   * ids across different channels in the system (e.g. message queue).
+   * This ID is also submitted as a refference withing the transaction
    * in the Memo field (HEX representation)
-   * Submit() is non-blocking, but returns an object with three properties explain in the return.
+   * submit() is non-blocking, but returns an object with three properties
+   * explain in the return.
    *
-   * @param tx Transaction Object e.g.:
+   * @example
+   * ```typescript
    *  {
    *    TransactionType: "AccountSet",
    *    Account: "rEzaLebaTBXNy7C4s8Ru7yxxkE65bDAAkF",
    *    SetFlag: 5
    *  }
+   *  ```
+   *
    *  It is important to note that certain properties such as Fee, Sequence, Flags, LastLedgerSequence are inserted by this class
    *  and are overridden if provided.
    *
-   * @returns TransactionObject
-   *    events: Each instance of the submit() gets an instance of `EventEmitter` these events are emitted when certain actions take place
-   *            within the transaction submission.
-   *            Events: queued, dispatched, requeued, warning, validated
-   *    id: This is the uuid generated in a non-blocking approach so clients can later use this id for refference. The id is of type of string
-   *        and are generated using v4 of uuid library. e.g: 6316751c-bde4-412b-ac9a-7d05e548171f
-   *    promise: This property contains a promise and resolves only when a transaction has been validated.
-   *              Contains: hash, dispatchedSequence, accountSequence, ledgerVersion, timestamp, fee
+   * @param   {tx}                  Transaction Object
+   * @returns {TransactionObject}
    */
   public submit(tx: SologenicTypes.TX): SologenicTypes.TransactionObject {
     try {
       // Generate a unique ID using the uuid library
       const id = uuid();
+
       // Add a new EventEmitter to txEvents array identifiable with the generated id.
       this.txEvents![id] = new EventEmitter();
       this._initiateTx(id, tx);
@@ -325,6 +421,10 @@ export class SologenicTxHandler extends EventEmitter {
     }
   }
 
+  /**
+   * Check if we're connected to the XRPL
+   * @returns connected
+   */
   private async _connected(): Promise<boolean> {
     if (this.getRippleApi().isConnected()) {
       return true;
@@ -335,7 +435,7 @@ export class SologenicTxHandler extends EventEmitter {
   }
 
   /**
-   * recursivley loop and query TXMQƨ to see when the id is validated
+   * Recursivle loop and query TXMQƨ to see when the id has been validated, every 100 milliseconds
    * @param id
    * @returns ResolvedTx
    */
@@ -358,7 +458,10 @@ export class SologenicTxHandler extends EventEmitter {
   }
 
   /**
-   *  Fetch the current ledger and account information to be used for transaction submission
+   * Fetches current ledger and account information to be used for transaction submission
+   *
+   * @returns {Promise.<void>}
+   * @throws {SologenicError}
    */
   private async _fetchCurrentState(): Promise<void> {
     try {
@@ -394,10 +497,9 @@ export class SologenicTxHandler extends EventEmitter {
     }
   }
 
-  /*
-  Testing helper to get the current state, so we can make sure we
-  actually got the next sequence */
-
+  /**
+   * Get the current state account state
+   */
   public async fetchCurrentState(): Promise<Number> {
     await this._fetchCurrentState();
 
@@ -405,7 +507,8 @@ export class SologenicTxHandler extends EventEmitter {
   }
 
   /**
-   * Subscribe to ripple-lib ws implementation of XRPL WebSockets
+   * Subscribe to ripple-lib websocket events connect, disconnect, error and ledger stream updates.
+   * @throws {SologenicError}
    */
   private _subscribeWS(): any {
     try {
@@ -434,8 +537,11 @@ export class SologenicTxHandler extends EventEmitter {
 
   /**
    * Initiate the transaction, prepare it to add the queue
-   * @param id
-   * @param tx
+   *
+   * @param {id}  Transaction ID generated by the UUID library
+   * @param {tx}  Raw Transaction Object
+   *
+   * @throws {SologenicError}
    */
   private async _initiateTx(id: string, tx: SologenicTypes.TX): Promise<void> {
     try {
@@ -447,8 +553,7 @@ export class SologenicTxHandler extends EventEmitter {
 
   /**
    * Helper function to add any other properties to the TX before being added to the queue.
-   * @param tx
-   * @returns tx;
+   * @param {tx}  Raw Transaction Object
    */
   private _constructRawTx(tx: SologenicTypes.TX): SologenicTypes.TxJSON {
     return { txJSON: tx };
@@ -456,8 +561,8 @@ export class SologenicTxHandler extends EventEmitter {
 
   /**
    * Add the raw transaction to the queue.
-   * @param tx
-   * @param id
+   * @param {id}  Transaction ID generated by the UUID library
+   * @param {tx}  Raw Transaction Object
    */
   private async _addRawTxToQueue(
     txJson: SologenicTypes.TxJSON,
@@ -487,7 +592,7 @@ export class SologenicTxHandler extends EventEmitter {
    * Add id to the memo field of the transactions.
    * More info: https://xrpl.org/transaction-common-fields.html#memos-field
    *
-   * @param tx
+   * @param {tx}  Raw Transaction Object
    */
   private _addMemo(tx: SologenicTypes.UnsignedTx): SologenicTypes.TX {
     try {
@@ -514,7 +619,9 @@ export class SologenicTxHandler extends EventEmitter {
   }
 
   /**
-   * Dispatch listener. Recursivley loop and fetch the persistent data store to fetch groups of transactions to be dispatched
+   * Dispatch listener
+   *
+   * @description Recursively loop and fetch the persistent data store to fetch groups of transactions to be dispatched
    */
   private async _dispatch(): Promise<void> {
     try {
@@ -537,7 +644,9 @@ export class SologenicTxHandler extends EventEmitter {
   }
 
   /**
-   * dispatch job handler. Recursively try transactions and based on the dispatch result try again, or a
+   * Dispatch job handler
+   *
+   * @description Recursively try transactions and based on the dispatch result try again, or a
    * @param unsignedTx
    */
   private async _dispatchHandler(
@@ -558,7 +667,16 @@ export class SologenicTxHandler extends EventEmitter {
 
   /**
    * Dispatch the transaction to the ledger
+   *
+   * @description Adds a memo to the transaction for tracking
+   * @description Validates the the tx Flags are stored as an unsigned integer as JS converts to a signed integer
+   * @description Calculates the transaction fee, including applying a multiplier (default: 1.2)
+   * @description Sets the sequence for the transaction based on the accounts last sequence number
+   * @description Calculates the maximum ledger version we will wait for before we fail or requeue the transaction (default: 3 validated ledgers)
+   * @description Signs the transaction with the account secret or keypair
+   *
    * @param unsignedTx
+   * @throws {SologenicError}
    */
   private async _dispatchToLedger(
     unsignedTx: SologenicTypes.UnsignedTx
@@ -597,6 +715,8 @@ export class SologenicTxHandler extends EventEmitter {
       // Set LastLedgerSequence for this tx to make sure it becomes invalid after 3 verified closed ledgers
       tx.LastLedgerSequence = (await this.getLedgerVersion()) + 3
 
+      // console.log(`Signing (secret=${this.secret}, keypair={publicKey=${this.keypair.publicKey}, privateKey=${this.keypair.privateKey}})`);
+
       // Sign the transaction using the secret provided on init
       const signedTx: SologenicTypes.SignedTx = this.getRippleApi().sign(
         JSON.stringify(tx),
@@ -627,6 +747,7 @@ export class SologenicTxHandler extends EventEmitter {
         https://xrpl.org/ter-codes.html
         https://xrpl.org/tes-success.html
       */
+
       if (result.resultCode !== 'tesSUCCESS') {
         const warningEvent: SologenicTypes.WarningEvent = {
           id: unsignedTx.id,
@@ -766,7 +887,8 @@ export class SologenicTxHandler extends EventEmitter {
   }
 
   /**
-   * Handle dispatched transaction
+   * Handle dispatched transaction and emit (dispatched) events to event listeners
+   *
    * @param unsignedTx
    * @param tx
    * @param result
@@ -819,12 +941,14 @@ export class SologenicTxHandler extends EventEmitter {
   }
 
   /**
-   * Handle failed transaction
+   * Handle failed transaction and emit (failed) events to event listeners for
    * @param unsignedTx
    * @param tx
    * @param result
    * @param signedTx
    * @param firstLedgerSequence
+   *
+   * @throws {SologenicError}
    */
   private async _txFailed(
     unsignedTx: SologenicTypes.UnsignedTx,
@@ -869,6 +993,8 @@ export class SologenicTxHandler extends EventEmitter {
 
   /**
    * Validate missed transactions sitting on the dispatched queue
+   *
+   * @throws {SologenicError}
    */
   private async _validateMissedTransactions(): Promise<void> {
     try {
@@ -882,8 +1008,10 @@ export class SologenicTxHandler extends EventEmitter {
       throw new SologenicError('1006');
     }
   }
+
   /**
-   * eventListener to validate transactions that are added to the dispatched queue
+   * Event listener for dispatched events
+   * @description Validate transaction that are added to the dispatched queue once they have been emitted
    */
   private _validateOnLedger(): void {
     this.on('dispatched', async (dispatchedEvent: SologenicTypes.DispatchedEvent) => {
@@ -892,7 +1020,8 @@ export class SologenicTxHandler extends EventEmitter {
   }
 
   /**
-   * Validate transaction on the XRP Ledger
+   * Validate transactions on the XRP Ledger
+   *
    * @param id
    * @param dispatchedTx
    */

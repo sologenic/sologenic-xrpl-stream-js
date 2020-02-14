@@ -1,19 +1,9 @@
 import fetch, { RequestInfo } from 'node-fetch'
 
-// {"account":{"xAddress":"T7jQb738NQviPKxvtsheynRuEyz9wdUJGigLLAY4xmft8BP","classicAddress":"rfNviyjg6vFzhjXfdyrorSF2UnRyX5vDPE","address":"rfNviyjg6vFzhjXfdyrorSF2UnRyX5vDPE","secret":"sndYJr1oufWAPhHpMbQPgmYtSSiKn"},"balance":10000}* Closing connection 0
-
-export interface IFaucetAccount {
-  xAddress: string;
-  classicAddress: string;
-  address: string;
-  secret: string;
-}
-
-export interface IFaucet {
-  account: IFaucetAccount;
-  balance: number;
-}
-
+/**
+ * Perform a asynchronous request and cast the result back to a
+ * type.  In our case, we're using this to cast to [[IFaucet]].
+ */
 export async function http<T>(
   request: RequestInfo
 ): Promise<T> {
@@ -22,3 +12,13 @@ export async function http<T>(
 
   return body;
 }
+
+/**
+ * Pause execution for X milliseconds
+ *
+ * @param milliseconds Number of milliseconds to wait before resolving the promise.
+ * @returns {Promise}
+ */
+export const wait = (milliseconds: number) => {
+  return new Promise(resolve => setTimeout(resolve, milliseconds));
+};

@@ -101,12 +101,22 @@ test.serial('delete objects from queue', async t => {
       { message: 'Message 4' }
     ];
 
+    // Empty the queue first
+    await session.delAll(queue);
+
+    // Add each element to the queue
     for (var index in objects) {
-      await session.add(queue, objects[index]);
+      let _created_object = await session.add(queue, objects[index]);
+      t.true(typeof _created_object !== 'undefined');
+
+      // Get the object back from the queue
+      var _result = await session.get(queue, _created_object.id);
+
+      t.true(typeof _result !== 'undefined');
+      t.true(_result.data.message === objects[index].message);
     }
 
-    let items = [];
-    items = await session.getAll(queue);
+    let items = await session.getAll(queue);
 
     if (items)
       t.true(
