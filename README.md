@@ -22,7 +22,7 @@
       * [Event Emitter and Listeners](#event-emitter-and-listeners)
       * [Transactions](#transactions)
 
-<!-- Added by: pmcconna, at: Thu Feb 13 17:10:21 PST 2020 -->
+<!-- Added by: pmcconna, at: Fri Feb 14 13:35:27 PST 2020 -->
 
 <!--te-->
 
@@ -42,9 +42,19 @@ _&#x1a8;_ _sologenic_ is a sophisticated ecosystem that facilitates investing an
 
 ## Purpose
 
-The `sologenic-xrpl-stream-js` library was created for client and server integrations to provide [reliable transaction submissions](https://xrpl.org/reliable-transaction-submission.html) on the XRPL ledger.  In addition to using the library, it will automatically calculate your current account sequence, current ledger version and maximum ledger versions for the transaction to be successful.
+The sologenic-xrpl-stream-js enables clients to communicate and submit transactions to the XRP Ledger seamlessly and reliably.
 
-As a sample application, you can see the `sologenic-xrpl-stream-js` library in action with the [sologenic-electron-wallet](https://github.com/sologenic/sologenic-electron-wallet).
+This library provides reliable transaction handling following the guide provided by XRPL.org [reliable transaction submissions](https://xrpl.org/reliable-transaction-submission.html).
+
+![sologenic-xrpl-stream-js.png](assets/img/sologenic-xrpl-stream-js.png)
+
+Once a transaction is submitted, it is queued either using a Hash-based in-memory queue (non-persistent, ideal for front-end) or a Redis (persistent, ideal for backend). Transactions are queued and dispatched in sequence. Account sequence numbers, ledgerVersions and fees are also handled for each transaction that is being dispatched.
+
+Events are reported back to the client using a global EventEmitter and transaction-specific EventEmitter. This allows clients to track the statuses of their transactions and take actions based on the results.
+
+**Production uses**
+* SOLO ReactNative Wallet
+* SOLO React Electron Wallet
 
 In general, there are two types of users who would benefit from using this library:
 
