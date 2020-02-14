@@ -18,8 +18,10 @@
          * [Intializing the Sologenic XRPL stream with a redis-based queue](#intializing-the-sologenic-xrpl-stream-with-a-redis-based-queue)
          * [Sending a Payment with XRPL account and secret](#sending-a-payment-with-xrpl-account-and-secret)
          * [Sending a Payment with XRPL account and keypair](#sending-a-payment-with-xrpl-account-and-keypair)
+         * [Event Emitter and Listeners](#event-emitter-and-listeners)
+         * [Transactions](#transactions)
 
-<!-- Added by: pmcconna, at: Thu Feb 13 16:19:23 PST 2020 -->
+<!-- Added by: pmcconna, at: Thu Feb 13 16:57:12 PST 2020 -->
 
 <!--te-->
 
@@ -324,12 +326,73 @@ const ƨ = require('sologenic-xrpl-stream-js');
 
 There are 6 different events that you'll receive while a transaction is being processed by the library.  Each event has its own type associated with it as you can see in the `src/types/sologenicoptions.d.ts`.  See below for a list of events and the emitted objects.
 
-* validated: ValidatedEvent
-* warning: WarningEvent
-* requeued: RequeuedEvent
-* queued: QueuedEvent
-* failed: FailedEvent
-* dispatched: DispatchedEvent
+* Event (validated): `SologenicTypes.ValidatedEvent`
+* Event (warning): `SologenicTypes.WarningEvent`
+* Event (requeued): `SologenicTypes.RequeuedEvent`
+* Event (queued): `SologenicTypes.QueuedEvent`
+* Event (failed): `SologenicTypes.FailedEvent`
+* Event (dispatched): `SologenicTypes.DispatchedEvent`
+
+As you can see below in the `transactions` section there is a snippet of code there.  The reason we added this is because we wanted to outline that we have two separate event emitters that emit events based on the transactions.  One of the event emitters being a global emitter that receives all events, and then a transaction based event emitter which receives events for only the transaction it has subscribed to.  
+
+For example, the `sologenic.on()` subscriptions (event listeners) to events are global, meaning you'll receive events for every transaction you submit.  Whereas, the `tx.events.on()` subscriptions (event listeners) are specific to the transactions themselves, once the transaction has been `validated` or `failed` you will no longer receive transactions as the listeners are all unsubscribed automatically.
+
+```typescript
+// Events have their own types now.
+sologenic.on('queued', (event: SologenicTypes.QueuedEvent) => {
+  console.log('GLOBAL QUEUED: ', event);
+});
+sologenic.on('dispatched', (event: SologenicTypes.DispatchedEvent) => {
+  console.log('GLOBAL DISPATCHED:', event);
+});
+sologenic.on('requeued', (event: SologenicTypes.RequeuedEvent) => {
+  console.log('GLOBAL REQUEUED:', event);
+});
+sologenic.on('warning', (event: SologenicTypes.WarningEvent) => {
+  console.log('GLOBAL WARNING:', event);
+});
+sologenic.on('validated', (event: SologenicTypes.ValidatedEvent) => {
+  console.log('GLOBAL VALIDATED:', event);
+});
+sologenic.on('failed', (event: SologenicTypes.FailedEvent) => {
+  console.log('GLOBAL FAILED:', event);
+});
+
+await sologenic.setAccount({
+  address: 'rNbe8nh1K6nDC5XNsdAzHMtgYDXHZB486G',
+  keypair: {
+    publicKey: 'my public key with permission to sign transaction for address',
+    privateKey: 'my private key with permission to sign transactions for address'
+  }
+});
+
+const tx = sologenic.submit({
+  TransactionType: 'Payment',
+  Account: 'rNbe8nh1K6nDC5XNsdAzHMtgYDXHZB486G',
+  Destination: 'rUwty6Pf4gzUmCLVuKwrRWPYaUiUiku8Rg',
+  Amount: {
+    currency: '534F4C4F00000000000000000000000000000000',
+    issuer: 'rNbe8nh1K6nDC5XNsdAzHMtgYDXHZB486G',
+    value: '100000000'
+  }
+});
+
+// Events have their own types now.
+tx.events.on('queued', (event: SologenicTypes.QueuedEvent) => {
+  console.log('TX QUEUED: ', event);
+}).on('dispatched', (event: SologenicTypes.DispatchedEvent) => {
+  console.log('TX DISPATCHED:', event);
+}).on('requeued', (event: SologenicTypes.RequeuedEvent) => {
+  console.log('TX REQUEUED:', event);
+}).on('warning', (event: SologenicTypes.WarningEvent) => {
+  console.log('TX WARNING:', event);
+}).on('validated', (event: SologenicTypes.ValidatedEvent) => {
+  console.log('TX VALIDATED:', event);
+});.on('failed', (event: SologenicTypes.FailedEvent) => {
+  console.log('TX FAILED:', event);
+});
+```
+
 
 ### Transactions
 
@@ -338,14 +401,16 @@ Each transaction that is created by the `sologenic-xrpl-stream-js` library will 
 Example snippet from `src/lib/sologenictxhandler.ts`
 
 ```typescript
- 403   public submit(tx: SologenicTypes.TX): SologenicTypes.TransactionObject {
- 404     try {
- 405       // Generate a unique ID using the uuid library
- 406       const id = uuid();
- 407
- 408       // Add a new EventEmitter to txEvents array identifiable with the generated id.
- 409       this.txEvents![id] = new EventEmitter();
- 410       this._initiateTx(id, tx);
+public submit(tx: SologenicTypes.TX): SologenicTypes.TransactionObject {
+  try {
+    // Generate a unique ID using the uuid library
+    const id = uuid();
+
+    // Add a new EventEmitter to txEvents array identifiable with the generated id.
+    this.txEvents![id] = new EventEmitter();
+    this._initiateTx(id, tx);
  ```
 
  When you are receiving events while the transaction is undergoing processing in the XRPL, you'll receive your transaction ID which can be then used to verify your transaction has been completed.  In addition, once the transaction has been validated in the XRPL, you will notice that the `tx.id` is appended to a memo-field within the transaction itself.
+
+ The `tx.id` field is non-async and does not change if the transaction is requeued or failed so that you have the option of going back to check the state.
