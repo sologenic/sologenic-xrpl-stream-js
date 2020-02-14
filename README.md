@@ -3,6 +3,7 @@
 <!--ts-->
    * [<a href="https://www.sologenic.com" rel="nofollow">ƨ Sologenic Ecosystem</a>](#ƨ-sologenic-ecosystem)
    * [<a href="https://github.com/sologenic/sologenic-xrpl-stream-js">ƨ Sologenic XRPL Stream</a>](#ƨ-sologenic-xrpl-stream)
+      * [Purpose](#purpose)
       * [How to Participate](#how-to-participate)
       * [Install](#install)
       * [Node Package Manager Scripts](#node-package-manager-scripts)
@@ -18,10 +19,10 @@
          * [Intializing the Sologenic XRPL stream with a redis-based queue](#intializing-the-sologenic-xrpl-stream-with-a-redis-based-queue)
          * [Sending a Payment with XRPL account and secret](#sending-a-payment-with-xrpl-account-and-secret)
          * [Sending a Payment with XRPL account and keypair](#sending-a-payment-with-xrpl-account-and-keypair)
-         * [Event Emitter and Listeners](#event-emitter-and-listeners)
-         * [Transactions](#transactions)
+      * [Event Emitter and Listeners](#event-emitter-and-listeners)
+      * [Transactions](#transactions)
 
-<!-- Added by: pmcconna, at: Thu Feb 13 16:57:12 PST 2020 -->
+<!-- Added by: pmcconna, at: Thu Feb 13 17:10:21 PST 2020 -->
 
 <!--te-->
 
@@ -38,6 +39,18 @@ _&#x1a8;_ _sologenic_ is a sophisticated ecosystem that facilitates investing an
 - [One Pager](https://www.sologenic.com/downloads/sologenic-onepage.pdf)
 
 # [&#x1a8; Sologenic XRPL Stream](https://github.com/sologenic/sologenic-xrpl-stream-js)
+
+## Purpose
+
+The `sologenic-xrpl-stream-js` library was created for client and server integrations to provide [reliable transaction submissions](https://xrpl.org/reliable-transaction-submission.html) on the XRPL ledger.  In addition to using the library, it will automatically calculate your current account sequence, current ledger version and maximum ledger versions for the transaction to be successful.
+
+As a sample application, you can see the `sologenic-xrpl-stream-js` library in action with the [sologenic-electron-wallet](https://github.com/sologenic/sologenic-electron-wallet).
+
+In general, there are two types of users who would benefit from using this library:
+
+1. Exchanges or users with large volumes of transactions who want to ensure they receive reliable delivery and can receive event notifications throughout the transactions validation process.
+
+2. Users who do not want to deal with transaction dispatching, validations and errors on the XRPL. 
 
 ## How to Participate
 
