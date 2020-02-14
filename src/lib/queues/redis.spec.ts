@@ -1,22 +1,20 @@
-import test from 'ava';
-
+import anyTest, {TestInterface} from 'ava';
 import RedisQueue from './redis';
 
-const _ = require('underscore');
+const test = anyTest as TestInterface<{
+  session: any,
+  data: any
+}>;
 
 test.before(async t => {
-  _.extend(t.context, {
-    data: {
-      message: "Hello, World"
-    },
-    session: new RedisQueue({})
-  });
+  t.context.data = { message: "Hello, World" }
+  t.context.session = new RedisQueue({})
 });
 
-test("add to the queue", async t => {
-  var session = (<any>t.context).session;
+test.serial("add to the queue", async t => {
+  var session = t.context.session;
+  var data = t.context.data;
   var queue = "add_to_queue";
-  var data = (<any>t.context).data;
 
   var result = await session.add(queue, data);
 
@@ -30,10 +28,10 @@ test("add to the queue", async t => {
   t.true(response.id === result.id);
 });
 
-test("add to the queue with custom id", async t => {
-  var session = (<any>t.context).session;
+test.serial("add to the queue with custom id", async t => {
+  var session = t.context.session;
+  var data = t.context.data;
   var queue = "add_to_queue_with_redis_custom_id";
-  var data = (<any>t.context).data;
   var custom_id = 'foobar';
 
   await session.del(queue, custom_id);
@@ -48,28 +46,18 @@ test("add to the queue with custom id", async t => {
   };
 
   t.true(response.id === custom_id);
-
-  await session.appendEvent(queue, custom_id, "foo");
-  await session.appendEvent(queue, custom_id, "bar");
-  await session.appendEvent(queue, custom_id, "baz");
-
-  let results = await session.get(queue, custom_id) || {
-    events: []
-  };
-
-  t.true(results.data.events.length == 3);
 });
 
-test('validate retrieve with an invalid object identifier is undefined', async t => {
-  var session = (<any>t.context).session;
+test.serial('validate retrieve with an invalid object identifier is undefined', async t => {
+  var session = t.context.session;
   var queue = "invalid_object_identifier";
 
   t.true(await session.get(queue, "barfoo") === undefined);
 });
 
-test('store and retrieve objects', async t => {
+test.serial('store and retrieve objects', async t => {
   try {
-    var session = (<any>t.context).session;
+    var session = t.context.session;
     var queue = "store_and_retrieve";
 
     await session.delAll(queue);
@@ -103,9 +91,9 @@ test('store and retrieve objects', async t => {
   }
 });
 
-test('delete objects from queue', async t => {
+test.serial('delete objects from queue', async t => {
   try {
-    var session = (<any>t.context).session;
+    var session = t.context.session;
     var queue = "delete_all_objects_from_queue";
 
     var objects = [
@@ -142,7 +130,10 @@ test('delete objects from queue', async t => {
     t.false(await session.del(queue, items[0].id), "Verify return type is false because there are no more elements to delete");
 
     /* Pop an item off the queue */
-    t.false(await session.pop(queue), "Verify return type is false because there are no more elements left to pop");
+    t.is(
+      await session.pop(queue), undefined,
+      'Verify return type is false because there are no more elements left to pop'
+    );
 
     items = await session.getAll(queue);
     items && t.true(items.length === 0, "Checking that items.length === 0");

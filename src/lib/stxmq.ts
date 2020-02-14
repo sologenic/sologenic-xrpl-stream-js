@@ -2,7 +2,8 @@ import {
   MQTX,
   IQueue,
   QUEUE_TYPE_STXMQ_REDIS,
-  QUEUE_TYPE_STXMQ_HASH
+  QUEUE_TYPE_STXMQ_HASH,
+  TransactionHandlerOptions
 } from '../types';
 
 import RedisQueue from './queues/redis';
@@ -11,18 +12,19 @@ import HashQueue from './queues/hash';
 export class TXMQƨ {
   private queue: IQueue;
 
-  constructor(sologenicOptions: any) {
+  constructor(sologenicOptions: TransactionHandlerOptions) {
     try {
       switch (sologenicOptions!.queueType) {
         case QUEUE_TYPE_STXMQ_REDIS:
-          this.queue = new RedisQueue(sologenicOptions!.redis);
+          this.queue = new RedisQueue(sologenicOptions.redis!);
           break;
 
         case QUEUE_TYPE_STXMQ_HASH:
-          this.queue = new HashQueue(sologenicOptions!.hash);
+          this.queue = new HashQueue(sologenicOptions.hash!);
           break;
+
         default:
-          this.queue = new HashQueue(sologenicOptions!.hash);
+          this.queue = new HashQueue(sologenicOptions.hash!);
           break;
       }
     } catch (error) {
@@ -60,7 +62,7 @@ export class TXMQƨ {
    *
    * @param queue
    */
-  public async pop(queue: string): Promise<MQTX | boolean> {
+  public async pop(queue: string): Promise<MQTX | undefined> {
     return this.queue.pop(queue);
   }
 
