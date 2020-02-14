@@ -1,7 +1,6 @@
 ![sologenic-xrpl-stream-js](https://www.sologenic.com/images/solo-plain.png)
 
 <!--ts-->
-   * [<a href="https://www.sologenic.com" rel="nofollow">ƨ Sologenic Ecosystem</a>](#ƨ-sologenic-ecosystem)
    * [<a href="https://github.com/sologenic/sologenic-xrpl-stream-js">ƨ Sologenic XRPL Stream</a>](#ƨ-sologenic-xrpl-stream)
       * [Purpose](#purpose)
       * [How to Participate](#how-to-participate)
@@ -22,21 +21,13 @@
       * [Event Emitter and Listeners](#event-emitter-and-listeners)
       * [Transactions](#transactions)
 
-<!-- Added by: pmcconna, at: Fri Feb 14 13:35:27 PST 2020 -->
+<!-- Added by: pmcconna, at: Fri Feb 14 13:37:46 PST 2020 -->
 
 <!--te-->
-
-# [&#x1a8; Sologenic Ecosystem](https://www.sologenic.com)
 
 ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/sologenic/sologenic-xrpl-stream-js)
 ![GitHub contributors](https://img.shields.io/github/contributors/sologenic/sologenic-xrpl-stream-js)
 ![GitHub commit activity](https://img.shields.io/github/commit-activity/w/sologenic/sologenic-xrpl-stream-js)
-
-_&#x1a8;_ _sologenic_ is a sophisticated ecosystem that facilitates investing and trading of on-demand tokenized assets, including Stocks and ETFs from 25+ global exchanges on top of the XRP Ledger.
-
-- [White Paper](https://www.sologenic.com/downloads/sologenic-whitepaper.pdf)
-
-- [One Pager](https://www.sologenic.com/downloads/sologenic-onepage.pdf)
 
 # [&#x1a8; Sologenic XRPL Stream](https://github.com/sologenic/sologenic-xrpl-stream-js)
 
