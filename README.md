@@ -322,7 +322,7 @@ const ƨ = require('sologenic-xrpl-stream-js');
 })();
 ```
 
-### Event Emitter and Listeners
+## Event Emitter and Listeners
 
 There are 6 different events that you'll receive while a transaction is being processed by the library.  Each event has its own type associated with it as you can see in the `src/types/sologenicoptions.d.ts`.  See below for a list of events and the emitted objects.
 
@@ -393,8 +393,7 @@ tx.events.on('queued', (event: SologenicTypes.QueuedEvent) => {
 });
 ```
 
-
-### Transactions
+## Transactions
 
 Each transaction that is created by the `sologenic-xrpl-stream-js` library will have a unique `uuidv4` that is used for tracking purposes in the queue system.  The `tx.id` is not the same as the XRPL ledger hash.
 
