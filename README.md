@@ -20,7 +20,74 @@ We have a community for questions and support at [sologenic-dev.slack.com](https
 $ npm install sologenic-xrpl-stream-js
 ```
 
-## Example
+## Typescript Example
+
+### Intializing the Sologenic XRPL stream with a hash-based queue
+
+```typescript
+'use strict';
+const ƨ = require('sologenic-xrpl-stream-js');
+
+(async () => {
+  try {
+    const sologenic = await new ƨ.SologenicTxHandler(
+      // RippleAPI Options
+      {
+        server: 'wss://testnet.xrpl-labs.com', // Kudos to Wietse Wind
+      },
+      // Sologenic Options, hash or redis (see SologenicOptions in documentation)
+      {
+        // Clear the cache before accessing the queue, since this is a hash-based 
+        // queue it will be initialized empty, so this will have no effect.
+        clearCache: true,
+        queueType: "hash",
+        hash: {}
+      }
+    ).connect();
+);
+```
+
+### Intializing the Sologenic XRPL stream with a redis-based queue
+
+```typescript
+'use strict';
+const ƨ = require('sologenic-xrpl-stream-js');
+
+(async () => {
+  try {
+    const sologenic = await new ƨ.SologenicTxHandler(
+      // RippleAPI Options
+      {
+        server: 'wss://testnet.xrpl-labs.com', // Kudos to Wietse Wind
+      },
+      // Sologenic Options, hash or redis
+      {
+        // Clear the cache before accessing the queue, since this is a redis-based 
+        // queue it will be emptied before after connecting.  Please make sure there
+        // is no data in the database you're accessing you want to preserve.
+        clearCache: true,
+        queueType: 'redis',
+        redis: {          
+          // The IP address or hostname of the redis queue
+          // host: '127.0.0.1',
+
+          // The port of the redis queue
+          // port: 6379,
+
+          // The password to access the redis queue
+          // password: 'password',
+
+          // The database number of the redis queue (if multiple database support is active)
+          // database: 1
+        }
+      }
+    ).connect();
+);
+```
+
+Note: When using a redis queue, you must have an active redis server which the transactional handler can connect.
+
+### Sending a Payment with XRPL account and secret
 
 ```js
 'use strict';
