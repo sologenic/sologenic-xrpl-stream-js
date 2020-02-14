@@ -5,13 +5,21 @@
    * [<a href="https://github.com/sologenic/sologenic-xrpl-stream-js">ƨ Sologenic XRPL Stream</a>](#ƨ-sologenic-xrpl-stream)
       * [How to Participate](#how-to-participate)
       * [Install](#install)
+      * [Node Package Manager Scripts](#node-package-manager-scripts)
+         * [Creating a packagable distribution](#creating-a-packagable-distribution)
+         * [Testing](#testing)
+            * [One-time execution of the unit tests](#one-time-execution-of-the-unit-tests)
+            * [Persistent execution of unit tests (watching for changes)](#persistent-execution-of-unit-tests-watching-for-changes)
+         * [Generating documentation](#generating-documentation)
+            * [Generating HTML documentation only](#generating-html-documentation-only)
+            * [Generating markdown documentation only](#generating-markdown-documentation-only)
       * [Typescript Example](#typescript-example)
          * [Intializing the Sologenic XRPL stream with a hash-based queue](#intializing-the-sologenic-xrpl-stream-with-a-hash-based-queue)
          * [Intializing the Sologenic XRPL stream with a redis-based queue](#intializing-the-sologenic-xrpl-stream-with-a-redis-based-queue)
          * [Sending a Payment with XRPL account and secret](#sending-a-payment-with-xrpl-account-and-secret)
          * [Sending a Payment with XRPL account and keypair](#sending-a-payment-with-xrpl-account-and-keypair)
 
-<!-- Added by: pmcconna, at: Thu Feb 13 16:11:43 PST 2020 -->
+<!-- Added by: pmcconna, at: Thu Feb 13 16:19:23 PST 2020 -->
 
 <!--te-->
 
@@ -34,6 +42,49 @@ We have a community for questions and support at [sologenic-dev.slack.com](https
 ```bash
 $ npm install sologenic-xrpl-stream-js
 ```
+
+## Node Package Manager Scripts
+
+Each `npm` script defined in `package.json` can be run by simply running the command `npm run-script <script name>`
+
+For example, notably the following scripts are frequently used when creating a packagable distribution, testing,
+and generating documentation.
+
+### Creating a packagable distribution
+
+`npm run-s build`
+
+### Testing
+
+#### One-time execution of the unit tests
+
+The following command will iterate over all test cases (files with `.spec.ts`) as their suffix.
+
+`npm run-s test`
+
+#### Persistent execution of unit tests (watching for changes)
+
+The following command will iterate over all test cases (files with `.spec.ts`) as their suffix.  But it will also watch for changes to the `.spec.ts` and `.ts` scripts and run tests on change.
+
+`npm run-s watch`
+
+### Generating documentation
+
+The following command will generate both HTML and markdown documentation in the `docs/` folder.
+
+`npm run-s doc`
+
+#### Generating HTML documentation only
+
+The following command will generate HTML only documentation.
+
+`npm run-s doc:html`
+
+#### Generating markdown documentation only
+
+The following command will generate markdown only documentation.
+
+`npm run-s doc:markdown`
 
 ## Typescript Example
 
