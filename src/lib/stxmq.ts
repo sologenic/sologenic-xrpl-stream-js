@@ -127,11 +127,12 @@ export class TXMQƨ {
           var contents: Array<MQTX> = <Array<MQTX>>values;
 
           for (var item of contents) {
-            if (item.created < currentTime - maximumTimeToLive) {
+            if (item.created <= currentTime - maximumTimeToLive) {
               // console.log(`TTL expired {${item.created} < ${currentTime} - ${maximumTimeToLive}}: ${item.id}`)
-              counter++;
 
-              this.queue.del(typeof queue === 'string' ? queue : queue.toFixed(), item.id);
+              if (await this.queue.del(typeof queue === 'string' ? queue : queue.toFixed(), item.id)) {
+                counter++;
+              }
             }
           }
         }

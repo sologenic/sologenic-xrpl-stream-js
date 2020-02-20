@@ -33,6 +33,9 @@ test.serial("add to the queue", async t => {
   };
 
   t.true(response.id === result.id);
+
+  // Make sure we cleanup after the tests
+  await session.delAll(queue);
 });
 
 test.serial("add to the queue with custom id", async t => {
@@ -53,6 +56,9 @@ test.serial("add to the queue with custom id", async t => {
   };
 
   t.true(response.id === custom_id);
+
+  // Make sure we cleanup after the tests
+  await session.delAll(queue);
 });
 
 test.serial('validate retrieve with an invalid object identifier is undefined', async t => {
@@ -71,9 +77,13 @@ test.serial('store and retrieve objects', async t => {
 
     var objects: Array<MQTX> = [
       { id: '1', data: [ 'Message 1' ], created: Math.floor(new Date().getTime() / 1000) - 901 },
-      { id: '2', data: [ 'Message 2' ], created: Math.floor(new Date().getTime() / 1000) - 0 },
+      { id: '2', data: [ 'Message 2' ], created: Math.floor(new Date().getTime() / 1000) },
       { id: '3', data: [ 'Message 3' ], created: Math.floor(new Date().getTime() / 1000) - 901 },
-      { id: '4', data: [ 'Message 4' ], created: Math.floor(new Date().getTime() / 1000) - 0 },
+      { id: '4', data: [ 'Message 4' ], created: Math.floor(new Date().getTime() / 1000) },
+      { id: '5', data: [ 'Message 4' ], created: Math.floor(new Date().getTime() / 1000) },
+      { id: '6', data: [ 'Message 4' ], created: Math.floor(new Date().getTime() / 1000) },
+      { id: '7', data: [ 'Message 4' ], created: Math.floor(new Date().getTime() / 1000) },
+      { id: '8', data: [ 'Message 4' ], created: Math.floor(new Date().getTime() / 1000) },
     ];
 
     for (var index in objects) {
@@ -93,6 +103,10 @@ test.serial('store and retrieve objects', async t => {
     } else {
       t.fail("Failing because items.length !== objects.length - 1");
     }
+
+    // Make sure we cleanup after the tests
+    await session.delAll(queue);
+
   } catch(error) {
     t.fail(`Failing test, caught an exception = ${error}`);
   }
@@ -108,6 +122,10 @@ test.serial('delete objects from queue', async t => {
       { id: '2', data: [ 'Message 2' ], created: Math.floor(new Date().getTime() / 1000) },
       { id: '3', data: [ 'Message 3' ], created: Math.floor(new Date().getTime() / 1000) - 901 },
       { id: '4', data: [ 'Message 4' ], created: Math.floor(new Date().getTime() / 1000) },
+      { id: '5', data: [ 'Message 4' ], created: Math.floor(new Date().getTime() / 1000) },
+      { id: '6', data: [ 'Message 4' ], created: Math.floor(new Date().getTime() / 1000) },
+      { id: '7', data: [ 'Message 4' ], created: Math.floor(new Date().getTime() / 1000) },
+      { id: '8', data: [ 'Message 4' ], created: Math.floor(new Date().getTime() / 1000) },
     ];
 
     // Empty the queue first
@@ -118,21 +136,24 @@ test.serial('delete objects from queue', async t => {
     items && t.true(items.length === 0, "Checking that items.length === 0");
 
     // Recreate the queue and add the new objects
-    for (var index in objects) {
-      await session.add(queue, objects[index]);
-    }
+    objects.forEach(async function(v) {
+      await session.add(queue, v);
+    });
 
+    // Get the items before we perform a cleanup
     let beforeDeletedItems = await session.getAll(queue);
 
-    // Delete everything older than 20 seconds
-    let deletedItems: number = await session.deleteOlderThan(900);
+    // Delete everything older than 900 seconds (15 minutes)
+    let deletedItemsCount: number = await session.deleteOlderThan(900);
 
+    // Get the items after the cleanup
     let afterDeletedItems = await session.getAll(queue);
 
-    // console.log(`beforeDeletedItems: ${beforeDeletedItems.length}, deletedItems: ${deletedItems}, afterDeletedItems: ${afterDeletedItems.length}`);
+    // Make sure that the beforeCleanup - deletedItemsCount === afterCleanup
+    // console.log(`beforeDeletedItems: ${beforeDeletedItems.length}, deletedItems: ${deletedItemsCount}, afterDeletedItems: ${afterDeletedItems.length}`);
 
     t.true(typeof afterDeletedItems === "object");
-    t.true((beforeDeletedItems.length - deletedItems) === afterDeletedItems.length,
+    t.true((beforeDeletedItems.length - deletedItemsCount) === afterDeletedItems.length,
       "Checking that items.length === objects.length");
 
     /* Pop an item off the queue */
