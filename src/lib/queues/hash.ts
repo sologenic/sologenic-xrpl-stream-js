@@ -20,10 +20,11 @@ export default class HashQueue implements IQueue {
    * @param id
    * @description add an object to the queue
    */
-  public async add(queue: string, data: object, id?: string): Promise<MQTX> {
+  public async add(queue: string, data: MQTX, id?: string): Promise<MQTX> {
     const element = {
       id: typeof id !== 'undefined' ? id : uuid(),
-      data
+      created: data.created ? data.created : Math.floor(new Date().getTime() / 1000),
+      data,
     };
 
     var _queue = this._exist(queue) ? this.hash.get(queue) : new Array<MQTX>();
@@ -62,8 +63,18 @@ export default class HashQueue implements IQueue {
    * @param queue
    * @description returns all elements of the queue
    */
-  public async getAll(queue: string): Promise<Array<MQTX>> {
-    return this._exist(queue) ? this.hash.get(queue) || [] : [];
+  public async getAll(queue?: string): Promise<Array<MQTX> | Map<string, Array<MQTX>>> {
+    let elements = new Map<string, Array<MQTX>>();
+
+    if (typeof queue !== 'undefined') {
+      return this.hash.get(queue) || [];
+    }
+
+    this.hash.forEach(function(_, key, data) {
+      elements.set(key, data.get(key) || []);
+    });
+
+    return elements;
   }
 
   /**

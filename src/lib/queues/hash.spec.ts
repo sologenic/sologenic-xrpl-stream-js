@@ -1,5 +1,7 @@
-import anyTest, {TestInterface} from 'ava';
-import HashQueue from './hash';
+import anyTest, {TestInterface, after} from 'ava';
+
+import { TXMQƨ } from '../stxmq';
+import { MQTX, QUEUE_TYPE_STXMQ_HASH } from '../../types';
 
 const test = anyTest as TestInterface<{
   session: any,
@@ -8,7 +10,9 @@ const test = anyTest as TestInterface<{
 
 test.before(async t => {
   t.context.data = { message: "Hello, World" }
-  t.context.session = new HashQueue({})
+  t.context.session = new TXMQƨ({
+    queueType: QUEUE_TYPE_STXMQ_HASH
+  });
 });
 
 test.serial('add to the queue', async t => {
@@ -62,11 +66,11 @@ test.serial('store and retrieve objects', async t => {
 
     await session.delAll(queue);
 
-    var objects = [
-      { message: 'Message 1' },
-      { message: 'Message 2' },
-      { message: 'Message 3' },
-      { message: 'Message 4' }
+    var objects: Array<MQTX> = [
+      { id: '1', data: [ 'Message 1' ], created: Math.floor(new Date().getTime() / 1000) - 10 },
+      { id: '2', data: [ 'Message 2' ], created: Math.floor(new Date().getTime() / 1000) - 0 },
+      { id: '3', data: [ 'Message 3' ], created: Math.floor(new Date().getTime() / 1000) - 10 },
+      { id: '4', data: [ 'Message 4' ], created: Math.floor(new Date().getTime() / 1000) - 0 },
     ];
 
     for (var index in objects) {
@@ -81,9 +85,9 @@ test.serial('store and retrieve objects', async t => {
 
     let items = await session.getAll(queue);
 
-    if (items) {
-      t.true(items.length === objects.length);
-    }
+    t.true(typeof items === "object");
+    t.true(items.length === objects.length);
+
   } catch (error) {
     t.fail(`Failing test, caught an exception = ${error}`);
   }
@@ -94,15 +98,19 @@ test.serial('delete objects from queue', async t => {
     var session = t.context.session;
     var queue = 'delete_all_objects_from_queue';
 
-    var objects = [
-      { message: 'Message 1' },
-      { message: 'Message 2' },
-      { message: 'Message 3' },
-      { message: 'Message 4' }
+    var objects: Array<MQTX> = [
+      { id: '1', data: [ 'Message 1' ], created: Math.floor(new Date().getTime() / 1000) - 901 },
+      { id: '2', data: [ 'Message 2' ], created: Math.floor(new Date().getTime() / 1000) - 0 },
+      { id: '3', data: [ 'Message 3' ], created: Math.floor(new Date().getTime() / 1000) - 901 },
+      { id: '4', data: [ 'Message 4' ], created: Math.floor(new Date().getTime() / 1000) - 0 },
     ];
 
     // Empty the queue first
     await session.delAll(queue);
+
+    // Get all items to make sure we've emptied the queue
+    let items = await session.getAll(queue);
+    items && t.true(items.length === 0, "Checking that items.length === 0");
 
     // Add each element to the queue
     for (var index in objects) {
@@ -113,33 +121,36 @@ test.serial('delete objects from queue', async t => {
       var _result = await session.get(queue, _created_object.id);
 
       t.true(typeof _result !== 'undefined');
-      t.true(_result.data.message === objects[index].message);
+      t.true(_result.data.data[0] === objects[index].data[0]);
     }
 
-    let items = await session.getAll(queue);
+    let beforeDeletedItems = await session.getAll(queue);
 
-    if (items)
-      t.true(
-        items.length === objects.length,
-        'Checking that items.length === objects.length'
-      );
-    else t.fail('Failing test because the items.length !== objects.length');
+    // Delete everything older than 20 seconds
+    let deletedItems: number = await session.deleteOlderThan(900);
+
+    let afterDeletedItems = await session.getAll(queue);
+
+    // console.log(`beforeDeletedItems: ${beforeDeletedItems.length}, deletedItems: ${deletedItems}, afterDeletedItems: ${afterDeletedItems.length}`);
+
+    t.true(typeof afterDeletedItems === "object");
+    t.true((beforeDeletedItems.length - deletedItems) === afterDeletedItems.length,
+      "Checking that items.length === objects.length");
 
     /* Pop an item off the queue */
-    t.true(
-      typeof (await session.pop(queue)) === 'object',
+    t.true(typeof (await session.pop(queue)) === 'object',
       "Verify that the returned element is of type 'object'"
     );
 
     /* Delete an item */
-    t.true(await session.del(queue, items[0].id), 'Delete the first item');
+    t.true(await session.del(queue, afterDeletedItems[0].id), 'Delete the first item');
 
     /* Delete the remaining items */
     t.true(await session.delAll(queue));
 
     /* Delete an item */
     t.false(
-      await session.del(queue, items[0].id),
+      await session.del(queue, afterDeletedItems[0].id),
       'Verify return type is false because there are no more elements to delete'
     );
 
@@ -150,8 +161,7 @@ test.serial('delete objects from queue', async t => {
     );
 
     items = await session.getAll(queue);
-
-    t.true(items!.length === 0, 'Checking that items.length === 0');
+    items && t.true(items.length === 0, "Checking that items.length === 0");
   } catch (error) {
     t.fail(`Failing test, caught an exception = ${error}`);
   }

@@ -20,10 +20,11 @@ export default class RedisQueue implements IQueue {
      * @param data
      * @param id
      */
-    public async add(queue: string, data: object, id?: string): Promise<MQTX> {
+    public async add(queue: string, data: MQTX, id?: string): Promise<MQTX> {
       try {
         const element = {
           id: typeof id !== 'undefined' ? id : uuid(),
+          created: data.created ? data.created : Math.floor(new Date().getTime() / 1000),
           data
         };
         const result = await this.redis.rpush(queue, JSON.stringify(element));
@@ -63,21 +64,47 @@ export default class RedisQueue implements IQueue {
      *
      * @param queue
      */
-    public async getAll(queue: string): Promise<Array<MQTX>> {
+    public async getAll(queue?: string): Promise<Array<MQTX> | Map<string, Array<MQTX>>> {
       try {
-        const elements = await this.redis.lrange(queue, 0, -1);
+        if (queue) {
+          const elements = await this.redis.lrange(queue, 0, -1);
 
-        if (elements.length > 0) {
-          return elements.map((el: string) => {
-            return JSON.parse(el);
-          });
+          if (elements.length > 0) {
+            return elements.map((el: string) => {
+              return JSON.parse(el);
+            });
+          }
         } else {
-          return [];
+          let keys = [];
+          let result = new Map<string, Array<MQTX>>();
+
+          if (typeof queue === 'undefined') {
+            keys.push(...(await this.redis.keys('*')));
+          }
+
+          for (const key in keys) {
+            const elements = await this.redis.lrange(keys[key], 0, -1);
+
+            if (elements.length > 0) {
+              if (typeof keys[key] !== 'undefined') {
+                result.set(keys[key], elements.map((el: string) => {
+                  return JSON.parse(el);
+                }));
+              }
+            } else {
+              result.set(keys[key], []);
+            }
+          }
+
+          return result;
         }
+
+        return [];
       } catch (error) {
         throw new Error("Can't get TX from Redis");
       }
     }
+
     /**
      *
      * @param queue

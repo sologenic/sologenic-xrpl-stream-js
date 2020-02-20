@@ -1,5 +1,7 @@
 import anyTest, {TestInterface} from 'ava';
-import RedisQueue from './redis';
+
+import { TXMQƨ } from '../stxmq';
+import { MQTX, QUEUE_TYPE_STXMQ_REDIS } from '../../types';
 
 const test = anyTest as TestInterface<{
   session: any,
@@ -8,7 +10,12 @@ const test = anyTest as TestInterface<{
 
 test.before(async t => {
   t.context.data = { message: "Hello, World" }
-  t.context.session = new RedisQueue({})
+  t.context.session = new TXMQƨ({
+    queueType: QUEUE_TYPE_STXMQ_REDIS,
+    redis: {
+      host: 'localhost'
+    }
+  });
 });
 
 test.serial("add to the queue", async t => {
@@ -62,11 +69,11 @@ test.serial('store and retrieve objects', async t => {
 
     await session.delAll(queue);
 
-    var objects = [
-      { message: "Message 1" },
-      { message: "Message 2" },
-      { message: "Message 3" },
-      { message: "Message 4" }
+    var objects: Array<MQTX> = [
+      { id: '1', data: [ 'Message 1' ], created: Math.floor(new Date().getTime() / 1000) - 901 },
+      { id: '2', data: [ 'Message 2' ], created: Math.floor(new Date().getTime() / 1000) - 0 },
+      { id: '3', data: [ 'Message 3' ], created: Math.floor(new Date().getTime() / 1000) - 901 },
+      { id: '4', data: [ 'Message 4' ], created: Math.floor(new Date().getTime() / 1000) - 0 },
     ];
 
     for (var index in objects) {
@@ -96,24 +103,37 @@ test.serial('delete objects from queue', async t => {
     var session = t.context.session;
     var queue = "delete_all_objects_from_queue";
 
-    var objects = [
-      { message: "Message 1" },
-      { message: "Message 2" },
-      { message: "Message 3" },
-      { message: "Message 4" }
+    var objects: Array<MQTX> = [
+      { id: '1', data: [ 'Message 1' ], created: Math.floor(new Date().getTime() / 1000) - 901 },
+      { id: '2', data: [ 'Message 2' ], created: Math.floor(new Date().getTime() / 1000) },
+      { id: '3', data: [ 'Message 3' ], created: Math.floor(new Date().getTime() / 1000) - 901 },
+      { id: '4', data: [ 'Message 4' ], created: Math.floor(new Date().getTime() / 1000) },
     ];
 
+    // Empty the queue first
+    await session.delAll(queue);
+
+    // Get all items to make sure we've emptied the queue
+    let items = await session.getAll(queue);
+    items && t.true(items.length === 0, "Checking that items.length === 0");
+
+    // Recreate the queue and add the new objects
     for (var index in objects) {
       await session.add(queue, objects[index]);
     }
 
-    let items = [];
-    items = await session.getAll(queue);
+    let beforeDeletedItems = await session.getAll(queue);
 
-    if (items)
-      t.true(items.length === objects.length, "Checking that items.length === objects.length");
-    else
-      t.fail("Failing test because the items.length !== objects.length");
+    // Delete everything older than 20 seconds
+    let deletedItems: number = await session.deleteOlderThan(900);
+
+    let afterDeletedItems = await session.getAll(queue);
+
+    // console.log(`beforeDeletedItems: ${beforeDeletedItems.length}, deletedItems: ${deletedItems}, afterDeletedItems: ${afterDeletedItems.length}`);
+
+    t.true(typeof afterDeletedItems === "object");
+    t.true((beforeDeletedItems.length - deletedItems) === afterDeletedItems.length,
+      "Checking that items.length === objects.length");
 
     /* Pop an item off the queue */
     t.true(typeof(await session.pop(queue)) === 'object', "Verify that the returned element is of type 'object'");
@@ -130,12 +150,12 @@ test.serial('delete objects from queue', async t => {
     t.false(await session.del(queue, items[0].id), "Verify return type is false because there are no more elements to delete");
 
     /* Pop an item off the queue */
-    t.is(
-      await session.pop(queue), undefined,
+    t.is(await session.pop(queue), undefined,
       'Verify return type is false because there are no more elements left to pop'
     );
 
     items = await session.getAll(queue);
+
     items && t.true(items.length === 0, "Checking that items.length === 0");
   } catch (error) {
     t.fail(`Failing test, caught an exception = ${error}`);

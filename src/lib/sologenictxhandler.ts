@@ -88,6 +88,11 @@ export class SologenicTxHandler extends EventEmitter {
   protected sequence: number = 0;
 
   /**
+   * Delete events older than
+  */
+  protected maximumTimeToLive: number = 900;
+
+  /**
    * Our math library used to calculate fees
    */
   protected math: any;
@@ -142,8 +147,16 @@ constructor(
       };
 
       /**
-        Initialize TXMQƨ (Sologenic Transaction Message Queue)
-      */
+       * Maximum time to live, if this is 0, then we'll not perform any cleanup
+       */
+      this.maximumTimeToLive =
+        sologenicOptions.maximumTimeToLive ?
+        sologenicOptions.maximumTimeToLive :
+        0;
+
+      /**
+       * Initialize TXMQƨ (Sologenic Transaction Message Queue)
+       */
       try {
         this.txmq = new TXMQƨ(sologenicOptions); // Pass on the queue connection details
       } catch (error) {
@@ -161,8 +174,8 @@ constructor(
       }
 
       /**
-        Initialize BigNumber
-      */
+       * Initialize BigNumber
+       */
       this.math = mathCreate(mathAll, {
         epsilon: 1e-12,
         number: 'BigNumber',
@@ -526,9 +539,14 @@ constructor(
         this.getRippleApi().connect();
       });
 
-      this.getRippleApi().on('ledger', (ledger: SologenicTypes.Ledger) => {
+      this.getRippleApi().on('ledger', async (ledger: SologenicTypes.Ledger) => {
         // Update the ledger version
         this.ledger = ledger;
+
+        // console.log(`Clean up running to flush elements > ${this.maximumTimeToLive} seconds`);
+        if (this.maximumTimeToLive > 0) {
+          await this.txmq.deleteOlderThan(this.maximumTimeToLive)
+        }
       });
     } catch (error) {
       throw new SologenicError('1005', error);
@@ -626,9 +644,16 @@ constructor(
   private async _dispatch(): Promise<void> {
     try {
       // Get raw transactions from the queue
+      /*
       const unsignedTxs: Array<SologenicTypes.UnsignedTx> = await this.txmq.getAll(
         'txmq:raw:' + this.account
       );
+      */
+
+      const unsignedTxs: Array<SologenicTypes.UnsignedTx> = await this.txmq.getAll(
+        'txmq:raw:' + this.account
+      );
+
       // Loop through each, FIFO order, and dispatch the transaction
       for (const unsignedTx of unsignedTxs!) {
         await this._dispatchHandler(unsignedTx);
@@ -999,6 +1024,7 @@ constructor(
   private async _validateMissedTransactions(): Promise<void> {
     try {
       const dispatchedTxs = await this.txmq.getAll('txmq:dispatched:' + this.account);
+
       for (const dispatchedTx of dispatchedTxs!) {
         await this._validateTxOnLedger(dispatchedTx.id, dispatchedTx.data);
       }
