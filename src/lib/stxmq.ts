@@ -55,7 +55,7 @@ export class TXMQƨ {
    * @param data   Object of keys and values
    * @param id     Optional `id` key to store the data against
    */
-  public async add(queue: string, data: object, id?: string): Promise<MQTX> {
+  public async add(queue: string, data: MQTX, id?: string): Promise<MQTX> {
     return this.queue.add(queue, data, id);
   }
 
@@ -74,7 +74,7 @@ export class TXMQƨ {
    *
    * @param queue  Queue name
    */
-  public async getAll(queue: string): Promise<Array<MQTX>> {
+  public async getAll(queue?: string): Promise<Array<MQTX> | Map<string, Array<MQTX>>> {
     return this.queue.getAll(queue);
   }
   /**
@@ -114,5 +114,31 @@ export class TXMQƨ {
     event_name: string
   ): Promise<boolean> {
     return this.queue.appendEvent(queue, id, event_name);
+  }
+
+  public async deleteOlderThan(maximumTimeToLive: number): Promise<number> {
+    const currentTime = Math.floor(new Date().getTime() / 1000);
+    const items = await this.queue.getAll();
+    let counter: number = 0;
+
+    if (typeof items !== 'undefined') {
+      for (var [queue, values] of items.entries()) {
+        if (values.hasOwnProperty('length')) {
+          var contents: Array<MQTX> = <Array<MQTX>>values;
+
+          for (var item of contents) {
+            if (item.created <= currentTime - maximumTimeToLive) {
+              // console.log(`TTL expired {${item.created} < ${currentTime} - ${maximumTimeToLive}}: ${item.id}`)
+
+              if (await this.queue.del(typeof queue === 'string' ? queue : queue.toFixed(), item.id)) {
+                counter++;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    return counter;
   }
 }

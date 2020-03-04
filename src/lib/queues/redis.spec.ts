@@ -1,5 +1,7 @@
 import anyTest, {TestInterface} from 'ava';
-import RedisQueue from './redis';
+
+import { TXMQƨ } from '../stxmq';
+import { MQTX, QUEUE_TYPE_STXMQ_REDIS } from '../../types';
 
 const test = anyTest as TestInterface<{
   session: any,
@@ -8,7 +10,12 @@ const test = anyTest as TestInterface<{
 
 test.before(async t => {
   t.context.data = { message: "Hello, World" }
-  t.context.session = new RedisQueue({})
+  t.context.session = new TXMQƨ({
+    queueType: QUEUE_TYPE_STXMQ_REDIS,
+    redis: {
+      host: 'localhost'
+    }
+  });
 });
 
 test.serial("add to the queue", async t => {
@@ -26,6 +33,9 @@ test.serial("add to the queue", async t => {
   };
 
   t.true(response.id === result.id);
+
+  // Make sure we cleanup after the tests
+  await session.delAll(queue);
 });
 
 test.serial("add to the queue with custom id", async t => {
@@ -46,6 +56,9 @@ test.serial("add to the queue with custom id", async t => {
   };
 
   t.true(response.id === custom_id);
+
+  // Make sure we cleanup after the tests
+  await session.delAll(queue);
 });
 
 test.serial('validate retrieve with an invalid object identifier is undefined', async t => {
@@ -62,11 +75,15 @@ test.serial('store and retrieve objects', async t => {
 
     await session.delAll(queue);
 
-    var objects = [
-      { message: "Message 1" },
-      { message: "Message 2" },
-      { message: "Message 3" },
-      { message: "Message 4" }
+    var objects: Array<MQTX> = [
+      { id: '1', data: [ 'Message 1' ], created: Math.floor(new Date().getTime() / 1000) - 901 },
+      { id: '2', data: [ 'Message 2' ], created: Math.floor(new Date().getTime() / 1000) },
+      { id: '3', data: [ 'Message 3' ], created: Math.floor(new Date().getTime() / 1000) - 901 },
+      { id: '4', data: [ 'Message 4' ], created: Math.floor(new Date().getTime() / 1000) },
+      { id: '5', data: [ 'Message 4' ], created: Math.floor(new Date().getTime() / 1000) },
+      { id: '6', data: [ 'Message 4' ], created: Math.floor(new Date().getTime() / 1000) },
+      { id: '7', data: [ 'Message 4' ], created: Math.floor(new Date().getTime() / 1000) },
+      { id: '8', data: [ 'Message 4' ], created: Math.floor(new Date().getTime() / 1000) },
     ];
 
     for (var index in objects) {
@@ -86,6 +103,10 @@ test.serial('store and retrieve objects', async t => {
     } else {
       t.fail("Failing because items.length !== objects.length - 1");
     }
+
+    // Make sure we cleanup after the tests
+    await session.delAll(queue);
+
   } catch(error) {
     t.fail(`Failing test, caught an exception = ${error}`);
   }
@@ -96,24 +117,44 @@ test.serial('delete objects from queue', async t => {
     var session = t.context.session;
     var queue = "delete_all_objects_from_queue";
 
-    var objects = [
-      { message: "Message 1" },
-      { message: "Message 2" },
-      { message: "Message 3" },
-      { message: "Message 4" }
+    var objects: Array<MQTX> = [
+      { id: '1', data: [ 'Message 1' ], created: Math.floor(new Date().getTime() / 1000) - 901 },
+      { id: '2', data: [ 'Message 2' ], created: Math.floor(new Date().getTime() / 1000) },
+      { id: '3', data: [ 'Message 3' ], created: Math.floor(new Date().getTime() / 1000) - 901 },
+      { id: '4', data: [ 'Message 4' ], created: Math.floor(new Date().getTime() / 1000) },
+      { id: '5', data: [ 'Message 4' ], created: Math.floor(new Date().getTime() / 1000) },
+      { id: '6', data: [ 'Message 4' ], created: Math.floor(new Date().getTime() / 1000) },
+      { id: '7', data: [ 'Message 4' ], created: Math.floor(new Date().getTime() / 1000) },
+      { id: '8', data: [ 'Message 4' ], created: Math.floor(new Date().getTime() / 1000) },
     ];
 
-    for (var index in objects) {
-      await session.add(queue, objects[index]);
-    }
+    // Empty the queue first
+    await session.delAll(queue);
 
-    let items = [];
-    items = await session.getAll(queue);
+    // Get all items to make sure we've emptied the queue
+    let items = await session.getAll(queue);
+    items && t.true(items.length === 0, "Checking that items.length === 0");
 
-    if (items)
-      t.true(items.length === objects.length, "Checking that items.length === objects.length");
-    else
-      t.fail("Failing test because the items.length !== objects.length");
+    // Recreate the queue and add the new objects
+    objects.forEach(async function(v) {
+      await session.add(queue, v);
+    });
+
+    // Get the items before we perform a cleanup
+    let beforeDeletedItems = await session.getAll(queue);
+
+    // Delete everything older than 900 seconds (15 minutes)
+    let deletedItemsCount: number = await session.deleteOlderThan(900);
+
+    // Get the items after the cleanup
+    let afterDeletedItems = await session.getAll(queue);
+
+    // Make sure that the beforeCleanup - deletedItemsCount === afterCleanup
+    // console.log(`beforeDeletedItems: ${beforeDeletedItems.length}, deletedItems: ${deletedItemsCount}, afterDeletedItems: ${afterDeletedItems.length}`);
+
+    t.true(typeof afterDeletedItems === "object");
+    t.true((beforeDeletedItems.length - deletedItemsCount) === afterDeletedItems.length,
+      "Checking that items.length === objects.length");
 
     /* Pop an item off the queue */
     t.true(typeof(await session.pop(queue)) === 'object', "Verify that the returned element is of type 'object'");
@@ -130,12 +171,12 @@ test.serial('delete objects from queue', async t => {
     t.false(await session.del(queue, items[0].id), "Verify return type is false because there are no more elements to delete");
 
     /* Pop an item off the queue */
-    t.is(
-      await session.pop(queue), undefined,
+    t.is(await session.pop(queue), undefined,
       'Verify return type is false because there are no more elements left to pop'
     );
 
     items = await session.getAll(queue);
+
     items && t.true(items.length === 0, "Checking that items.length === 0");
   } catch (error) {
     t.fail(`Failing test, caught an exception = ${error}`);

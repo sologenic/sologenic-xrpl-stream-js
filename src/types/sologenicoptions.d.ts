@@ -3,9 +3,9 @@ import { MQTX } from '../types';
 import { EventEmitter } from 'events';
 
 export interface IQueue {
-  add(queue: string, data: object, id?: string): Promise<MQTX>;
+  add(queue: string, data: MQTX, id?: string): Promise<MQTX>;
   get(queue: string, id: string): Promise<MQTX | undefined>;
-  getAll(queue: string): Promise<Array<MQTX>>;
+  getAll(queue?: string): Promise<Array<MQTX> | Map<string, Array<MQTX>>>;
   pop(queue: string): Promise<MQTX | undefined>;
   del(queue: string, id: string): Promise<boolean>;
   delAll(queue: string): Promise<boolean>;
@@ -27,6 +27,7 @@ export interface TransactionHandlerOptions {
   clearCache?: boolean;
   redis?: RedisTransactionHandlerOptions
   hash?: HashTransactionHandlerOptions
+  maximumTimeToLive?: number;
 }
 
 export declare interface ISologenicTxHandler extends EventEmitter {
