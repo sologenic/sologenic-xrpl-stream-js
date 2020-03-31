@@ -1,85 +1,20 @@
 import { http, promiseTimeout, wait } from '../utils';
 
+import Redis from 'ioredis';
+
 import XrplAccount from '../account';
 import * as SologenicTypes from '../../types';
 import SologenicTxSigner from './index';
-import uuid from 'uuid';
 import { SologenicError } from '../error';
-
-export interface IXummSubmitPayload {
-  uuid: string,
-  next: {
-    always: string;
-    no_push_msg_received: string;
-  },
-  refs: {
-    qr_png: string,
-    qr_matrix: string,
-    qr_uri_quality_opts: []
-  },
-  websocket_status: string,
-  pushed: boolean
-};
-
-export interface IXummQueryPayload {
-  meta: {
-    exists: boolean,
-    uuid: any,
-    multisign: boolean,
-    submit: boolean,
-    destination: any,
-    resolved_destination: any,
-    resolved: boolean,
-    signed: boolean,
-    cancelled: boolean,
-    expired: boolean,
-    pushed: boolean,
-    app_opened: any,
-    return_url_app: any
-    return_url_web?: any
-  },
-
-  custom_meta?: {
-    identifier: any,
-    blob: any,
-    instruction: any
-  },
-
-  application: {
-    name: any,
-    description: any,
-    disabled: any,
-    uuidv4: any,
-    icon_url: any,
-    issued_user_token: any
-  }
-
-  payload: {
-    tx_type: any,
-    tx_destination: any,
-    tx_destination_tag: any
-    request_json?: any
-    created_at: any,
-    expires_at: any,
-    expires_in_seconds: any
-  },
-
-  response: {
-    hex: any,
-    txid: any,
-    resolved_at: any,
-    dispatched_to: any,
-    dispatched_result: any,
-    multisign_account: any,
-    account: any
-  }
-}
+import { IXummQueryPayload, IXummSubmitPayload } from '../../types/xumm';
 
 export class XummSigner extends SologenicTxSigner {
   protected xummApiKey: string = '';
   protected xummApiSecret: string = '';
   protected xummApiEndpoint: string = 'https://xumm.app/api/v1/platform/payload';
   protected xummApiUserToken?: string;
+
+  private redisClient = new Redis();
 
   // 60 seconds should be enough for a user interaction
   protected maximumExecutionTime: number = 60 * 1000;
@@ -117,17 +52,7 @@ export class XummSigner extends SologenicTxSigner {
     }
   }
 
-  async token(): Promise<string> {
-    const result = await http<IXummQueryPayload>(
-      this.xummApiEndpoint,
-      'GET',
-      this._headers()
-    );
-
-    return "";
-  };
-
-  async verify(payload: string): Promise<IXummQueryPayload | undefined> {
+  async verify(payload: string, account?: XrplAccount): Promise<IXummQueryPayload | undefined> {
     while (true) {
       const result = await http<IXummQueryPayload>(
         `${this.xummApiEndpoint}/${payload}`,
@@ -135,16 +60,13 @@ export class XummSigner extends SologenicTxSigner {
         this._headers()
       );
 
-      /*
-        {
-          error: true,
-          message: 'Endpoint unknown or method invalid for given endpoint',
-          reference: '',
-          code: 404,
-          req: '/v1/platform/payload/1fb3f20e-fe62-4822-a893-b35322f2bd0a',
-          method: 'POST'
-        }
-      */
+      console.log(result);
+
+      if (typeof(result.application.issued_user_token) !== 'undefined' && account!.getAddress()) {
+        await this.redisClient.set(
+          'xumm:account:' + account!.getAddress(),
+          result.application.issued_user_token)
+      }
 
       if (result.hasOwnProperty('error') && result.hasOwnProperty('code') && result.hasOwnProperty('message')) {
         return undefined;
@@ -158,7 +80,7 @@ export class XummSigner extends SologenicTxSigner {
         return undefined;
       }
 
-      await wait(5000);
+      await wait(2500);
     }
   }
 
@@ -172,17 +94,26 @@ export class XummSigner extends SologenicTxSigner {
     account;
     signingOptions;
 
+    const extra = {
+      options: {
+        submit: false,
+        expire: Math.ceil(this.maximumExecutionTime / 1000 / 60).toFixed()
+      },
+      user_token: await this.redisClient.get('xumm:account:' + account!.getAddress()) || ""
+    };
+
     const result = await http<IXummSubmitPayload>(
       this.xummApiEndpoint,
       'POST',
       this._headers(),
       JSON.stringify({
-        txjson: JSON.parse(txJson)
+        txjson: JSON.parse(txJson),
+        ...extra
       }
     ));
 
     const verification: IXummQueryPayload =
-      await promiseTimeout(this.maximumExecutionTime, this.verify(result.uuid));
+      await promiseTimeout(this.maximumExecutionTime, this.verify(result.uuid, account));
 
     if (typeof verification === 'undefined') {
       // Unable to sign request (request was rejected or cancelled)

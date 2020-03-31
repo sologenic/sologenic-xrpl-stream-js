@@ -205,8 +205,7 @@ export default class XrplAccount {
     if (typeof (this.keypair) === 'undefined')
       return false;
 
-      if ((typeof this.keypair.publicKey !== 'undefined' && this.keypair.publicKey !== '') &&
-      (typeof this.keypair.privateKey !== 'undefined' && this.keypair.privateKey !== '')) {
+      if ((typeof this.keypair.publicKey !== 'undefined') && (typeof this.keypair.privateKey !== 'undefined')) {
         return true;
       }
 
