@@ -9,6 +9,26 @@ export default class HashQueue implements IQueue {
     options!;
   }
 
+  public async deleteQueue(queue: string): Promise<boolean> {
+    if (this.hash.hasOwnProperty(queue)) {
+      return this.hash.delete(queue);
+    }
+
+    return false;
+  }
+
+  public async queues(): Promise<string[]> {
+    var keys = Array<string>();
+
+    for (var key in this.hash) {
+        if (this.hash.hasOwnProperty(key)) {
+          keys.push(key);
+        }
+    }
+
+    return keys;
+  }
+
   private _exist(queue: string): boolean {
     return this.hash.has(queue);
   }
@@ -23,7 +43,7 @@ export default class HashQueue implements IQueue {
   public async add(queue: string, data: MQTX, id?: string): Promise<MQTX> {
     const element = {
       id: typeof id !== 'undefined' ? id : uuid(),
-      created: data.created ? data.created : Math.floor(new Date().getTime() / 1000),
+      created: data.hasOwnProperty('created') ? data.created : Math.floor(new Date().getTime() / 1000),
       data,
     };
 
@@ -63,18 +83,16 @@ export default class HashQueue implements IQueue {
    * @param queue
    * @description returns all elements of the queue
    */
-  public async getAll(queue?: string): Promise<Array<MQTX> | Map<string, Array<MQTX>>> {
-    let elements = new Map<string, Array<MQTX>>();
+  public async getAll(queue: string): Promise<Array<MQTX>> {
+    return this.hash.get(queue) || Array<MQTX>();
 
-    if (typeof queue !== 'undefined') {
-      return this.hash.get(queue) || [];
-    }
-
+    /*
     this.hash.forEach(function(_, key, data) {
       elements.set(key, data.get(key) || []);
     });
 
     return elements;
+    */
   }
 
   /**
@@ -130,7 +148,6 @@ export default class HashQueue implements IQueue {
   }
 
   /**
-   *
    * @param queue
    * @description delete all elements from the queue
    */
