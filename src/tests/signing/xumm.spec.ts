@@ -8,8 +8,7 @@ const test = anyTest as TestInterface<{
   data: any
 }>;
 
-/*
-test.serial("time out a signing a request with xumm", async t => {
+test.skip("time out a signing a request with xumm", async t => {
   const xs = new XummSigner({
     xummApiKey: process.env.XUMM_API_KEY,
     xummApiSecret: process.env.XUMM_API_SECRET,
@@ -39,9 +38,8 @@ test.serial("time out a signing a request with xumm", async t => {
     t.pass();
   }
 });
-*/
 
-test.serial("valid signing a request with xumm", async t => {
+test.skip("valid signing a request with xumm", async t => {
   const xs = new XummSigner({
     xummApiKey: process.env.XUMM_API_KEY,
     xummApiSecret: process.env.XUMM_API_SECRET

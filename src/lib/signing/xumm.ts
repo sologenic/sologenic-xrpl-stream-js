@@ -60,9 +60,7 @@ export class XummSigner extends SologenicTxSigner {
         this._headers()
       );
 
-      console.log(result);
-
-      if (typeof(result.application.issued_user_token) !== 'undefined' && account!.getAddress()) {
+      if (result && result.hasOwnProperty('application') && typeof(result.application.issued_user_token) !== 'undefined' && account!.getAddress()) {
         await this.redisClient.set(
           'xumm:account:' + account!.getAddress(),
           result.application.issued_user_token)
@@ -120,6 +118,7 @@ export class XummSigner extends SologenicTxSigner {
       throw new SologenicError('2002');
     }
 
+    // Return the signed transaction
     return {
       id: txId,
       signedTransaction: verification.response.hex
