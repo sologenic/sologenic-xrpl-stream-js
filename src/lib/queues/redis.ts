@@ -1,5 +1,9 @@
 import Redis from 'ioredis';
-import { MQTX, IQueue, RedisTransactionHandlerOptions } from '../../types';
+import {
+  MQTX,
+  IQueue,
+  RedisTransactionHandlerOptions
+} from '../../types';
 
 import { v4 as uuid } from 'uuid';
 
@@ -14,6 +18,20 @@ export default class RedisQueue implements IQueue {
       }
     }
 
+    public async deleteQueue(queue: string): Promise<boolean> {
+      if (await this.redis.exists(queue)) {
+        await this.redis.del(queue);
+
+        return true;
+      }
+
+      return false;
+    }
+
+    public async queues(): Promise<string[]> {
+      return this.redis.keys('*');
+    }
+
     /**
      *
      * @param queue
@@ -24,7 +42,7 @@ export default class RedisQueue implements IQueue {
       try {
         const element = {
           id: typeof id !== 'undefined' ? id : uuid(),
-          created: data.created ? data.created : Math.floor(new Date().getTime() / 1000),
+          created: data.hasOwnProperty('created') ? data.created : Math.floor(new Date().getTime() / 1000),
           data
         };
         const result = await this.redis.rpush(queue, JSON.stringify(element));
@@ -64,45 +82,16 @@ export default class RedisQueue implements IQueue {
      *
      * @param queue
      */
-    public async getAll(queue?: string): Promise<Array<MQTX> | Map<string, Array<MQTX>>> {
-      try {
-        if (queue) {
-          const elements = await this.redis.lrange(queue, 0, -1);
+    public async getAll(queue: string): Promise<MQTX[]> {
+      const elements = await this.redis.lrange(queue, 0, -1);
 
-          if (elements.length > 0) {
-            return elements.map((el: string) => {
-              return JSON.parse(el);
-            });
-          }
-        } else {
-          let keys = [];
-          let result = new Map<string, Array<MQTX>>();
-
-          if (typeof queue === 'undefined') {
-            keys.push(...(await this.redis.keys('*')));
-          }
-
-          for (const key in keys) {
-            const elements = await this.redis.lrange(keys[key], 0, -1);
-
-            if (elements.length > 0) {
-              if (typeof keys[key] !== 'undefined') {
-                result.set(keys[key], elements.map((el: string) => {
-                  return JSON.parse(el);
-                }));
-              }
-            } else {
-              result.set(keys[key], []);
-            }
-          }
-
-          return result;
-        }
-
-        return [];
-      } catch (error) {
-        throw new Error("Can't get TX from Redis");
+      if (elements.length > 0) {
+        return elements.map((el: string) => {
+          return JSON.parse(el);
+        });
       }
+
+      return [];
     }
 
     /**
@@ -155,6 +144,7 @@ export default class RedisQueue implements IQueue {
     public async delAll(queue: string): Promise<boolean> {
       try {
         const elements = await this.redis.del(queue);
+
         if (elements > 0) {
           return true;
         } else {
