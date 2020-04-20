@@ -17,3 +17,11 @@ export interface IFaucet {
   account: IFaucetAccount;
   balance: number;
 }
+
+/**
+ * Supporting interface for xumm so that XummSigner can switch 
+ * the API key and secret for mobile and desktop
+ */
+export interface Client {
+  clientType: string;
+}
