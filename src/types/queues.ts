@@ -29,6 +29,7 @@ export interface TransactionHandlerOptions {
   hash?: HashTransactionHandlerOptions
   maximumTimeToLive?: number;
   signingMechanism?: ISologenicTxSigner;
+  clientType?: string;
 }
 
 export interface MQTX {

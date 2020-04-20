@@ -100,7 +100,7 @@ export class SologenicTxHandler extends EventEmitter {
   /**
    * Type of client application using Sologenic Tx Handler
    */
-  protected clientType: string = 'mobile';
+  protected clientType: string = '';
 
   /**
    * Constructor for an instance of sologenic tx handler.
@@ -120,8 +120,7 @@ export class SologenicTxHandler extends EventEmitter {
    */
   constructor(
     rippleApiOptions: SologenicTypes.RippleAPIOptions,
-    sologenicOptions: SologenicTypes.TransactionHandlerOptions,
-    clientOptions: SologenicTypes.Client,
+    sologenicOptions: SologenicTypes.TransactionHandlerOptions
   ) {
     /**
      * Event emitter constructor
@@ -198,8 +197,8 @@ export class SologenicTxHandler extends EventEmitter {
        * Initialize client type
        */
 
-      if (typeof clientOptions.clientType !== 'undefined') {
-        this.clientType = clientOptions.clientType;
+      if (typeof sologenicOptions.clientType !== 'undefined') {
+        this.clientType = sologenicOptions.clientType;
       } 
 
     } catch (error) {
