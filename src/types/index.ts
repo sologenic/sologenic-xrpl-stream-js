@@ -3,3 +3,4 @@ export * from './queues';
 export * from './txhandler';
 export * from './utils';
 export * from './xrpl';
+export * from './txhandleroptions';
