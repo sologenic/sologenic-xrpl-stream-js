@@ -16,7 +16,7 @@ export class OfflineSigner extends SologenicTxSigner
   }
 
   async sign(
-    txJson: string,
+    txJson: SologenicTypes.TX,
     txId: string,
     account: XrplAccount,
     signingOptions?: any
@@ -25,8 +25,14 @@ export class OfflineSigner extends SologenicTxSigner
       // Sign the transaction using the secret provided on init
       // console.log(`Signing transaction txJson=${txJson}, secret=${account.secret}, keypair=${account.keypair}`)
 
+      // Delete the transaction metadata if it exists since the signing will fail
+      // as this TransactionMetadata is not known to the schema.
+      if (txJson.TransactionMetadata) {
+        delete txJson.TransactionMetadata;
+      }
+
       const signedTx: SologenicTypes.SignedTx = this.rippleApi.sign(
-        txJson,
+        JSON.stringify(txJson),
         account.getSecret(),
         signingOptions,
         account.getKeypair()
