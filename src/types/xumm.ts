@@ -1,3 +1,6 @@
+export interface IXummSubmitAdditional {
+  issued_user_token: string;
+};
 
 export interface IXummSubmitPayload {
   uuid: string,
