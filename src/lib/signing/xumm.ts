@@ -95,6 +95,16 @@ export class XummSigner extends SologenicTxSigner {
       delete txJson.TransactionMetadata;
     }
 
+    if (typeof txJson.Flags === 'undefined')
+      txJson.Flags = 0;
+
+    if ((txJson.Flags & 0x80000000) === 0) {
+      txJson.Flags |= 0x80000000;
+    }
+
+    // Convert tx.Flags to an unsigned
+    txJson.Flags = txJson.Flags >>> 0;
+
     const xummOptionsPayload = {
       options: {
         // If submit is false, xumm returns the signed transaction.
