@@ -1,5 +1,4 @@
 import { RippleAPI } from 'ripple-lib';
-import { SologenicError } from '../error';
 import * as SologenicTypes from '../../types';
 
 import XrplAccount from '../account';
@@ -30,6 +29,16 @@ export class OfflineSigner extends SologenicTxSigner
       if (txJson.TransactionMetadata) {
         delete txJson.TransactionMetadata;
       }
+
+      if (typeof txJson.Flags === 'undefined')
+        txJson.Flags = 0;
+
+      if ((txJson.Flags & 0x80000000) === 0) {
+        txJson.Flags |= 0x80000000;
+      }
+
+      // Convert tx.Flags to an unsigned
+      txJson.Flags = txJson.Flags >>> 0;
 
       const signedTx: SologenicTypes.SignedTx = this.rippleApi.sign(
         JSON.stringify(txJson),

@@ -722,20 +722,6 @@ export class SologenicTxHandler extends EventEmitter {
     // Add id in the memo common field for tracking
     const tx = this._addMemo(unsignedTx);
 
-    if (typeof tx.Flags === 'undefined') {
-      // Transaction Specific Settings
-      switch (tx.TransactionType) {
-        case 'AccountSet':
-          tx.Flags = this.getRippleApi().txFlags.Universal.FullyCanonicalSig;
-          // JavaScript converts operands to 32-bit signed ints before doing bitwise
-          // operations. We need to convert it back to an unsigned int.
-          tx.Flags = tx.Flags >>> 0;
-          break;
-      }
-    } else {
-      tx.Flags = tx.Flags >>> 0;
-    }
-
     // multiply the fee by 1.2 to make sure the tx goes through
     // Suggestion. In cases of surge in network fee, this value can be dynamically increased.
     tx.Fee = this.getRippleApi().xrpToDrops(
