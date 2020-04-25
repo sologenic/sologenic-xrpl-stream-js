@@ -1,5 +1,4 @@
 import { RippleAPI } from 'ripple-lib';
-import { SologenicError } from '../error';
 import * as SologenicTypes from '../../types';
 
 import XrplAccount from '../account';
@@ -16,7 +15,7 @@ export class OfflineSigner extends SologenicTxSigner
   }
 
   async sign(
-    txJson: string,
+    txJson: SologenicTypes.TX,
     txId: string,
     account: XrplAccount,
     signingOptions?: any
@@ -25,8 +24,24 @@ export class OfflineSigner extends SologenicTxSigner
       // Sign the transaction using the secret provided on init
       // console.log(`Signing transaction txJson=${txJson}, secret=${account.secret}, keypair=${account.keypair}`)
 
+      // Delete the transaction metadata if it exists since the signing will fail
+      // as this TransactionMetadata is not known to the schema.
+      if (txJson.TransactionMetadata) {
+        delete txJson.TransactionMetadata;
+      }
+
+      if (typeof txJson.Flags === 'undefined')
+        txJson.Flags = 0;
+
+      if ((txJson.Flags & 0x80000000) === 0) {
+        txJson.Flags |= 0x80000000;
+      }
+
+      // Convert tx.Flags to an unsigned
+      txJson.Flags = txJson.Flags >>> 0;
+
       const signedTx: SologenicTypes.SignedTx = this.rippleApi.sign(
-        txJson,
+        JSON.stringify(txJson),
         account.getSecret(),
         signingOptions,
         account.getKeypair()

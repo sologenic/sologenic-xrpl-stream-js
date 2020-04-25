@@ -1,5 +1,6 @@
 import { EventEmitter } from 'events';
 import XrplAccount from '../lib/account';
+import { IXummSubmitAdditional } from './xumm';
 
 export interface ISologenicTxHandler extends EventEmitter {
   on(event: string, listener: Function): this;
@@ -7,7 +8,7 @@ export interface ISologenicTxHandler extends EventEmitter {
 
 export interface ISologenicTxSigner {
   sign(
-    txJson: string,
+    txJson: TX,
     txId: string,
     account: XrplAccount,
     signingOptions: any): Promise<SignedTx>;
@@ -20,7 +21,11 @@ export interface TX {
   TransactionType: string;
   Memos?: { Memo: any }[];
   Flags?: any;
-  [Field: string]: string | number | Array<any> | undefined;
+  TransactionMetadata?: {
+    offlineMeta?: object;
+    xummMeta?: IXummSubmitAdditional
+  };
+  [Field: string]: string | number | object | Array<any> | undefined;
 }
 
 export interface TxJSON {
