@@ -18,6 +18,7 @@ import { EventEmitter } from 'events';
 
 import { v4 as uuid } from 'uuid';
 import { wait } from './utils';
+import { ISologenicTxSigner } from '../types';
 
 const binaryCodec = require('ripple-binary-codec');
 
@@ -191,6 +192,22 @@ export class SologenicTxHandler extends EventEmitter {
     } catch (error) {
       throw new SologenicError('1001', error);
     }
+  }
+
+  /**
+   * Sets the Sologenic TX handler signing mechanism
+   * @param signingMechanism
+   */
+  public setSigningMechanism(signingMechanism: ISologenicTxSigner) {
+    this.signingMechanism = signingMechanism;
+  }
+
+  /**
+   * Gets the Sologenic TX handler signing mechanism
+   * @param signingMechanism
+   */
+  public getSigningMechanism(): ISologenicTxSigner {
+    return this.signingMechanism;
   }
 
   /**
@@ -740,12 +757,10 @@ export class SologenicTxHandler extends EventEmitter {
     // Set LastLedgerSequence for this tx to make sure it becomes invalid after 3 verified closed ledgers
     tx.LastLedgerSequence = this.getLedgerVersion() + 3;
 
-    // console.log(tx);
-
     // Use the signing mechanism and then run the callback once the request has been signed, we
     // could use a promise here too...
     return this.signingMechanism
-      .sign(JSON.stringify(tx), unsignedTx.id, this.getAccount(), {})
+      .sign(tx, unsignedTx.id, this.getAccount(), {})
       .then((signedTx: SologenicTypes.SignedTx) => {
         this.txEvents![signedTx.id].emit('signed', signedTx);
 

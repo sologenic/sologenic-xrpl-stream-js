@@ -27,6 +27,7 @@ import { IFaucet } from '../../types/utils';
 import * as SologenicTypes from '../../types/txhandler';
 import { SologenicTxHandler } from '../../lib/txhandler';
 import XrplAccount from '../../lib/account';
+import { XummSigner } from '../../lib/signing';
 
 const NETWORK_LIST = {
   dev: {
@@ -543,6 +544,91 @@ test.serial('transaction should fail because not enough funds are available', as
     transaction.events.on('failed', (failedTx: SologenicTypes.FailedEvent) => {
       t.true(typeof failedTx !== 'undefined');
       t.is(failedTx.reason, 'tecUNFUNDED_PAYMENT');
+    });
+
+    await transaction.promise;
+
+  } catch (error) {
+    t.fail(error);
+  }
+});
+
+test.serial('transaction should fail, after sending request via xumm because no user input', async t => {
+  try {
+    const handler: SologenicTxHandler = t.context!.handler;
+
+    handler.setSigningMechanism(new XummSigner({
+      xummApiKey: process.env.XUMM_API_KEY,
+      xummApiSecret: process.env.XUMM_API_SECRET,
+      // Gives us 10 seconds to react as this is a manual test, just so we can verify
+      // the push notification was received.
+      maximumExecutionTime: 5000
+    }));
+
+    await handler.setAccount(t.context.emptyAccount);
+
+    // See flags at https://xrpl.org/accountset.html
+    const tx1: SologenicTypes.TX = {
+      Account: t.context.emptyAccount.getAddress(),
+      TransactionType: 'Payment',
+      Amount: handler.getRippleApi().xrpToDrops('99999'),
+      Destination: t.context.validAccount.getAddress()
+    };
+
+    // Send all funds out of this account to our validAccount, then
+    // we'll send another transaction which will not be successful
+    // because we'll be out of funds.
+
+    const transaction: SologenicTypes.TransactionObject = handler.submit(tx1);
+
+    transaction.events.on('failed', (failedTx: SologenicTypes.FailedEvent) => {
+      t.true(typeof failedTx !== 'undefined');
+      t.is(failedTx.reason, 'unable_to_sign_transaction');
+    });
+
+    await transaction.promise;
+
+  } catch (error) {
+    t.fail(error);
+  }
+});
+
+test.serial('transaction should fail, after sending push notification via xumm because no user input', async t => {
+  try {
+    const handler: SologenicTxHandler = t.context!.handler;
+
+    handler.setSigningMechanism(new XummSigner({
+      xummApiKey: process.env.XUMM_API_KEY,
+      xummApiSecret: process.env.XUMM_API_SECRET,
+      // Gives us 10 seconds to react as this is a manual test, just so we can verify
+      // the push notification was received.
+      maximumExecutionTime: 10000
+    }));
+
+    await handler.setAccount(t.context.emptyAccount);
+
+    // See flags at https://xrpl.org/accountset.html
+    const tx1: SologenicTypes.TX = {
+      Account: t.context.emptyAccount.getAddress(),
+      TransactionType: 'Payment',
+      Amount: handler.getRippleApi().xrpToDrops('99999'),
+      Destination: t.context.validAccount.getAddress(),
+      TransactionMetadata: {
+        xummMeta: {
+          issued_user_token: 'ee9d788d-2de7-4d27-8afd-7829490f21bf'
+        }
+      }
+    };
+
+    // Send all funds out of this account to our validAccount, then
+    // we'll send another transaction which will not be successful
+    // because we'll be out of funds.
+
+    const transaction: SologenicTypes.TransactionObject = handler.submit(tx1);
+
+    transaction.events.on('failed', (failedTx: SologenicTypes.FailedEvent) => {
+      t.true(typeof failedTx !== 'undefined');
+      t.is(failedTx.reason, 'unable_to_sign_transaction');
     });
 
     await transaction.promise;
