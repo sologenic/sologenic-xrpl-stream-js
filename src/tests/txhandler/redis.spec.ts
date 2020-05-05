@@ -215,7 +215,7 @@ test('transaction to sologenic xrpl stream', async t => {
     const handler: SologenicTxHandler = t.context!.handler;
     const eventsReceived: Array<string> = [];
 
-    await handler.setAccount(t.context.validAccount);
+    await handler.setXrplAccount(t.context.validAccount);
 
     // Make sure we're actually performing an operation (setflags: 5)
     const tx: SologenicTypes.TX = {

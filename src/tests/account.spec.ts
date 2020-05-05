@@ -1,4 +1,6 @@
 import test from 'ava';
+import * as SologenicTypes from '../types';
+import { SologenicTxHandler } from '../lib/txhandler';
 import XrplAccount, { XrplAddressException, XrplSecretException, XrplKeypairException, XrplKeypairOrSecretMissingException } from '../lib/account';
 import { generateSeed, deriveAddress, deriveKeypair } from 'ripple-keypairs';
 
@@ -76,24 +78,18 @@ test.serial('validate account with address but invalid keypair combinations', as
     new XrplAccount(address, undefined, keypair.publicKey, undefined);
   }, {
     instanceOf: XrplKeypairException
-  });
+  }, "Missing secret or private key");
 
   t.throws(() => {
     new XrplAccount(address, undefined, undefined, keypair.privateKey);
   }, {
     instanceOf: XrplKeypairException
-  });
+  }, "Missing secret or public key");
 
   t.notThrows(() => {
     new XrplAccount(address, undefined, keypair.publicKey, keypair.privateKey);
-  });
+  }, "Missing secret");
 
-  t.false(new XrplAccount(address, undefined, keypair.publicKey, keypair.privateKey).hasSecret());
-  t.true(new XrplAccount(address, undefined, keypair.publicKey, keypair.privateKey).hasKeypair());
-
-  t.throws(() => {
-    new XrplAccount(address, undefined, undefined, undefined)
-  }, {
-    instanceOf: XrplKeypairOrSecretMissingException
-  });
+  t.false(new XrplAccount(address, undefined, keypair.publicKey, keypair.privateKey).hasSecret(), "Has secret");
+  t.true(new XrplAccount(address, undefined, keypair.publicKey, keypair.privateKey).hasKeypair(), "Has keypair");
 });

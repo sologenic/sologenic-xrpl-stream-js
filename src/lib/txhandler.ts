@@ -295,6 +295,54 @@ export class SologenicTxHandler extends EventEmitter {
   }
 
   /**
+   * Preserve existing functionality
+   *
+   * @param {account}           XRPL account address and secret, or address and a keypair
+   * @returns {Promise.<void>}
+   * @throws {SologenicError}
+   */
+  public async setAccount(account: SologenicTypes.Account): Promise<void> {
+    try {
+      let xrplAccount = new XrplAccount(
+        account.address,
+        account.secret!,
+        (typeof(account.keypair) !== 'undefined' && typeof(account.keypair.publicKey) !== 'undefined') ? account.keypair.publicKey : undefined,
+        (typeof(account.keypair) !== 'undefined' && typeof(account.keypair.privateKey) !== 'undefined') ? account.keypair.privateKey : undefined);
+
+      this.xrplAccount = xrplAccount;
+
+      // The validate method will raise an exception if the account is not
+      xrplAccount.validate();
+
+      if (this.clearCache)
+        // Clear the cache
+        await this.txmq.delAll();
+
+      // Connect, fetch the current state (sequence) of the account, and validate missed
+      // transactions
+
+      await this.connect();
+
+      await this._fetchCurrentState();
+      await this._validateMissedTransactions();
+
+    } catch (error) {
+      if (error instanceof XrplAddressException) {
+        throw new SologenicError('2000', error);
+      } else if (error instanceof XrplSecretException) {
+        throw new SologenicError('2001', error);
+      } else if (error instanceof XrplKeypairException) {
+        throw new SologenicError('2001', error);
+      } else if (error instanceof XrplKeypairOrSecretMissingException) {
+        throw new SologenicError('2001', error);
+      } else {
+        throw error;
+      }
+    }
+  }
+
+
+  /**
    * Set the current account to use on the XRPL for transactions or use
    * a keypair.  See the [[SologenicTypes.Account]] interface for more
    * details.
@@ -307,7 +355,7 @@ export class SologenicTxHandler extends EventEmitter {
    * @returns {Promise.<void>}
    * @throws {SologenicError}
    */
-  public async setAccount(xrplAccount: XrplAccount): Promise<void> {
+  public async setXrplAccount(xrplAccount: XrplAccount): Promise<void> {
     try {
       // The validate method will raise an exception if the account is not
       xrplAccount.validate();

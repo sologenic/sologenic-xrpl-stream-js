@@ -203,7 +203,7 @@ test.before(async t => {
 });
 
 test.serial('sologenic tx hash initialization', async t => {
-  await t.notThrowsAsync(t.context.handler.setAccount(t.context.validAccount));
+  await t.notThrowsAsync(t.context.handler.setXrplAccount(t.context.validAccount));
 });
 
 test.serial('transaction to sologenic xrpl stream', async t => {
@@ -211,7 +211,7 @@ test.serial('transaction to sologenic xrpl stream', async t => {
     const handler: SologenicTxHandler = t.context!.handler;
     const eventsReceived: Array<string> = [];
 
-    await handler.setAccount(t.context.validAccount);
+    await handler.setXrplAccount(t.context.validAccount);
 
     // Make sure we're actually performing an operation (setflags: 5)
     const tx: SologenicTypes.TX = {
@@ -268,7 +268,7 @@ test.serial('transaction to sologenic xrpl stream', async t => {
 test.serial('transaction should fail immediately (invalid flags)', async t => {
   try {
     const handler: SologenicTxHandler = t.context!.handler;
-    await handler.setAccount(t.context.validAccount);
+    await handler.setXrplAccount(t.context.validAccount);
 
     // See flags at https://xrpl.org/accountset.html
     const tx: SologenicTypes.TX = {
@@ -300,7 +300,7 @@ test.serial('transaction should be successful', async t => {
   try {
     const handler: SologenicTxHandler = t.context!.handler;
 
-    await handler.setAccount(t.context.validAccount);
+    await handler.setXrplAccount(t.context.validAccount);
 
     // See flags at https://xrpl.org/accountset.html
     const tx: SologenicTypes.TX = {
@@ -331,7 +331,7 @@ test.serial('transaction send multiple transactions', async t => {
   try {
     const handler: SologenicTxHandler = t.context!.handler;
 
-    await handler.setAccount(t.context.validAccount);
+    await handler.setXrplAccount(t.context.validAccount);
 
     // See flags at https://xrpl.org/accountset.html
     const tx1: SologenicTypes.TX = {
@@ -379,7 +379,7 @@ test.serial('transaction should fail with insufficient fee', async t => {
   try {
     const handler: SologenicTxHandler = t.context!.handler;
 
-    await handler.setAccount(t.context.validAccount);
+    await handler.setXrplAccount(t.context.validAccount);
     await handler.setLedgerBaseFeeXRP('0');
 
     // See flags at https://xrpl.org/accountset.html
@@ -441,7 +441,7 @@ test.serial('transaction should return next sequence', async t => {
   try {
     const handler: SologenicTxHandler = t.context.handler;
     const currentSequence: number = t.context.validAccount.getCurrentAccountSequence();
-    await handler.setAccount(t.context.validAccount);
+    await handler.setXrplAccount(t.context.validAccount);
 
     const sequence = handler.getAccount().getCurrentAccountSequence();
 
@@ -456,13 +456,13 @@ test.serial('transaction should return next sequence', async t => {
 test.serial('transaction will fail with tefBAD_AUTH (invalid account cannot send on behalf of valid account)', async t => {
   try {
     const handler: SologenicTxHandler = t.context!.handler;
-    await handler.setAccount(t.context.validAccount);
+    await handler.setXrplAccount(t.context.validAccount);
 
     // The current sequence of the valid account needs to be used, otherwise we'll
     // fail with tefPAST_SEQ because the transaction sequence is too old.
     const currentSequence: number = t.context.validAccount.getCurrentAccountSequence();
 
-    await handler.setAccount(t.context.invalidAccount);
+    await handler.setXrplAccount(t.context.invalidAccount);
 
     // See flags at https://xrpl.org/accountset.html
     const tx: SologenicTypes.TX = {
@@ -494,7 +494,7 @@ test.serial('transaction will fail with tefPAST_SEQ (invalid account sequence is
     const handler: SologenicTxHandler = t.context!.handler;
 
     // Set an invalid account and set the sequence number to the valid accounts sequence.
-    await handler.setAccount(t.context.validAccount);
+    await handler.setXrplAccount(t.context.validAccount);
 
     // See flags at https://xrpl.org/accountset.html
     const tx: SologenicTypes.TX = {
@@ -525,7 +525,7 @@ test.serial('transaction should fail because not enough funds are available', as
   try {
     const handler: SologenicTxHandler = t.context!.handler;
 
-    await handler.setAccount(t.context.emptyAccount);
+    await handler.setXrplAccount(t.context.emptyAccount);
 
     // See flags at https://xrpl.org/accountset.html
     const tx1: SologenicTypes.TX = {
@@ -565,7 +565,7 @@ test.serial('transaction should fail, after sending request via xumm because no 
       maximumExecutionTime: 5000
     }));
 
-    await handler.setAccount(t.context.emptyAccount);
+    await handler.setXrplAccount(t.context.emptyAccount);
 
     // See flags at https://xrpl.org/accountset.html
     const tx1: SologenicTypes.TX = {
@@ -605,7 +605,7 @@ test.serial('transaction should fail, after sending push notification via xumm b
       maximumExecutionTime: 10000
     }));
 
-    await handler.setAccount(t.context.emptyAccount);
+    await handler.setXrplAccount(t.context.emptyAccount);
 
     // See flags at https://xrpl.org/accountset.html
     const tx1: SologenicTypes.TX = {
