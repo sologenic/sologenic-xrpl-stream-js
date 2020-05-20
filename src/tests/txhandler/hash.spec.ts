@@ -290,7 +290,6 @@ test.serial('transaction should fail immediately (invalid flags)', async t => {
 
     await transaction.promise;
 
-    t.true(txFailed);
   } catch (error) {
     t.fail();
   }
