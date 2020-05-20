@@ -1,74 +1,19 @@
-import { MQTX } from '../types';
-
 import { EventEmitter } from 'events';
+import XrplAccount from '../lib/account';
+import { IXummSubmitAdditional } from './xumm';
 
-export interface IQueue {
-  add(queue: string, data: MQTX, id?: string): Promise<MQTX>;
-  get(queue: string, id: string): Promise<MQTX | undefined>;
-  getAll(queue?: string): Promise<Array<MQTX> | Map<string, Array<MQTX>>>;
-  pop(queue: string): Promise<MQTX | undefined>;
-  del(queue: string, id: string): Promise<boolean>;
-  delAll(queue: string): Promise<boolean>;
-  appendEvent(queue: string, id: string, event_name: string): Promise<boolean>;
-}
-
-export interface HashTransactionHandlerOptions {}
-
-export interface RedisTransactionHandlerOptions {
-  port?: number;
-  host?: string;
-  family?: number;
-  password?: string;
-  db?: number;
-}
-
-export interface TransactionHandlerOptions {
-  queueType?: string;
-  clearCache?: boolean;
-  redis?: RedisTransactionHandlerOptions
-  hash?: HashTransactionHandlerOptions
-  maximumTimeToLive?: number;
-}
-
-export declare interface ISologenicTxHandler extends EventEmitter {
+export interface ISologenicTxHandler extends EventEmitter {
   on(event: string, listener: Function): this;
 }
 
-export interface RippleAPIOptions {
-  trace?: boolean;
-  proxy?: string;
-  proxyAuthorization?: string;
-  authorization?: string;
-  trustedCertificates?: string[];
-  key?: string;
-  passphrase?: string;
-  certificate?: string;
-  timeout?: number;
-  server?: string;
-  feeCushion?: number;
-  maxFeeXRP?: string;
-}
+export interface ISologenicTxSigner {
+  sign(
+    txJson: TX,
+    txId: string,
+    account: XrplAccount,
+    signingOptions: any): Promise<SignedTx>;
 
-export interface Account {
-  address: string;
-  secret: string;
-  keypair: KeyPair;
-}
-
-export interface KeyPair {
-  publicKey: string;
-  privateKey: string;
-}
-
-export interface Ledger {
-  baseFeeXRP: string;
-  ledgerHash?: string;
-  ledgerVersion: number;
-  ledgerTimestamp: string;
-  reserveBaseXRP?: string;
-  reserveIncrementXRP?: string;
-  transactionCount?: number;
-  validatedLedgerVersions?: string;
+  getIncludeSequence(): boolean;
 }
 
 export interface TX {
@@ -76,7 +21,11 @@ export interface TX {
   TransactionType: string;
   Memos?: { Memo: any }[];
   Flags?: any;
-  [Field: string]: string | number | Array<any> | undefined;
+  TransactionMetadata?: {
+    offlineMeta?: object;
+    xummMeta?: IXummSubmitAdditional
+  };
+  [Field: string]: string | number | object | Array<any> | undefined;
 }
 
 export interface TxJSON {
@@ -84,8 +33,8 @@ export interface TxJSON {
 }
 
 export interface SignedTx {
-  signedTransaction: string;
   id: string;
+  signedTransaction: string;
 }
 
 export interface FormattedSubmitResponse {
@@ -105,7 +54,7 @@ export interface WarningEvent {
   state: string;
   reason: string;
   dispatchedTx?: DispatchedTx;
-  unsignedTx?: UnsignedTx
+  unsignedTx?: UnsignedTx;
 }
 
 export interface RequeuedEvent {
@@ -128,11 +77,11 @@ export interface FailedEvent {
 
 export interface DispatchedEvent {
   id: string;
-  unsignedTx: UnsignedTx,
+  unsignedTx?: UnsignedTx;
   dispatchedTx: DispatchedTx
 }
 
-export interface txResult {
+export interface TxResult {
   status: any;
   hash?: any;
   sequence?: any;
@@ -140,19 +89,19 @@ export interface txResult {
   lastLedger?: any;
 }
 
-export interface txFailedResult {
+export interface TxFailedResult {
   status: any;
   reason: string;
 }
 
 export interface DispatchedTx {
-  unsignedTx: UnsignedTx;
-  result: txResult;
+  unsignedTx?: UnsignedTx;
+  result: TxResult;
 }
 
 export interface FailedTx {
-  unsignedTx: UnsignedTx;
-  result: txFailedResult;
+  unsignedTx?: UnsignedTx;
+  result: TxFailedResult;
 }
 
 export interface ResolvedTx {

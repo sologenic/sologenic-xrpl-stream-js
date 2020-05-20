@@ -4,24 +4,24 @@ import {
   QUEUE_TYPE_STXMQ_REDIS,
   QUEUE_TYPE_STXMQ_HASH,
   TransactionHandlerOptions
-} from '../types';
+} from '../../types/queues';
 
 /**
  * Import redis queue implementation
  */
-import RedisQueue from './queues/redis';
+import RedisQueue from './redis';
 
 /**
  * Import hash queue implementation
  */
-import HashQueue from './queues/hash';
+import HashQueue from './hash';
 
 /**
  * The TXMQƨ class is an implementation that calls the methods against the queue
  * instances.  When constructing the [[SologenicTxHandler]] the `sologenicOptions`
  * parameter is passed to this classes constructor.
 */
-export class TXMQƨ {
+export default class TXMQƨ implements IQueue {
   private queue: IQueue;
 
   constructor(sologenicOptions: TransactionHandlerOptions) {
@@ -42,6 +42,14 @@ export class TXMQƨ {
     } catch (error) {
       throw new Error('Unable to initialize TXMQ');
     }
+  }
+
+  public deleteQueue(queue: string): Promise<boolean> {
+    return this.queue.deleteQueue(queue);
+  }
+
+  public queues(): Promise<string[]> {
+    return this.queue.queues();
   }
 
   /**
@@ -74,7 +82,7 @@ export class TXMQƨ {
    *
    * @param queue  Queue name
    */
-  public async getAll(queue?: string): Promise<Array<MQTX> | Map<string, Array<MQTX>>> {
+  public async getAll(queue?: string): Promise<MQTX[]> {
     return this.queue.getAll(queue);
   }
   /**
@@ -83,7 +91,14 @@ export class TXMQƨ {
    * @param queue  Queue name
    */
   public async pop(queue: string): Promise<MQTX | undefined> {
-    return this.queue.pop(queue);
+    const result = await this.queue.pop(queue);
+    const items = await this.queue.getAll(queue);
+
+    if (items.length < 1) {
+      await this.queue.deleteQueue(queue);
+    }
+
+    return result;
   }
 
   /**
@@ -93,7 +108,14 @@ export class TXMQƨ {
    * @param id     Key used to retrieve the data
    */
   public async del(queue: string, id: string): Promise<boolean> {
-    return this.queue.del(queue, id);
+    const result = await this.queue.del(queue, id);
+    const items = await this.queue.getAll(queue);
+
+    if (items.length < 1) {
+      await this.queue.deleteQueue(queue);
+    }
+
+    return result;
   }
 
   /**
@@ -102,7 +124,11 @@ export class TXMQƨ {
    * @param queue  Queue name
    */
   public async delAll(queue: string): Promise<boolean> {
-    return this.queue.delAll(queue);
+    const result = await this.queue.delAll(queue);
+
+    await this.queue.deleteQueue(queue);
+
+    return result;
   }
 
   /**
@@ -116,25 +142,32 @@ export class TXMQƨ {
     return this.queue.appendEvent(queue, id, event_name);
   }
 
-  public async deleteOlderThan(maximumTimeToLive: number): Promise<number> {
+  /**
+   * Delete entries older than maximumTimeToLive (seconds)
+  */
+  public async deleteOlderThan(maximumTimeToLive: number, queue?: string): Promise<number> {
+    let counter = 0;
+
     const currentTime = Math.floor(new Date().getTime() / 1000);
-    const items = await this.queue.getAll();
-    let counter: number = 0;
+    const queueNames = await this.queue.queues();
 
-    if (typeof items !== 'undefined') {
-      for (var [queue, values] of items.entries()) {
-        if (values.hasOwnProperty('length')) {
-          var contents: Array<MQTX> = <Array<MQTX>>values;
+    if (maximumTimeToLive < 0) {
+      return counter;
+    }
 
-          for (var item of contents) {
-            if (item.created <= currentTime - maximumTimeToLive) {
-              // console.log(`TTL expired {${item.created} < ${currentTime} - ${maximumTimeToLive}}: ${item.id}`)
+    for (var queueName in queueNames) {
+      if (queueNames[queueName] !== queue)
+        // Skip the queue if it does not match what we're looking for (if specified)
+        continue;
 
-              if (await this.queue.del(typeof queue === 'string' ? queue : queue.toFixed(), item.id)) {
-                counter++;
-              }
-            }
-          }
+      const items = await this.queue.getAll(queueNames[queueName]);
+
+      for (var key in items) {
+        if (items[key].created + maximumTimeToLive <= currentTime) {
+          // console.log(`Item (${items[key].created} is older than ${currentTime}), so ${JSON.stringify(items[key])} will be deleted`);
+          await this.queue.del(queueNames[queueName], items[key].id);
+
+          counter++;
         }
       }
     }
@@ -142,3 +175,8 @@ export class TXMQƨ {
     return counter;
   }
 }
+
+export {
+  HashQueue,
+  RedisQueue
+};

@@ -1,5 +1,5 @@
 import test from 'ava';
-import { SologenicError } from './error';
+import { SologenicError } from '../lib/error';
 
 test.serial('check for duplicate error ids and messages', async function(t) {
     let errorCodes = SologenicError.getErrorCodes();
@@ -7,9 +7,9 @@ test.serial('check for duplicate error ids and messages', async function(t) {
     for (var i in errorCodes) {
         let errorId = SologenicError.getErrorCodeByMessage(errorCodes[i].message);
         let message = SologenicError.getErrorCodeById(errorCodes[i].id);
-       
+
         t.true(typeof(errorId) == 'string');
-        t.true(typeof(message) == 'string');          
+        t.true(typeof(message) == 'string');
 
         await new Promise((resolve) => {
             let count = 0;
@@ -38,5 +38,5 @@ test.serial('check for duplicate error ids and messages', async function(t) {
         }).then(function(value) {
             t.is(value, 1);
         });
-    }       
+    }
 });

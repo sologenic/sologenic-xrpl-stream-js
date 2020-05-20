@@ -112,6 +112,10 @@ When using the `sologenic-xrpl-stream-js` library on the server side, we recomme
 
 ### Intializing the Sologenic XRPL stream with a hash-based queue
 
+#### Initialization of the Sologenic XRPL stream with the offline signer
+
+The offline signing mechanism uses the standard `sign()` method included within the ripple-lib library.  In previous versions of the library, ripple-lib signing was the only supported mechanism.
+
 ```typescript
 'use strict';
 const ƨ = require('sologenic-xrpl-stream-js');
@@ -130,6 +134,44 @@ const ƨ = require('sologenic-xrpl-stream-js');
         clearCache: true,
         queueType: "hash",
         hash: {}
+      }
+    ).connect();
+);
+```
+
+#### Initialization of the Sologenic XRPL stream with the xumm signer
+
+The xumm signing mechanism implements xumm signing within the sologenic-xrpl-stream-js library.  The xumm signing is initialized by passing a `signingMechansim` parameter to the sologenic TX handler constructor.  At the current point in time, the xumm integration requires user interaction between the xumm application and sologenic-xrpl-stream-js.  When the xumm functionality is enabled, the sologenic-xrpl-stream-js prints out the `next_url` parameter that the user should follow within their web browser to sign the transaction.  The signing of the transaction should happen before the `maximumExecutionTime` times out, otherwise the promise object will be rejected and the transaction will need to be retried with a new xumm transaction URL.
+
+All existing transaction submission functionality remains the same in this library, the only difference is the signing mechanism requires third-party confirmation.
+
+```typescript
+'use strict';
+const ƨ = require('sologenic-xrpl-stream-js');
+
+(async () => {
+  try {
+    const sologenic = await new ƨ.SologenicTxHandler(
+      // RippleAPI Options
+      {
+        server: 'wss://testnet.xrpl-labs.com', // Kudos to Wietse Wind
+      },
+      // Sologenic Options, hash or redis (see SologenicOptions in documentation)
+      {
+        // Clear the cache before accessing the queue, since this is a hash-based 
+        // queue it will be initialized empty, so this will have no effect.
+        clearCache: true,
+        queueType: "hash",
+        hash: {},
+        signingMechanism: new XummSigner({
+          // Xumm API key and secret, inherited by the XUMM_API_KEY and XUMM_API_SECRET environment variables
+          xummApiKey: process.env.XUMM_API_KEY,
+          xummApiSecret: process.env.XUMM_API_SECRET,
+
+          // The maximum execution time is the time in milliseconds that a TX
+          // will wait for the transaction
+          maximumExecutionTime: 10000
+        })
       }
     ).connect();
 );

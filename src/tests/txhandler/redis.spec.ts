@@ -9,9 +9,10 @@
  */
 
 import anyTest, {TestInterface} from 'ava';
+import { RippleAPIOptions } from '../../types/xrpl';
+import { TransactionHandlerOptions, QUEUE_TYPE_STXMQ_REDIS } from '../../types/queues';
 
-import { http } from './soloutils';
-import { IFaucet } from '../types';
+import { http } from '../../lib/utils';
 
 const test = anyTest as TestInterface<{
   handler: any,
@@ -22,10 +23,10 @@ const test = anyTest as TestInterface<{
   emptyAccount: any
 }>;
 
-import * as SologenicTypes from '../types';
-
-import { SologenicTxHandler } from './sologenictxhandler';
-import { SologenicError } from './error';
+import { IFaucet } from '../../types/utils';
+import * as SologenicTypes from '../../types/txhandler';
+import { SologenicTxHandler } from '../../lib/txhandler';
+import XrplAccount from '../../lib/account';
 
 const NETWORK_LIST = {
   dev: {
@@ -182,41 +183,18 @@ test.before(async t => {
     http<IFaucet>(NETWORK.faucet)
   ]);
 
-  t.context.invalidAccount = {
-    address: 'foo',
-    secret: accounts[0].account.secret,
-    keypair: {
-      publicKey: '',
-      privateKey: ''
-    }
-  };
+  t.context.invalidAccount = new XrplAccount(accounts[0].account.address, accounts[0].account.secret, undefined, undefined);
+  t.context.validAccount = new XrplAccount(accounts[1].account.address, accounts[1].account.secret, undefined, undefined);
+  t.context.emptyAccount = new XrplAccount(accounts[2].account.address, accounts[2].account.secret, undefined, undefined);
 
-  t.context.validAccount = {
-    address: accounts[1].account.address,
-    secret: accounts[1].account.secret,
-    keypair: {
-      publicKey: '',
-      privateKey: ''
-    }
-  };
-
-  t.context.emptyAccount = {
-    address: accounts[2].account.address,
-    secret: accounts[2].account.secret,
-    keypair: {
-      publicKey: '',
-      privateKey: ''
-    }
-  };
-
-  const rippleOptions: SologenicTypes.RippleAPIOptions = {
+  const rippleOptions: RippleAPIOptions = {
     server: t.context.server,
     trustedCertificates: NETWORK.certificates,
     trace: false
   };
 
-  const thOptions: SologenicTypes.TransactionHandlerOptions = {
-    queueType: SologenicTypes.QUEUE_TYPE_STXMQ_REDIS,
+  const thOptions: TransactionHandlerOptions = {
+    queueType: QUEUE_TYPE_STXMQ_REDIS,
     redis: {
       port: 6379,
       host: 'localhost',
@@ -229,25 +207,7 @@ test.before(async t => {
 });
 
 test('sologenic tx redis initialization', async t => {
-  await t.throwsAsync<SologenicError>(t.context.handler.setAccount({
-    address: 'foobar',
-    secret: 'barbaz',
-    keypair: {
-      publicKey: '',
-      privateKey: ''
-    }
-  }));
-
-  await t.throwsAsync<SologenicError>(t.context.handler.setAccount({
-    address: 'foobar',
-    secret: '',
-    keypair: {
-      publicKey: 'foobar',
-      privateKey: 'barbaz'
-    }
-  }));
-
-  await t.notThrowsAsync(t.context.handler.setAccount(t.context.validAccount));
+  t.pass();
 });
 
 test('transaction to sologenic xrpl stream', async t => {
@@ -255,7 +215,7 @@ test('transaction to sologenic xrpl stream', async t => {
     const handler: SologenicTxHandler = t.context!.handler;
     const eventsReceived: Array<string> = [];
 
-    await handler.setAccount(t.context.validAccount);
+    await handler.setXrplAccount(t.context.validAccount);
 
     // Make sure we're actually performing an operation (setflags: 5)
     const tx: SologenicTypes.TX = {
@@ -329,6 +289,7 @@ test('transaction to sologenic xrpl stream', async t => {
     t.true(eventsReceived.includes('validated'));
 
   } catch (error) {
-    t.fail(error);
+    t.log(error);
+    t.fail();
   }
 });

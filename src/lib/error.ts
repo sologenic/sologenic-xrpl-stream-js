@@ -1,5 +1,5 @@
 export class SologenicError extends Error {
-  /** 
+  /**
    * @param status       Status code for error
    * @param rippleError  Inner error
    */
@@ -10,8 +10,8 @@ export class SologenicError extends Error {
     this.message = this._getError(status);
     Object.setPrototypeOf(this, SologenicError.prototype);
   }
-  
-  /** 
+
+  /**
    * @returns  An array of error codes
    */
 
@@ -25,11 +25,12 @@ export class SologenicError extends Error {
       { id: '1005', message: 'ripple_ws_connection_error' },
       { id: '1006', message: 'unable_to_validate_missed_transactions' },
       { id: '2000', message: 'invalid_xrp_address' },
-      { id: '2001', message: 'invalid_xrp_secret' }
+      { id: '2001', message: 'invalid_xrp_secret' },
+      { id: '2002', message: 'unable_to_sign_transaction' }
     ]
   }
 
-  /** 
+  /**
    * @param errorId  An error 'id'
    * @returns        An error 'message' or undefined.
    */
@@ -39,7 +40,7 @@ export class SologenicError extends Error {
       e => e.id === errorId)!.message;
   }
 
-  /** 
+  /**
    * @param message  An error 'message'
    * @returns        An error 'id' or undefined.
    */
@@ -49,7 +50,7 @@ export class SologenicError extends Error {
       e => e.message === message)!.id;
   }
 
-  /** 
+  /**
    * @param errorId  An error 'id'
    * @returns        An error 'message' or undefined.
    */
