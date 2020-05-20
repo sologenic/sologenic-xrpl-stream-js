@@ -18,6 +18,7 @@ import { EventEmitter } from 'events';
 
 import { v4 as uuid } from 'uuid';
 import { wait } from './utils';
+import { ISologenicTxSigner } from '../types';
 
 const binaryCodec = require('ripple-binary-codec');
 
@@ -194,6 +195,22 @@ export class SologenicTxHandler extends EventEmitter {
   }
 
   /**
+   * Sets the Sologenic TX handler signing mechanism
+   * @param signingMechanism
+   */
+  public setSigningMechanism(signingMechanism: ISologenicTxSigner) {
+    this.signingMechanism = signingMechanism;
+  }
+
+  /**
+   * Gets the Sologenic TX handler signing mechanism
+   * @param signingMechanism
+   */
+  public getSigningMechanism(): ISologenicTxSigner {
+    return this.signingMechanism;
+  }
+
+  /**
    * Set XRPL base fee for transactions, the ledger object is updated by ledger streaming event updates
    * @param fee Fee in XRP (not drops), this will be converted when constructing the TX
    * @returns {Promise.<this>}
@@ -278,6 +295,54 @@ export class SologenicTxHandler extends EventEmitter {
   }
 
   /**
+   * Preserve existing functionality
+   *
+   * @param {account}           XRPL account address and secret, or address and a keypair
+   * @returns {Promise.<void>}
+   * @throws {SologenicError}
+   */
+  public async setAccount(account: SologenicTypes.Account): Promise<void> {
+    try {
+      let xrplAccount = new XrplAccount(
+        account.address,
+        account.secret!,
+        (typeof(account.keypair) !== 'undefined' && typeof(account.keypair.publicKey) !== 'undefined') ? account.keypair.publicKey : undefined,
+        (typeof(account.keypair) !== 'undefined' && typeof(account.keypair.privateKey) !== 'undefined') ? account.keypair.privateKey : undefined);
+
+      this.xrplAccount = xrplAccount;
+
+      // The validate method will raise an exception if the account is not
+      xrplAccount.validate();
+
+      if (this.clearCache)
+        // Clear the cache
+        await this.txmq.delAll();
+
+      // Connect, fetch the current state (sequence) of the account, and validate missed
+      // transactions
+
+      await this.connect();
+
+      await this._fetchCurrentState();
+      await this._validateMissedTransactions();
+
+    } catch (error) {
+      if (error instanceof XrplAddressException) {
+        throw new SologenicError('2000', error);
+      } else if (error instanceof XrplSecretException) {
+        throw new SologenicError('2001', error);
+      } else if (error instanceof XrplKeypairException) {
+        throw new SologenicError('2001', error);
+      } else if (error instanceof XrplKeypairOrSecretMissingException) {
+        throw new SologenicError('2001', error);
+      } else {
+        throw error;
+      }
+    }
+  }
+
+
+  /**
    * Set the current account to use on the XRPL for transactions or use
    * a keypair.  See the [[SologenicTypes.Account]] interface for more
    * details.
@@ -290,7 +355,7 @@ export class SologenicTxHandler extends EventEmitter {
    * @returns {Promise.<void>}
    * @throws {SologenicError}
    */
-  public async setAccount(xrplAccount: XrplAccount): Promise<void> {
+  public async setXrplAccount(xrplAccount: XrplAccount): Promise<void> {
     try {
       // The validate method will raise an exception if the account is not
       xrplAccount.validate();
@@ -740,12 +805,10 @@ export class SologenicTxHandler extends EventEmitter {
     // Set LastLedgerSequence for this tx to make sure it becomes invalid after 3 verified closed ledgers
     tx.LastLedgerSequence = this.getLedgerVersion() + 3;
 
-    // console.log(tx);
-
     // Use the signing mechanism and then run the callback once the request has been signed, we
     // could use a promise here too...
     return this.signingMechanism
-      .sign(JSON.stringify(tx), unsignedTx.id, this.getAccount(), {})
+      .sign(tx, unsignedTx.id, this.getAccount(), {})
       .then((signedTx: SologenicTypes.SignedTx) => {
         this.txEvents![signedTx.id].emit('signed', signedTx);
 

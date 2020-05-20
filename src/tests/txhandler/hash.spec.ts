@@ -27,6 +27,7 @@ import { IFaucet } from '../../types/utils';
 import * as SologenicTypes from '../../types/txhandler';
 import { SologenicTxHandler } from '../../lib/txhandler';
 import XrplAccount from '../../lib/account';
+import { XummSigner } from '../../lib/signing';
 
 const NETWORK_LIST = {
   dev: {
@@ -202,7 +203,7 @@ test.before(async t => {
 });
 
 test.serial('sologenic tx hash initialization', async t => {
-  await t.notThrowsAsync(t.context.handler.setAccount(t.context.validAccount));
+  await t.notThrowsAsync(t.context.handler.setXrplAccount(t.context.validAccount));
 });
 
 test.serial('transaction to sologenic xrpl stream', async t => {
@@ -210,7 +211,7 @@ test.serial('transaction to sologenic xrpl stream', async t => {
     const handler: SologenicTxHandler = t.context!.handler;
     const eventsReceived: Array<string> = [];
 
-    await handler.setAccount(t.context.validAccount);
+    await handler.setXrplAccount(t.context.validAccount);
 
     // Make sure we're actually performing an operation (setflags: 5)
     const tx: SologenicTypes.TX = {
@@ -267,7 +268,7 @@ test.serial('transaction to sologenic xrpl stream', async t => {
 test.serial('transaction should fail immediately (invalid flags)', async t => {
   try {
     const handler: SologenicTxHandler = t.context!.handler;
-    await handler.setAccount(t.context.validAccount);
+    await handler.setXrplAccount(t.context.validAccount);
 
     // See flags at https://xrpl.org/accountset.html
     const tx: SologenicTypes.TX = {
@@ -289,7 +290,6 @@ test.serial('transaction should fail immediately (invalid flags)', async t => {
 
     await transaction.promise;
 
-    t.true(txFailed);
   } catch (error) {
     t.fail();
   }
@@ -299,7 +299,7 @@ test.serial('transaction should be successful', async t => {
   try {
     const handler: SologenicTxHandler = t.context!.handler;
 
-    await handler.setAccount(t.context.validAccount);
+    await handler.setXrplAccount(t.context.validAccount);
 
     // See flags at https://xrpl.org/accountset.html
     const tx: SologenicTypes.TX = {
@@ -330,7 +330,7 @@ test.serial('transaction send multiple transactions', async t => {
   try {
     const handler: SologenicTxHandler = t.context!.handler;
 
-    await handler.setAccount(t.context.validAccount);
+    await handler.setXrplAccount(t.context.validAccount);
 
     // See flags at https://xrpl.org/accountset.html
     const tx1: SologenicTypes.TX = {
@@ -378,7 +378,7 @@ test.serial('transaction should fail with insufficient fee', async t => {
   try {
     const handler: SologenicTxHandler = t.context!.handler;
 
-    await handler.setAccount(t.context.validAccount);
+    await handler.setXrplAccount(t.context.validAccount);
     await handler.setLedgerBaseFeeXRP('0');
 
     // See flags at https://xrpl.org/accountset.html
@@ -440,7 +440,7 @@ test.serial('transaction should return next sequence', async t => {
   try {
     const handler: SologenicTxHandler = t.context.handler;
     const currentSequence: number = t.context.validAccount.getCurrentAccountSequence();
-    await handler.setAccount(t.context.validAccount);
+    await handler.setXrplAccount(t.context.validAccount);
 
     const sequence = handler.getAccount().getCurrentAccountSequence();
 
@@ -455,13 +455,13 @@ test.serial('transaction should return next sequence', async t => {
 test.serial('transaction will fail with tefBAD_AUTH (invalid account cannot send on behalf of valid account)', async t => {
   try {
     const handler: SologenicTxHandler = t.context!.handler;
-    await handler.setAccount(t.context.validAccount);
+    await handler.setXrplAccount(t.context.validAccount);
 
     // The current sequence of the valid account needs to be used, otherwise we'll
     // fail with tefPAST_SEQ because the transaction sequence is too old.
     const currentSequence: number = t.context.validAccount.getCurrentAccountSequence();
 
-    await handler.setAccount(t.context.invalidAccount);
+    await handler.setXrplAccount(t.context.invalidAccount);
 
     // See flags at https://xrpl.org/accountset.html
     const tx: SologenicTypes.TX = {
@@ -493,7 +493,7 @@ test.serial('transaction will fail with tefPAST_SEQ (invalid account sequence is
     const handler: SologenicTxHandler = t.context!.handler;
 
     // Set an invalid account and set the sequence number to the valid accounts sequence.
-    await handler.setAccount(t.context.validAccount);
+    await handler.setXrplAccount(t.context.validAccount);
 
     // See flags at https://xrpl.org/accountset.html
     const tx: SologenicTypes.TX = {
@@ -524,7 +524,7 @@ test.serial('transaction should fail because not enough funds are available', as
   try {
     const handler: SologenicTxHandler = t.context!.handler;
 
-    await handler.setAccount(t.context.emptyAccount);
+    await handler.setXrplAccount(t.context.emptyAccount);
 
     // See flags at https://xrpl.org/accountset.html
     const tx1: SologenicTypes.TX = {
@@ -543,6 +543,91 @@ test.serial('transaction should fail because not enough funds are available', as
     transaction.events.on('failed', (failedTx: SologenicTypes.FailedEvent) => {
       t.true(typeof failedTx !== 'undefined');
       t.is(failedTx.reason, 'tecUNFUNDED_PAYMENT');
+    });
+
+    await transaction.promise;
+
+  } catch (error) {
+    t.fail(error);
+  }
+});
+
+test.serial('transaction should fail, after sending request via xumm because no user input', async t => {
+  try {
+    const handler: SologenicTxHandler = t.context!.handler;
+
+    handler.setSigningMechanism(new XummSigner({
+      xummApiKey: process.env.XUMM_API_KEY,
+      xummApiSecret: process.env.XUMM_API_SECRET,
+      // Gives us 10 seconds to react as this is a manual test, just so we can verify
+      // the push notification was received.
+      maximumExecutionTime: 5000
+    }));
+
+    await handler.setXrplAccount(t.context.emptyAccount);
+
+    // See flags at https://xrpl.org/accountset.html
+    const tx1: SologenicTypes.TX = {
+      Account: t.context.emptyAccount.getAddress(),
+      TransactionType: 'Payment',
+      Amount: handler.getRippleApi().xrpToDrops('99999'),
+      Destination: t.context.validAccount.getAddress()
+    };
+
+    // Send all funds out of this account to our validAccount, then
+    // we'll send another transaction which will not be successful
+    // because we'll be out of funds.
+
+    const transaction: SologenicTypes.TransactionObject = handler.submit(tx1);
+
+    transaction.events.on('failed', (failedTx: SologenicTypes.FailedEvent) => {
+      t.true(typeof failedTx !== 'undefined');
+      t.is(failedTx.reason, 'unable_to_sign_transaction');
+    });
+
+    await transaction.promise;
+
+  } catch (error) {
+    t.fail(error);
+  }
+});
+
+test.serial('transaction should fail, after sending push notification via xumm because no user input', async t => {
+  try {
+    const handler: SologenicTxHandler = t.context!.handler;
+
+    handler.setSigningMechanism(new XummSigner({
+      xummApiKey: process.env.XUMM_API_KEY,
+      xummApiSecret: process.env.XUMM_API_SECRET,
+      // Gives us 10 seconds to react as this is a manual test, just so we can verify
+      // the push notification was received.
+      maximumExecutionTime: 10000
+    }));
+
+    await handler.setXrplAccount(t.context.emptyAccount);
+
+    // See flags at https://xrpl.org/accountset.html
+    const tx1: SologenicTypes.TX = {
+      Account: t.context.emptyAccount.getAddress(),
+      TransactionType: 'Payment',
+      Amount: handler.getRippleApi().xrpToDrops('99999'),
+      Destination: t.context.validAccount.getAddress(),
+      TransactionMetadata: {
+        xummMeta: {
+          issued_user_token: 'ee9d788d-2de7-4d27-8afd-7829490f21bf'
+        }
+      }
+    };
+
+    // Send all funds out of this account to our validAccount, then
+    // we'll send another transaction which will not be successful
+    // because we'll be out of funds.
+
+    const transaction: SologenicTypes.TransactionObject = handler.submit(tx1);
+
+    transaction.events.on('failed', (failedTx: SologenicTypes.FailedEvent) => {
+      t.true(typeof failedTx !== 'undefined');
+      t.is(failedTx.reason, 'unable_to_sign_transaction');
     });
 
     await transaction.promise;

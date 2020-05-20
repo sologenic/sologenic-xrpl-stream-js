@@ -17,6 +17,7 @@ test.serial("sign a transaction and verify the signature", async t => {
     "snevTM71p4xj5ZQcnBvpHeb9P3Umn");
 
   const txJson = {
+    Account: account.getAddress(),
     TransactionType: 'AccountSet',
     SetFlag: 1
   };
@@ -24,7 +25,7 @@ test.serial("sign a transaction and verify the signature", async t => {
   const signer = new OfflineSigner({});
 
   // Encode transaction and sign
-  const signedTx: SignedTx = await signer.sign(JSON.stringify(txJson), "1234", account, {});
+  const signedTx: SignedTx = await signer.sign(txJson, "1234", account, {});
 
   // Decode the transaction
   const decodedTransaction = binaryCodec.decode(signedTx.signedTransaction);

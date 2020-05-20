@@ -24,8 +24,8 @@ export default abstract class SologenicTxSigner implements SologenicTypes.ISolog
   }
 
   public async sign(
-    txJson?: string,
-    txId?: string,
+    txJson: SologenicTypes.TX,
+    txId: string,
     account?: XrplAccount,
     signingOptions?: any
   ): Promise<any> {

@@ -114,9 +114,15 @@ export default class XrplAccount {
       throw new XrplKeypairException('Keypair is not valid', new RippleError.ValidationError());
     }
 
+    // Don't check if we have a keypair or secret because
+    // we may only pass in an address because we are are only
+    // wanting to monitor an address
+
+    /*
     if (!this.hasKeypair() && !this.hasSecret()) {
       throw new XrplKeypairOrSecretMissingException('Missing keypair or secret');
     }
+    */
   }
 
   /**

@@ -1,7 +1,5 @@
 import { http, promiseTimeout, wait } from '../utils';
 
-import Redis from 'ioredis';
-
 import XrplAccount from '../account';
 import * as SologenicTypes from '../../types';
 import SologenicTxSigner from './index';
@@ -13,8 +11,6 @@ export class XummSigner extends SologenicTxSigner {
   protected xummApiSecret: string = '';
   protected xummApiEndpoint: string = 'https://xumm.app/api/v1/platform/payload';
   protected xummApiUserToken?: string;
-
-  private redisClient = new Redis();
 
   // 60 seconds should be enough for a user interaction
   protected maximumExecutionTime: number = 60 * 1000;
@@ -52,7 +48,7 @@ export class XummSigner extends SologenicTxSigner {
     }
   }
 
-  async verify(payload: string, account?: XrplAccount): Promise<IXummQueryPayload | undefined> {
+  async verify(payload: string): Promise<IXummQueryPayload | undefined> {
     while (true) {
       const result = await http<IXummQueryPayload>(
         `${this.xummApiEndpoint}/${payload}`,
@@ -60,20 +56,19 @@ export class XummSigner extends SologenicTxSigner {
         this._headers()
       );
 
-      if (result && result.hasOwnProperty('application') && typeof(result.application.issued_user_token) !== 'undefined' && account!.getAddress()) {
-        await this.redisClient.set(
-          'xumm:account:' + account!.getAddress(),
-          result.application.issued_user_token)
-      }
-
       if (result.hasOwnProperty('error') && result.hasOwnProperty('code') && result.hasOwnProperty('message')) {
         return undefined;
       } else if (result.meta! && result.meta!.resolved) {
-        if (result.meta!.signed)
+        if (result.meta!.signed) {
+          // If you would like to see the raw signed payload
+          // console.log("XUMM SIGNED PAYLOAD");
+          // console.log(result);
+
           // The request has been signed, send it back, otherwise return undefined if the
           // request has been resolved but not signed/cancelled/expired/etc.
           // This is probably quite simple for now and can be extended later.
           return result;
+        }
 
         return undefined;
       }
@@ -83,7 +78,7 @@ export class XummSigner extends SologenicTxSigner {
   }
 
   async sign(
-    txJson: string,
+    txJson: SologenicTypes.TX,
     txId: string,
     account?: XrplAccount,
     signingOptions?: any
@@ -92,12 +87,22 @@ export class XummSigner extends SologenicTxSigner {
     account;
     signingOptions;
 
-    const extra = {
+    const xummMeta = txJson.TransactionMetadata?.xummMeta;
+
+    // Delete the transaction metadata if it exists since the signing will fail
+    // as this TransactionMetadata is not known to the schema.
+    if (txJson.TransactionMetadata) {
+      delete txJson.TransactionMetadata;
+    }
+
+    const xummOptionsPayload = {
       options: {
+        // If submit is false, xumm returns the signed transaction.
+        // If submit is true, xumm returns the signed transaction, but also submits to the XRPL for us.
         submit: false,
         expire: Math.ceil(this.maximumExecutionTime / 1000 / 60).toFixed()
       },
-      user_token: await this.redisClient.get('xumm:account:' + account!.getAddress()) || ""
+      user_token: xummMeta?.issued_user_token
     };
 
     const result = await http<IXummSubmitPayload>(
@@ -105,13 +110,17 @@ export class XummSigner extends SologenicTxSigner {
       'POST',
       this._headers(),
       JSON.stringify({
-        txjson: JSON.parse(txJson),
-        ...extra
+        txjson: txJson,
+        ...xummOptionsPayload
       }
     ));
 
+    // If you would like to see the raw response (with app_url) payload to the xumm API
+    // console.log("XUMM PAYLOAD (with app_url)");
+    // console.log(result);
+
     const verification: IXummQueryPayload =
-      await promiseTimeout(this.maximumExecutionTime, this.verify(result.uuid, account));
+      await promiseTimeout(this.maximumExecutionTime, this.verify(result.uuid));
 
     if (typeof verification === 'undefined') {
       // Unable to sign request (request was rejected or cancelled)
