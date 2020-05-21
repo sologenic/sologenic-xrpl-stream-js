@@ -99,6 +99,11 @@ export class SologenicTxHandler extends EventEmitter {
   );
 
   /**
+   * Type of client application using Sologenic Tx Handler
+   */
+  protected clientType: string = '';
+
+  /**
    * Constructor for an instance of sologenic tx handler.
    *
    * @param rippleApiOptions     This parameter is used to construct ripple-lib and takes in:
@@ -188,6 +193,14 @@ export class SologenicTxHandler extends EventEmitter {
 
       if (typeof sologenicOptions.signingMechanism !== 'undefined')
         this.signingMechanism = sologenicOptions.signingMechanism;
+      
+      /**
+       * Initialize client type
+       */
+
+      if (typeof sologenicOptions.clientType !== 'undefined') {
+        this.clientType = sologenicOptions.clientType;
+      } 
 
     } catch (error) {
       throw new SologenicError('1001', error);

@@ -3,8 +3,8 @@ import {
   IQueue,
   QUEUE_TYPE_STXMQ_REDIS,
   QUEUE_TYPE_STXMQ_HASH,
-  TransactionHandlerOptions
 } from '../../types/queues';
+import { TransactionHandlerOptions } from '../../types/txhandleroptions';
 
 /**
  * Import redis queue implementation

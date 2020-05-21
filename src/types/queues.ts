@@ -1,4 +1,3 @@
-import { ISologenicTxSigner } from "./txhandler";
 
 export interface IQueue {
   add(queue: string, data: MQTX, id?: string): Promise<MQTX>;
@@ -20,15 +19,6 @@ export interface RedisTransactionHandlerOptions {
   family?: number;
   password?: string;
   db?: number;
-}
-
-export interface TransactionHandlerOptions {
-  queueType?: string;
-  clearCache?: boolean;
-  redis?: RedisTransactionHandlerOptions
-  hash?: HashTransactionHandlerOptions
-  maximumTimeToLive?: number;
-  signingMechanism?: ISologenicTxSigner;
 }
 
 export interface MQTX {

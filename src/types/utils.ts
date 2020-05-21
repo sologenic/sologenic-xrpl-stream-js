@@ -17,3 +17,4 @@ export interface IFaucet {
   account: IFaucetAccount;
   balance: number;
 }
+
