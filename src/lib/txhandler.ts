@@ -1129,8 +1129,8 @@ export class SologenicTxHandler extends EventEmitter {
 
         this.txmq.add(
           'txmq:failed:' + this.getAccount().getAddress(),
-          unsignedTx,
-          unsignedTx.id
+          failedTx,
+          failedTx.unsignedTx!.id
         )
       ]);
 
