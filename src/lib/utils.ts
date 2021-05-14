@@ -1,4 +1,5 @@
-import fetch, { RequestInfo } from 'node-fetch'
+import axios, { Method } from 'axios';
+import fetch, { RequestInfo } from 'node-fetch';
 
 /**
  * Perform a asynchronous request and cast the result back to a
@@ -22,6 +23,29 @@ export async function http<T>(
   return await response.json();
 }
 
+export async function httpRequest<T>(
+  url: string,
+  method: Method,
+  headers?: object,
+  body?: string
+): Promise<T> {
+  try {
+    const response = await axios({
+      url: url,
+      method: method,
+      headers: {
+        'Content-type': 'application/json',
+        ...headers
+      },
+      data: body
+    });
+
+    return response.data;
+  } catch (e) {
+    throw new Error(e);
+  }
+}
+
 /**
  * Pause execution for X milliseconds
  *
@@ -38,18 +62,15 @@ export const wait = (milliseconds: number) => {
  * @param promise
  */
 
- export const promiseTimeout = function(milliseconds: number, promise: any){
+export const promiseTimeout = function(milliseconds: number, promise: any) {
   // Create a promise that rejects in <ms> milliseconds
   let timeout = new Promise((_, reject) => {
     let id = setTimeout(() => {
       clearTimeout(id);
-      reject('Timed out in '+ milliseconds + 'ms.')
-    }, milliseconds)
-  })
+      reject('Timed out in ' + milliseconds + 'ms.');
+    }, milliseconds);
+  });
 
   // Returns a race between our timeout and the passed in promise
-  return Promise.race([
-    promise,
-    timeout
-  ])
-}
+  return Promise.race([promise, timeout]);
+};

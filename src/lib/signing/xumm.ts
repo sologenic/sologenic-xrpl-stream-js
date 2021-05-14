@@ -2,15 +2,17 @@ import { http, promiseTimeout, wait } from '../utils';
 
 import XrplAccount from '../account';
 import * as SologenicTypes from '../../types';
-import SologenicTxSigner from './index';
+import { SologenicTxSigner } from './index';
 import { SologenicError } from '../error';
 import { IXummQueryPayload, IXummSubmitPayload } from '../../types/xumm';
 
 export class XummSigner extends SologenicTxSigner {
   protected xummApiKey: string = '';
   protected xummApiSecret: string = '';
-  protected xummApiEndpoint: string = 'https://xumm.app/api/v1/platform/payload';
+  protected xummApiEndpoint: string =
+    'https://xumm.app/api/v1/platform/payload';
   protected xummApiUserToken?: string;
+  signerID: string = 'xumm';
 
   // 60 seconds should be enough for a user interaction
   protected maximumExecutionTime: number = 60 * 1000;
@@ -45,7 +47,7 @@ export class XummSigner extends SologenicTxSigner {
     return {
       'X-API-Key': this.xummApiKey,
       'X-API-Secret': this.xummApiSecret
-    }
+    };
   }
 
   async verify(payload: string): Promise<IXummQueryPayload | undefined> {
@@ -56,7 +58,11 @@ export class XummSigner extends SologenicTxSigner {
         this._headers()
       );
 
-      if (result.hasOwnProperty('error') && result.hasOwnProperty('code') && result.hasOwnProperty('message')) {
+      if (
+        result.hasOwnProperty('error') &&
+        result.hasOwnProperty('code') &&
+        result.hasOwnProperty('message')
+      ) {
         return undefined;
       } else if (result.meta! && result.meta!.resolved) {
         if (result.meta!.signed) {
@@ -87,7 +93,9 @@ export class XummSigner extends SologenicTxSigner {
     account;
     signingOptions;
 
-    const xummMeta = txJson.TransactionMetadata?.xummMeta;
+    const txMeta: any = txJson.TransactionMetadata;
+
+    const xummMeta: any = txMeta.xummMeta;
 
     // Delete the transaction metadata if it exists since the signing will fail
     // as this TransactionMetadata is not known to the schema.
@@ -102,7 +110,8 @@ export class XummSigner extends SologenicTxSigner {
         submit: false,
         expire: Math.ceil(this.maximumExecutionTime / 1000 / 60).toFixed()
       },
-      user_token: xummMeta?.issued_user_token
+      user_token:
+        typeof xummMeta !== 'undefined' ? xummMeta.issued_user_token : ''
     };
 
     const result = await http<IXummSubmitPayload>(
@@ -112,15 +121,17 @@ export class XummSigner extends SologenicTxSigner {
       JSON.stringify({
         txjson: txJson,
         ...xummOptionsPayload
-      }
-    ));
+      })
+    );
 
     // If you would like to see the raw response (with app_url) payload to the xumm API
     // console.log("XUMM PAYLOAD (with app_url)");
     // console.log(result);
 
-    const verification: IXummQueryPayload =
-      await promiseTimeout(this.maximumExecutionTime, this.verify(result.uuid));
+    const verification: IXummQueryPayload = await promiseTimeout(
+      this.maximumExecutionTime,
+      this.verify(result.uuid)
+    );
 
     if (typeof verification === 'undefined') {
       // Unable to sign request (request was rejected or cancelled)

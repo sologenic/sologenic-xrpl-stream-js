@@ -188,7 +188,6 @@ export class SologenicTxHandler extends EventEmitter {
 
       if (typeof sologenicOptions.signingMechanism !== 'undefined')
         this.signingMechanism = sologenicOptions.signingMechanism;
-
     } catch (error) {
       throw new SologenicError('1001', error);
     }
@@ -295,6 +294,18 @@ export class SologenicTxHandler extends EventEmitter {
   }
 
   /**
+   * Start Signer Connection if this one is not OFFLINE SIGNER
+   *
+   */
+  public async connectSigner(): Promise<any> {
+    if (this.signingMechanism.signerID !== 'offline') {
+      const connection_ref = await this.signingMechanism.requestConnection();
+
+      return connection_ref;
+    }
+  }
+
+  /**
    * Preserve existing functionality
    *
    * @param {account}           XRPL account address and secret, or address and a keypair
@@ -306,8 +317,15 @@ export class SologenicTxHandler extends EventEmitter {
       let xrplAccount = new XrplAccount(
         account.address,
         account.secret!,
-        (typeof(account.keypair) !== 'undefined' && typeof(account.keypair.publicKey) !== 'undefined') ? account.keypair.publicKey : undefined,
-        (typeof(account.keypair) !== 'undefined' && typeof(account.keypair.privateKey) !== 'undefined') ? account.keypair.privateKey : undefined);
+        typeof account.keypair !== 'undefined' &&
+        typeof account.keypair.publicKey !== 'undefined'
+          ? account.keypair.publicKey
+          : undefined,
+        typeof account.keypair !== 'undefined' &&
+        typeof account.keypair.privateKey !== 'undefined'
+          ? account.keypair.privateKey
+          : undefined
+      );
 
       this.xrplAccount = xrplAccount;
 
@@ -325,7 +343,6 @@ export class SologenicTxHandler extends EventEmitter {
 
       await this._fetchCurrentState();
       await this._validateMissedTransactions();
-
     } catch (error) {
       if (error instanceof XrplAddressException) {
         throw new SologenicError('2000', error);
@@ -340,7 +357,6 @@ export class SologenicTxHandler extends EventEmitter {
       }
     }
   }
-
 
   /**
    * Set the current account to use on the XRPL for transactions or use
@@ -375,7 +391,6 @@ export class SologenicTxHandler extends EventEmitter {
 
       await this._fetchCurrentState();
       await this._validateMissedTransactions();
-
     } catch (error) {
       if (error instanceof XrplAddressException) {
         throw new SologenicError('2000', error);
@@ -393,6 +408,27 @@ export class SologenicTxHandler extends EventEmitter {
 
   public getAccount(): XrplAccount {
     return this.xrplAccount;
+  }
+
+  public async cancelTx(
+    unsignedTx: SologenicTypes.UnsignedTx
+  ): Promise<boolean> {
+    // const cancellation: boolean = await this._txFailed(
+    //   unsignedTx,
+    //   'txCancelled',
+    //   'transaction cancelled'
+    // );
+
+    this.signingMechanism.cancelSigning(true);
+
+    await this.txmq.add(
+      'txmq:cancelled:' + this.getAccount().getAddress(),
+      unsignedTx.data,
+      unsignedTx.id
+    );
+
+    // return cancellation;
+    return true;
   }
 
   /**
@@ -723,8 +759,28 @@ export class SologenicTxHandler extends EventEmitter {
         unsignedTx.id
       );
 
+      const signingEvent: SologenicTypes.SigningEvent = {
+        id: unsignedTx.id!,
+        txJson: unsignedTx.data
+      };
+
+      this.emit('signing', signingEvent);
+
       return this._signTransaction(unsignedTx)
         .then(async signedTx => {
+          const isCancelled = await this.txmq.get(
+            `txmq:cancelled:${this.getAccount().getAddress()}`,
+            unsignedTx.id
+          );
+
+          if (isCancelled) {
+            await this.txmq.del(
+              `txmq:cancelled:${this.getAccount().getAddress()}`,
+              unsignedTx.id
+            );
+            throw new Error('TRANSACTION_HAS_BEEN_CANCELLED');
+          }
+
           const result: boolean = await this._dispatchSignedTxToLedger(
             unsignedTx,
             signedTx
@@ -794,7 +850,10 @@ export class SologenicTxHandler extends EventEmitter {
     await this._fetchCurrentState();
 
     // Set the sequence of this tx to the latest sequence obtained from account_info
-    if (this.signingMechanism.getIncludeSequence() && typeof tx.Sequence === 'undefined') {
+    if (
+      this.signingMechanism.getIncludeSequence() &&
+      typeof tx.Sequence === 'undefined'
+    ) {
       // Set the sequence number if it was not already provided,
       // this is for our test cases so we can manually specify our
       // sequence.
@@ -814,9 +873,8 @@ export class SologenicTxHandler extends EventEmitter {
 
         return signedTx;
       })
-      .catch(() => {
-        // console.log('Caught exception while signing transaction');
-        throw new SologenicError('2002');
+      .catch(e => {
+        throw new Error(e.message);
       });
   }
 
@@ -865,7 +923,7 @@ export class SologenicTxHandler extends EventEmitter {
           reason: `${submitResult.resultCode}: ${submitResult.resultMessage}`
         };
 
-        this.emit('warning', warningEvent);
+        this.emit('warning', warningEvent, unsignedTx);
 
         if (typeof this.txEvents![signedTx.id] !== 'undefined') {
           this.txEvents![signedTx.id].emit('warning', warningEvent);
@@ -1012,7 +1070,7 @@ export class SologenicTxHandler extends EventEmitter {
             `${error.data.error}: ${error.data.error_exception}`,
             undefined
           );
-        } else if (error.data.resultCode.startsWidth('tem')) {
+        } else if (error.data.resultCode.startsWith('tem')) {
           return this._txFailed(
             unsignedTx,
             `${error.data.error}: ${error.data.error_exception} (${error.data.resultCode})`,
@@ -1127,6 +1185,11 @@ export class SologenicTxHandler extends EventEmitter {
           unsignedTx.id
         ),
 
+        this.txmq.del(
+          'txmq:signing:' + this.getAccount().getAddress(),
+          unsignedTx.id
+        ),
+
         this.txmq.add(
           'txmq:failed:' + this.getAccount().getAddress(),
           failedTx,
@@ -1232,7 +1295,7 @@ export class SologenicTxHandler extends EventEmitter {
       */
 
       // Check and see if the dispatched transaction's ledger is passed or we are in the current ledger
-      if (dispatchedTx!.result!.lastLedger <= this.ledger.ledgerVersion) {
+      if (dispatchedTx!.result!.sequence + 3 <= this.ledger.ledgerVersion) {
         // Get the transaction details from the ledger
 
         const validatedTx = await this.getRippleApi().getTransaction(
