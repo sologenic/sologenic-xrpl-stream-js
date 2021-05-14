@@ -372,11 +372,22 @@ export class XummWalletSigner extends SologenicTxSigner {
   }
 
   showSigningQRcode() {
+    console.log('clike', this.is_mobile);
     let qrCode = document.createElement('img');
     qrCode.setAttribute('src', this.signing_refs.qr);
     qrCode.setAttribute('alt', 'QR Code');
 
     let container: any = document.getElementById(this.fallback_container_id);
     container.appendChild(qrCode);
+
+    if (this.is_mobile) {
+      let deepLink = document.createElement('a');
+      deepLink.setAttribute('href', this.signing_refs.deeplink);
+      deepLink.setAttribute('target', '_blank');
+      deepLink.setAttribute('rel', 'noopener noreferrer');
+      deepLink.innerText = 'XUMM Wallet >';
+
+      container.appendChild(deepLink);
+    }
   }
 }
