@@ -1,6 +1,6 @@
 {
   "name": "sologenic-xrpl-stream-js-nightly",
-  "version": "1.0.61",
+  "version": "1.0.62",
   "description": "Persistent transaction handling for the XRP Ledger",
   "main": "build/main/index.js",
   "typings": "build/main/index.d.ts",
