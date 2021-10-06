@@ -188,49 +188,6 @@ const  ƨ  =  require('sologenic-xrpl-stream-js');
 )();
 ```
 
-#### Initialization of the Sologenic XRPL stream with the xumm signer
-
-The xumm signing mechanism implements xumm signing within the sologenic-xrpl-stream-js library. The xumm signing is initialized by passing a `signingMechansim` parameter to the sologenic TX handler constructor. At the current point in time, the xumm integration requires user interaction between the xumm application and sologenic-xrpl-stream-js. When the xumm functionality is enabled, the sologenic-xrpl-stream-js prints out the `next_url` parameter that the user should follow within their web browser to sign the transaction. The signing of the transaction should happen before the `maximumExecutionTime` times out, otherwise the promise object will be rejected and the transaction will need to be retried with a new xumm transaction URL.
-
-All existing transaction submission functionality remains the same in this library, the only difference is the signing mechanism requires third-party confirmation.
-
-```typescript
-
-'use strict';
-
-const  ƨ  =  require('sologenic-xrpl-stream-js');
-
-
-(async () => {
-
-  try {
-    const  sologenic  =  await  new  ƨ.SologenicTxHandler(
-      // RippleAPI Options
-      {
-        server:  'wss://testnet.xrpl-labs.com',  // Kudos to Wietse Wind
-      },
-      // Sologenic Options, hash or redis (see SologenicOptions in documentation)
-      {
-        // Clear the cache before accessing the queue, since this is a hash-based
-        // queue it will be initialized empty, so this will have no effect.
-        clearCache: true,
-        queueType:  "hash",
-        hash: {},
-        signingMechanism:  new  XummSigner({
-          // Xumm API key and secret, inherited by the XUMM_API_KEY and XUMM_API_SECRET environment variables
-          xummApiKey:  process.env.XUMM_API_KEY,
-          xummApiSecret:  process.env.XUMM_API_SECRET,
-          // The maximum execution time is the time in milliseconds that a TX
-          // will wait for the transaction
-          maximumExecutionTime: 10000
-
-        })
-    }).connect();
-  }
-);
-
-```
-
 ### Intializing the Sologenic XRPL stream with a redis-based queue
 
 ```typescript
@@ -312,11 +269,14 @@ async () => {
 // IMPORTANT: This method HAS to be called on User interaction, otherwise, the LedgerDevice communication library will throw an exception.
 establishConnection().then(async () => {
   // Set the Communication Object as the SigningMechanism.
-  await s.setSigningMechanism(new s.LedgerDeviceSigner());
+  await sologenic.setSigningMechanism(
+    new s.LedgerDeviceSigner({
+      ripple_server: RIPPLE_SERVER_WEBSOCKET // `i.e.: wss://s1.ripple.com/
+    })
+  );
 
-  // Optional. Get SigningMechanism and fetch for the Address and Public Key;
-  const signingMechanism = s.getSigningMechanism();
-  const { address, publicKey } = signingMechanism.getWalletAddress();
+  // At the moment of connection, Ledger Devices return an array of accounts. This accounts are always going to be all the active accounts plus 1 inactive.
+  const { accounts } = await sologenic.connectSigner();
 });
 ```
 
@@ -370,20 +330,23 @@ const establishConnection = () => {
 
 ### Using SOLO Wallet as SigningMechanism
 
-The SOLO Wallet signing mechanims implements the feature to sign transactions with a SOLO Wallet. (Available for Android and iOS). The SOLO Wallet signer is initialized by passing a `signingMechanism` parameter to the SologenicTxHandler after initialization. As with the other SigningMechanism on Sologenic XRPL Stream, the library will handle the signing process/requests.
-
-This SigningMechanism requires the next arguments to be passed on its constructor.
+The SOLO Wallet signing mechanism implements the feature to sign transactions with a SOLO Wallet. (Available for Android and iOS). The SOLO Wallet signer is initialized by passing a `signingMechanism` parameter to the SologenicTxHandler after initialization. As with the other SigningMechanism on Sologenic XRPL Stream, the library will handle the signing process/requests.
 
 ```js
 new ƨ.SoloWalletSigner({
   // This is the server that will handle the signing requests with the Wallet.
-  server: 'https://api.sologenic.org/api/v1/',
+  server: 'https://api.sologenic.org/api/v1/', // REQUIRED
   // HTML element where the QR Code to Sign in and establish connection with the wallet
   // will be prompt.
-  container_id: HTML_ELEMENT_ID,
+  container_id: HTML_ELEMENT_ID, //  REQUIRED
   // HTML element where the QR Code to sign a transaction will be shown as fallback
   // in case the SOLO Wallet didn't receive the notification.
-  fallback_container_id: HTML_ELEMENT_ID
+  fallback_container_id: HTML_ELEMENT_ID, // REQUIRED
+  // Link to enable deeplinking to the SOLO WALLET when the webapp is being open in a mobile browser
+  deeplink_url: DEEPLINK_URL, // OPTIONAL
+  // Works together with deeplink_url. Both are needed in order for deeplinking to work, but not required
+  // for the signing to work
+  is_mobile: true || false // OPTIONAL
 });
 ```
 
@@ -419,12 +382,12 @@ const establishConnection = () => {
 		new ƨ.SoloWalletSigner({
 			server: 'https://api.sologenic.org/api/v1/',
 			container_id: 'container_id',
-			fallback_container_id: 'fallback_container_id'
+			fallback_container_id: 'fallback_container_id',
 		})
 	);
 
 	// In this moment, the Sologenic XRPL should prompt the SignIn QR Code on the element
-	// declared on the contructor. Then, user must scan this QR Code with their SOLO Wallet
+	// declared on the constructor. Then, user must scan this QR Code with their SOLO Wallet
 	// and sign the "transaction". After the transaction is signed. SOLO Wallet will send back
 	// the connection confirmation to the library as well as the address. Therefore, if the
 	// address exists, connection can be considered successful.
@@ -441,13 +404,16 @@ This SigningMechanism requires the next arguments to be passed on its constructo
 ```js
 new ƨ.XummWalletSigner({
   // This is the server that will handle the signing requests with the Wallet.
-  server: 'https://api.sologenic.org/api/v1/',
+  server: 'https://api.sologenic.org/api/v1/', // REQUIRED
   // HTML element where the QR Code to Sign in and establish connection with the wallet
   // will be prompt.
-  container_id: HTML_ELEMENT_ID,
+  container_id: HTML_ELEMENT_ID, // REQUIRED
   // HTML element where the QR Code to sign a transaction will be shown as fallback
   // in case the XUMM Wallet didn't receive the notification.
-  fallback_container_id: HTML_ELEMENT_ID
+  fallback_container_id: HTML_ELEMENT_ID, // REQUIRED
+  // This property determines if the deeplinking feature will be enabled if the webapp is being accessed
+  // by a mobile browser. If you don't want to have this feature at all, just ignore this property.
+  is_mobile: true || false // OPTIONAL
 });
 ```
 
@@ -532,7 +498,9 @@ const establishConnection = () => {
 
 	// Set the desired signingMechanism.
 
-	// await sologenic.setSigngMechanism(new ƨ.LedgerDeviceSigner());
+	// await sologenic.setSigngMechanism(new ƨ.LedgerDeviceSigner({
+	//    ripple_server: RIPPLE_SERVER // i.e.: wss://s1.ripple.com/
+	// }));
 
 	// await sologenic.setSigngMechanism(new ƨ.DcentSigner());
 
@@ -550,7 +518,6 @@ const establishConnection = () => {
 
 
   // Events have their own types now.
-
   sologenic.on('queued', (event:  SologenicTypes.QueuedEvent) => {
     console.log('GLOBAL QUEUED: ',  event);
   });
@@ -577,8 +544,7 @@ const establishConnection = () => {
 
   // Get Signing Mechanism and fetch for Wallet Address.
 
-  const { address } = sologenic.getSigningMechanism().getWalletAddress();
-
+  const { address } = await sologenic.connectSigner();
 
   await sologenic.setAccount({
     address:  address
@@ -586,7 +552,7 @@ const establishConnection = () => {
 
   const tx =  sologenic.submit({
     TransactionType:  'Payment',
-    Account:  'rNbe8nh1K6nDC5XNsdAzHMtgYDXHZB486G',
+    Account:  address,
     Destination:  'rUwty6Pf4gzUmCLVuKwrRWPYaUiUiku8Rg',
     Amount: {
       currency:  '534F4C4F00000000000000000000000000000000',

@@ -35,6 +35,7 @@ export interface XummWalletSignerSubmitPayload {
     signed: boolean;
     cancelled: boolean;
     expired: boolean;
+    push_token: string;
   };
   refs?: {
     qr: string;

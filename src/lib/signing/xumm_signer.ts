@@ -2,7 +2,7 @@ import XrplAccount from '../account';
 import * as SologenicTypes from '../../types';
 import { SologenicTxSigner } from './index';
 import { SologenicError } from '../error';
-import { httpRequest, wait } from '../utils';
+import { getToken, httpRequest, wait } from '../utils';
 import { XummWalletSignerSubmitPayload } from '../../types/api_signer';
 import moment from 'moment';
 
@@ -141,51 +141,16 @@ export class XummWalletSigner extends SologenicTxSigner {
       }
 
       if (socketResponse.updated) {
-        let waitTime = 100;
         let data: any = socketResponse.data;
 
         if (data.hasOwnProperty('signed') && !data.signed) {
           throw new SologenicError('2004');
         }
 
-        async function checkForSigned(url: string) {
-          while (true) {
-            try {
-              const signedTx = await httpRequest<XummWalletSignerSubmitPayload>(
-                url + 'xumm/payload/' + connectionRefs.meta.identifier,
-                'get',
-                {},
-                ''
-              );
-
-              if (signedTx.hasOwnProperty('signer')) {
-                signed_tx = signedTx;
-                break;
-              }
-
-              if (
-                signedTx.hasOwnProperty('meta') &&
-                !signedTx.meta.signed &&
-                waitTime < 1000
-              ) {
-                waitTime *= 2;
-                throw new Error('try again');
-              } else {
-                throw new Error('throw unspecified error');
-              }
-            } catch (e) {
-              if (e === 'try again') {
-                await wait(waitTime);
-              }
-
-              if (e === 'throw error') {
-                throw new SologenicError('1001');
-              }
-            }
-          }
-        }
-
-        await checkForSigned(this.server_url);
+        signed_tx = await this.checkForSigned(
+          this.server_url,
+          connectionRefs.meta.identifier
+        );
       }
     }
 
@@ -210,6 +175,8 @@ export class XummWalletSigner extends SologenicTxSigner {
       if (txJson.LastLedgerSequence)
         txJson.LastLedgerSequence = Number(txJson.LastLedgerSequence) + 100;
 
+      var pushToken = getToken(txJson.Account, 'xumm');
+
       const tx_init = await httpRequest<XummWalletSignerSubmitPayload>(
         this.server_url + 'xumm/payload',
         'post',
@@ -218,7 +185,7 @@ export class XummWalletSigner extends SologenicTxSigner {
           tx_json: txJson,
           options: {
             submit: false,
-            signer: txJson.Account,
+            ...(pushToken ? { push_token: pushToken } : {}),
             expires_at: moment()
               .add(10, 'm')
               .toISOString()
@@ -302,53 +269,15 @@ export class XummWalletSigner extends SologenicTxSigner {
 
         if (socketResponse.updated) {
           let data: any = socketResponse.data;
-          let waitTime = 100;
 
           if (data.hasOwnProperty('signed') && !data.signed) {
             throw new SologenicError('2003');
           }
 
-          async function checkForSigned(url: string, id: string) {
-            while (true) {
-              try {
-                const signedTx = await httpRequest<
-                  XummWalletSignerSubmitPayload
-                >(url + 'xumm/payload/' + id, 'get', {}, '');
-
-                if (signedTx.hasOwnProperty('signer')) {
-                  signed_tx = signedTx;
-                  break;
-                }
-
-                if (
-                  signedTx.hasOwnProperty('meta') &&
-                  !signedTx.meta.signed &&
-                  waitTime < 1000
-                ) {
-                  waitTime *= 2;
-                  throw new Error('try again');
-                } else {
-                  throw new Error('throw unspecified error');
-                }
-              } catch (e) {
-                if (e === 'throw error') {
-                  throw new SologenicError('1001');
-                }
-
-                if (
-                  e.message === 'Error: Request failed with status code 500'
-                ) {
-                  throw new SologenicError('1003');
-                }
-
-                if (e === 'try again') {
-                  await wait(waitTime);
-                }
-              }
-            }
-          }
-
-          await checkForSigned(this.server_url, data.payload_uuidv4);
+          signed_tx = await this.checkForSigned(
+            this.server_url,
+            data.payload_uuidv4
+          );
         }
       }
 
@@ -372,7 +301,6 @@ export class XummWalletSigner extends SologenicTxSigner {
   }
 
   showSigningQRcode() {
-    console.log('clike', this.is_mobile);
     let qrCode = document.createElement('img');
     qrCode.setAttribute('src', this.signing_refs.qr);
     qrCode.setAttribute('alt', 'QR Code');
@@ -388,6 +316,60 @@ export class XummWalletSigner extends SologenicTxSigner {
       deepLink.innerText = 'XUMM Wallet >';
 
       container.appendChild(deepLink);
+    }
+  }
+
+  async checkForSigned(url: string, id: string) {
+    let waitTime = 100;
+
+    while (true) {
+      try {
+        const signedTx = await httpRequest<XummWalletSignerSubmitPayload>(
+          url + 'xumm/payload/' + id,
+          'get',
+          {},
+          ''
+        );
+
+        if (signedTx.hasOwnProperty('signer')) {
+          if (sessionStorage.mode && sessionStorage.mode === '_testnet') {
+            localStorage.xummToken_testnet = JSON.stringify({
+              push_token: signedTx.meta.push_token,
+              signer: signedTx.signer
+            });
+          } else {
+            localStorage.xummToken = JSON.stringify({
+              push_token: signedTx.meta.push_token,
+              signer: signedTx.signer
+            });
+          }
+
+          return signedTx;
+        }
+
+        if (
+          signedTx.hasOwnProperty('meta') &&
+          !signedTx.meta.signed &&
+          waitTime < 1000
+        ) {
+          waitTime *= 2;
+          throw new Error('try again');
+        } else {
+          throw new Error('throw unspecified error');
+        }
+      } catch (e) {
+        if (e === 'throw error') {
+          throw new SologenicError('1001');
+        }
+
+        if (e.message === 'Error: Request failed with status code 500') {
+          throw new SologenicError('1003');
+        }
+
+        if (e === 'try again') {
+          await wait(waitTime);
+        }
+      }
     }
   }
 }

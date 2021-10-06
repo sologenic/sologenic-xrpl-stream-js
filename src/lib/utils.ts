@@ -74,3 +74,24 @@ export const promiseTimeout = function(milliseconds: number, promise: any) {
   // Returns a race between our timeout and the passed in promise
   return Promise.race([promise, timeout]);
 };
+
+/** Retrieve return push token if its the correct one */
+export const getToken = (signerAddress: string, wallet: string) => {
+  const sessionNet = sessionStorage.mode ? sessionStorage.mode : '_mainnet';
+  const tokenStorage =
+    wallet === 'solo'
+      ? sessionNet === '_mainnet'
+        ? localStorage.swToken
+        : localStorage.swToken_testnet
+      : sessionNet === '_mainnet'
+      ? localStorage.xummToken
+      : localStorage.xummToken_testnet;
+
+  if (!tokenStorage) return null;
+
+  const lsSWToken = JSON.parse(tokenStorage);
+
+  if (signerAddress === lsSWToken.signer) return lsSWToken.push_token;
+
+  return null;
+};

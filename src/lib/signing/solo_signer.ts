@@ -2,7 +2,7 @@ import XrplAccount from '../account';
 import * as SologenicTypes from '../../types';
 import { SologenicTxSigner } from './index';
 import { SologenicError } from '../error';
-import { httpRequest, wait } from '../utils';
+import { httpRequest, wait, getToken } from '../utils';
 import { SoloWalletSignerSubmitPayload } from '../../types/api_signer';
 import moment from 'moment';
 
@@ -12,6 +12,9 @@ export class SoloWalletSigner extends SologenicTxSigner {
   protected address: string = '';
   protected signing_refs: any;
   protected fallback_container_id: string = '';
+  protected is_mobile: boolean = false;
+  protected deeplink_url: string = '';
+
   signerID: string = 'solo_wallet';
 
   constructor(options: any) {
@@ -33,6 +36,14 @@ export class SoloWalletSigner extends SologenicTxSigner {
       this.fallback_container_id = options['fallback_container_id'];
     } else {
       throw new Error('Fallback container ID missing.');
+    }
+
+    if (options.hasOwnProperty('is_mobile')) {
+      this.is_mobile = options['is_mobile'];
+    }
+
+    if (options.hasOwnProperty('deeplink_url')) {
+      this.deeplink_url = options['deeplink_url'];
     }
 
     this.includeSequence = true;
@@ -68,7 +79,17 @@ export class SoloWalletSigner extends SologenicTxSigner {
       let container: any = document.getElementById(this.container_id);
 
       container.appendChild(qrCode);
-      //  console.log(connectionRefs);
+
+      if (this.is_mobile && this.deeplink_url) {
+        let deepLink = document.createElement('a');
+
+        deepLink.setAttribute('href', connectionRefs.refs.deeplink);
+        deepLink.setAttribute('target', '_blank');
+        deepLink.setAttribute('rel', 'noopener noreferrer');
+        deepLink.innerText = 'SOLO Wallet >';
+
+        container.appendChild(deepLink);
+      }
 
       const socket: WebSocket = new WebSocket(connectionRefs.refs.ws);
       var isSocketOpen = false;
@@ -93,8 +114,6 @@ export class SoloWalletSigner extends SologenicTxSigner {
       socket.addEventListener('message', message => {
         if (message.data !== 'pong') {
           const { data } = message;
-
-          console.log('SOLO Data', data);
 
           if (
             JSON.parse(data).hasOwnProperty('meta') &&
@@ -149,13 +168,25 @@ export class SoloWalletSigner extends SologenicTxSigner {
           {},
           ''
         );
+
+        if (sessionStorage.mode && sessionStorage.mode === '_testnet') {
+          localStorage.swToken_testnet = JSON.stringify({
+            push_token: meta.push_token,
+            signer: signed_tx.signer
+          });
+        } else {
+          localStorage.swToken = JSON.stringify({
+            push_token: meta.push_token,
+            signer: signed_tx.signer
+          });
+        }
       }
     }
 
-    this.address = signed_tx.signer;
+    this.address = signed_tx.signer ? signed_tx.signer : '';
 
     return {
-      address: signed_tx.signer
+      address: signed_tx.signer ? signed_tx.signer : null
     };
   }
 
@@ -173,6 +204,8 @@ export class SoloWalletSigner extends SologenicTxSigner {
       if (txJson.LastLedgerSequence)
         txJson.LastLedgerSequence = Number(txJson.LastLedgerSequence) + 100;
 
+      var pushToken = getToken(txJson.Account, 'solo');
+
       const tx_init = await httpRequest<SoloWalletSignerSubmitPayload>(
         this.server_url + 'issuer/transactions',
         'post',
@@ -180,7 +213,7 @@ export class SoloWalletSigner extends SologenicTxSigner {
         JSON.stringify({
           tx_json: txJson,
           options: {
-            signer: txJson.Account,
+            ...(pushToken ? { push_token: pushToken } : {}),
             expires_at: moment()
               .add(10, 'm')
               .toISOString()
@@ -191,7 +224,7 @@ export class SoloWalletSigner extends SologenicTxSigner {
       var signed_tx: any;
 
       if (tx_init.refs) {
-        this.signing_refs = tx_init.refs;
+        this.signing_refs = tx_init;
 
         const socket: WebSocket = new WebSocket(tx_init.refs.ws);
         var isSocketOpen = false;
@@ -280,6 +313,18 @@ export class SoloWalletSigner extends SologenicTxSigner {
             {},
             ''
           );
+
+          if (sessionStorage.mode && sessionStorage.mode === '_testnet') {
+            localStorage.swToken_testnet = JSON.stringify({
+              push_token: meta.push_token,
+              signer: signed_tx.signer
+            });
+          } else {
+            localStorage.swToken = JSON.stringify({
+              push_token: meta.push_token,
+              signer: signed_tx.signer
+            });
+          }
         }
       }
 
@@ -300,10 +345,22 @@ export class SoloWalletSigner extends SologenicTxSigner {
 
   showSigningQRcode() {
     let qrCode = document.createElement('img');
-    qrCode.setAttribute('src', this.signing_refs.qr);
+
+    qrCode.setAttribute('src', this.signing_refs.refs.qr);
     qrCode.setAttribute('alt', 'QR Code');
 
     let container: any = document.getElementById(this.fallback_container_id);
     container.appendChild(qrCode);
+
+    if (this.is_mobile && this.deeplink_url) {
+      let deepLink = document.createElement('a');
+
+      deepLink.setAttribute('href', this.signing_refs.refs.deeplink);
+      deepLink.setAttribute('target', '_blank');
+      deepLink.setAttribute('rel', 'noopener noreferrer');
+      deepLink.innerText = 'SOLO Wallet >';
+
+      container.appendChild(deepLink);
+    }
   }
 }
