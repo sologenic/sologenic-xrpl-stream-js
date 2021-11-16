@@ -459,13 +459,17 @@ export class SologenicTxHandler extends EventEmitter {
    * @param   {tx}                  Transaction Object
    * @returns {TransactionObject}
    */
-  public submit(tx: SologenicTypes.TX): SologenicTypes.TransactionObject {
+  public submit(
+    tx: SologenicTypes.TX,
+    shouldSubmitTx: boolean = true
+  ): SologenicTypes.TransactionObject {
     try {
       // Generate a unique ID using the uuid library
       const id = uuid();
 
       // Add a new EventEmitter to txEvents array identifiable with the generated id.
       this.txEvents![id] = new EventEmitter();
+      if (!shouldSubmitTx) tx.submit = shouldSubmitTx;
       this._initiateTx(id, tx);
 
       return {
@@ -673,6 +677,8 @@ export class SologenicTxHandler extends EventEmitter {
       const constructedTx: SologenicTypes.TX = {
         ...tx!.data!.txJSON,
         Memos: [
+          ...tx!.data!.txJSON.Memos,
+
           {
             Memo: {
               MemoData: unescape(encodeURIComponent(tx.id))
@@ -686,6 +692,7 @@ export class SologenicTxHandler extends EventEmitter {
           }
         ]
       };
+      console.log(constructedTx);
 
       return constructedTx;
     } catch (error) {
@@ -781,20 +788,29 @@ export class SologenicTxHandler extends EventEmitter {
             throw new Error('TRANSACTION_HAS_BEEN_CANCELLED');
           }
 
-          const result: boolean = await this._dispatchSignedTxToLedger(
-            unsignedTx,
-            signedTx
-          );
-
-          if (result) {
+          if (unsignedTx.data.txJSON.submit === false) {
+            this.emit('signed', { signedTx, unsignedTx });
             await this.txmq.del(
               `txmq:raw:${this.getAccount().getAddress()}`,
               unsignedTx.id
             );
-
             return;
           } else {
-            return await this._dispatchHandler(unsignedTx);
+            const result: boolean = await this._dispatchSignedTxToLedger(
+              unsignedTx,
+              signedTx
+            );
+
+            if (result) {
+              await this.txmq.del(
+                `txmq:raw:${this.getAccount().getAddress()}`,
+                unsignedTx.id
+              );
+
+              return;
+            } else {
+              return await this._dispatchHandler(unsignedTx);
+            }
           }
         })
         .catch(async error => {
@@ -864,6 +880,7 @@ export class SologenicTxHandler extends EventEmitter {
     // Set LastLedgerSequence for this tx to make sure it becomes invalid after 3 verified closed ledgers
     tx.LastLedgerSequence = this.getLedgerVersion() + 3;
 
+    delete tx.submit;
     // Use the signing mechanism and then run the callback once the request has been signed, we
     // could use a promise here too...
     return this.signingMechanism

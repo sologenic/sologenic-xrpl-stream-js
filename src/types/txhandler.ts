@@ -59,7 +59,7 @@ export interface TX {
     offlineMeta?: object;
     xummMeta?: IXummSubmitAdditional;
   };
-  [Field: string]: string | number | object | Array<any> | undefined;
+  [Field: string]: string | number | object | Array<any> | undefined | boolean;
 }
 
 export interface TxJSON {
