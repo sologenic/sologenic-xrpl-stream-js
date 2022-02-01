@@ -1,6 +1,6 @@
 {
-  "name": "sologenic-xrpl-stream-js",
-  "version": "1.0.36",
+  "name": "sologenic-xrpl-stream-js-app",
+  "version": "1.0.37",
   "description": "Persistent transaction handling for the XRP Ledger",
   "main": "build/main/index.js",
   "typings": "build/main/index.d.ts",
@@ -66,7 +66,7 @@
     "node-fetch": "^2.6.0",
     "request": "^2.88.2",
     "ripple-binary-codec": "^0.2.6",
-    "ripple-lib": "1.6.5",
+    "ripple-lib-1.6.5": "^1.6.5",
     "stream": "0.0.2",
     "tls": "0.0.1",
     "ts-node": "^8.8.1",
