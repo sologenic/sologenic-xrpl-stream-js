@@ -1,10 +1,11 @@
-import { RippleAPI } from 'ripple-lib';
+import { RippleAPI } from 'ripple-lib-1.6.5';
 
 import XrplAccount from '../account';
 
 import * as SologenicTypes from '../../types/';
 
-export default abstract class SologenicTxSigner implements SologenicTypes.ISologenicTxSigner {
+export default abstract class SologenicTxSigner
+  implements SologenicTypes.ISologenicTxSigner {
   protected rippleApi!: RippleAPI;
   protected includeSequence: boolean = false;
 
@@ -41,7 +42,4 @@ export default abstract class SologenicTxSigner implements SologenicTypes.ISolog
 import { OfflineSigner } from './offline';
 import { XummSigner } from './xumm';
 
-export {
-  OfflineSigner,
-  XummSigner
-};
+export { OfflineSigner, XummSigner };

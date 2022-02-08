@@ -1,5 +1,5 @@
 import * as SologenicTypes from '../types';
-import * as RippleError from 'ripple-lib/dist/npm/common/errors';
+import * as RippleError from 'ripple-lib-1.6.5/dist/npm/common/errors';
 import XrplAccount, {
   XrplAddressException,
   XrplSecretException,
@@ -10,7 +10,7 @@ import XrplAccount, {
 import TXMQƨ from './queues';
 
 import { OfflineSigner } from './signing';
-import { RippleAPI } from 'ripple-lib';
+import { RippleAPI } from 'ripple-lib-1.6.5';
 import { SologenicError } from './error';
 
 import { all as mathAll, create as mathCreate } from 'mathjs';
@@ -188,7 +188,6 @@ export class SologenicTxHandler extends EventEmitter {
 
       if (typeof sologenicOptions.signingMechanism !== 'undefined')
         this.signingMechanism = sologenicOptions.signingMechanism;
-
     } catch (error) {
       throw new SologenicError('1001', error);
     }
@@ -306,8 +305,15 @@ export class SologenicTxHandler extends EventEmitter {
       let xrplAccount = new XrplAccount(
         account.address,
         account.secret!,
-        (typeof(account.keypair) !== 'undefined' && typeof(account.keypair.publicKey) !== 'undefined') ? account.keypair.publicKey : undefined,
-        (typeof(account.keypair) !== 'undefined' && typeof(account.keypair.privateKey) !== 'undefined') ? account.keypair.privateKey : undefined);
+        typeof account.keypair !== 'undefined' &&
+        typeof account.keypair.publicKey !== 'undefined'
+          ? account.keypair.publicKey
+          : undefined,
+        typeof account.keypair !== 'undefined' &&
+        typeof account.keypair.privateKey !== 'undefined'
+          ? account.keypair.privateKey
+          : undefined
+      );
 
       this.xrplAccount = xrplAccount;
 
@@ -325,7 +331,6 @@ export class SologenicTxHandler extends EventEmitter {
 
       await this._fetchCurrentState();
       await this._validateMissedTransactions();
-
     } catch (error) {
       if (error instanceof XrplAddressException) {
         throw new SologenicError('2000', error);
@@ -340,7 +345,6 @@ export class SologenicTxHandler extends EventEmitter {
       }
     }
   }
-
 
   /**
    * Set the current account to use on the XRPL for transactions or use
@@ -375,7 +379,6 @@ export class SologenicTxHandler extends EventEmitter {
 
       await this._fetchCurrentState();
       await this._validateMissedTransactions();
-
     } catch (error) {
       if (error instanceof XrplAddressException) {
         throw new SologenicError('2000', error);
@@ -794,7 +797,10 @@ export class SologenicTxHandler extends EventEmitter {
     await this._fetchCurrentState();
 
     // Set the sequence of this tx to the latest sequence obtained from account_info
-    if (this.signingMechanism.getIncludeSequence() && typeof tx.Sequence === 'undefined') {
+    if (
+      this.signingMechanism.getIncludeSequence() &&
+      typeof tx.Sequence === 'undefined'
+    ) {
       // Set the sequence number if it was not already provided,
       // this is for our test cases so we can manually specify our
       // sequence.

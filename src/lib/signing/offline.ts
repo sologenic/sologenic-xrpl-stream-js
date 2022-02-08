@@ -1,4 +1,4 @@
-import { RippleAPI } from 'ripple-lib';
+import { RippleAPI } from 'ripple-lib-1.6.5';
 import { SologenicError } from '../error';
 import * as SologenicTypes from '../../types';
 
