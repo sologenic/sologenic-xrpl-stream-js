@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.1.11](https://github.com/sologenic/sologenic-xrpl-stream-js/compare/v1.1.10...v1.1.11) (2022-02-09)
+
+
+
 ### [1.1.10](https://github.com/sologenic/sologenic-xrpl-stream-js/compare/v1.1.9...v1.1.10) (2022-02-09)
 
 
