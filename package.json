@@ -1,6 +1,6 @@
 {
   "name": "sologenic-xrpl-stream-js-nightly",
-  "version": "1.1.11",
+  "version": "1.1.12",
   "description": "Persistent transaction handling for the XRP Ledger",
   "main": "build/main/index.js",
   "typings": "build/main/index.d.ts",
@@ -51,8 +51,8 @@
     "node": ">=8.9"
   },
   "dependencies": {
-    "@ledgerhq/hw-app-xrp": "^5.45.0",
-    "@ledgerhq/hw-transport-webusb": "^5.45.0",
+    "@ledgerhq/hw-app-xrp": "^6.24.1",
+    "@ledgerhq/hw-transport-webusb": "^6.24.1",
     "@types/ioredis": "^4.14.7",
     "@types/mathjs": "6.0.4",
     "@types/node": "12.11.5",
@@ -77,7 +77,8 @@
     "ts-node": "^8.8.1",
     "typedoc-plugin-markdown": "^2.2.16",
     "underscore": "^1.9.2",
-    "uuid": "^3.4.0"
+    "uuid": "^3.4.0",
+    "xrpl": "^2.1.1"
   },
   "devDependencies": {
     "@bitjson/npm-scripts-info": "^1.0.0",
