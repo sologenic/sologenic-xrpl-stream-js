@@ -1,6 +1,6 @@
 import * as SologenicTypes from '../types/';
-import { RippleAPI } from 'ripple-lib-1.6.5';
-import * as RippleError from 'ripple-lib-1.6.5/dist/npm/common/errors';
+import { RippleAPI } from 'sologenic-ripple-lib-1-10-0-patched';
+import * as RippleError from 'sologenic-ripple-lib-1-10-0-patched/dist/npm/common/errors';
 
 export class XrplException extends Error {
   /**

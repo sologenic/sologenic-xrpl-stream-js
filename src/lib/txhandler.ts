@@ -1,5 +1,5 @@
 import * as SologenicTypes from '../types';
-import * as RippleError from 'ripple-lib-1.6.5/dist/npm/common/errors';
+import * as RippleError from 'sologenic-ripple-lib-1-10-0-patched/dist/npm/common/errors';
 import XrplAccount, {
   XrplAddressException,
   XrplSecretException,
@@ -10,7 +10,7 @@ import XrplAccount, {
 import TXMQƨ from './queues';
 
 import { OfflineSigner } from './signing';
-import { RippleAPI } from 'ripple-lib-1.6.5';
+import { RippleAPI } from 'sologenic-ripple-lib-1-10-0-patched';
 import { SologenicError } from './error';
 
 import { all as mathAll, create as mathCreate } from 'mathjs';
@@ -101,7 +101,7 @@ export class SologenicTxHandler extends EventEmitter {
   /**
    * Constructor for an instance of sologenic tx handler.
    *
-   * @param rippleApiOptions     This parameter is used to construct ripple-lib and takes in:
+   * @param rippleApiOptions     This parameter is used to construct sologenic-ripple-lib-1-10-0-patched and takes in:
    * @param server               XRPL server to connect (eg. wss://s1.ripple.com)
    * @param feeCushion?          This property is overridden by Sologenic to 1.2
    * @param maxFeeXRP?           Maximum fee that we'll use when sending a transaction to the XRPL
@@ -134,7 +134,7 @@ export class SologenicTxHandler extends EventEmitter {
       });
 
       /**
-       * Subscribe to ripple-lib on("") events
+       * Subscribe to sologenic-ripple-lib-1-10-0-patched on("") events
        */
       this._subscribeWS();
 
@@ -504,7 +504,7 @@ export class SologenicTxHandler extends EventEmitter {
         await this.getRippleApi().connect();
       }
 
-      // Use the ripple-lib built in REST functions to get the ledger version and fee. Please note that these
+      // Use the sologenic-ripple-lib-1-10-0-patched built in REST functions to get the ledger version and fee. Please note that these
       // values are updated using the WS after the first initilization, until this method is called again
       const accountInfo = await this.getRippleApi().request('account_info', {
         account: this.getAccount().getAddress()
@@ -530,7 +530,7 @@ export class SologenicTxHandler extends EventEmitter {
   }
 
   /**
-   * Subscribe to ripple-lib websocket events connect, disconnect, error and ledger stream updates.
+   * Subscribe to sologenic-ripple-lib-1-10-0-patched websocket events connect, disconnect, error and ledger stream updates.
    * @throws {SologenicError}
    */
   private _subscribeWS(): any {

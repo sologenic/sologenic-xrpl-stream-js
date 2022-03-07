@@ -1,4 +1,4 @@
-import { RippleAPI } from 'ripple-lib-1.6.5';
+import { RippleAPI } from 'sologenic-ripple-lib-1-10-0-patched';
 
 import XrplAccount from '../account';
 
