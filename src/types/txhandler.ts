@@ -14,6 +14,9 @@ export interface ISologenicTxSigner {
     signingOptions: any): Promise<SignedTx>;
 
   getIncludeSequence(): boolean;
+  requestConnection(): any;
+  cancelSigning(cancel: boolean): any;
+  signerID: string;
 }
 
 export interface TX {
@@ -25,7 +28,7 @@ export interface TX {
     offlineMeta?: object;
     xummMeta?: IXummSubmitAdditional
   };
-  [Field: string]: string | number | object | Array<any> | undefined;
+  [Field: string]: string | number | object | Array<any> | undefined | boolean;
 }
 
 export interface TxJSON {
@@ -35,11 +38,25 @@ export interface TxJSON {
 export interface SignedTx {
   id: string;
   signedTransaction: string;
+  tx_blob?: string;
 }
 
 export interface FormattedSubmitResponse {
-  resultCode: string;
-  resultMessage: string;
+  // resultCode: string;
+  // resultMessage: string;
+  result: {
+    engine_result: string;
+    [Field: string]:
+      | string
+      | number
+      | object
+      | Array<any>
+      | boolean
+      | TX
+      | undefined;
+  };
+  id: number;
+  type: string;
 }
 
 export interface ValidatedEvent {
@@ -99,6 +116,11 @@ export interface DispatchedTx {
   result: TxResult;
 }
 
+export interface SigningEvent {
+  id: string;
+  txJson: TxJSON;
+}
+
 export interface FailedTx {
   unsignedTx?: UnsignedTx;
   result: TxFailedResult;
@@ -109,7 +131,7 @@ export interface ResolvedTx {
   sequence: number;
   accountSequence: number;
   ledgerVersion: number;
-  timestamp: string;
+  timestamp?: string;
   fee: string;
 }
 
