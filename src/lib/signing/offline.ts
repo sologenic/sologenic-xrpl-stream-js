@@ -3,16 +3,21 @@ import { SologenicError } from '../error';
 import * as SologenicTypes from '../../types';
 
 import XrplAccount from '../account';
-import SologenicTxSigner from './index';
+import { SologenicTxSigner } from './index';
 
 export class OfflineSigner extends SologenicTxSigner
   implements SologenicTypes.ISologenicTxSigner {
   protected rippleApi!: RippleAPI;
+  signerID: string = 'offline';
 
   constructor(options: any) {
     super(options);
 
     this.includeSequence = true;
+  }
+
+  requestConnection(): any {
+    return true;
   }
 
   async sign(
@@ -42,7 +47,6 @@ export class OfflineSigner extends SologenicTxSigner
 
       return signedTx;
     } catch (error) {
-      // console.log(`Signing error: ${error}`);
       // Re-throw the error (we catch it just for debugging purposes)
       throw error;
     }

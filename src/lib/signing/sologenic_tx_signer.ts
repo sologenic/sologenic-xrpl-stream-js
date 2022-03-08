@@ -1,4 +1,4 @@
-import { RippleAPI } from 'sologenic-ripple-lib-1-10-0-patched';
+import { RippleAPI } from 'ripple-lib';
 
 import XrplAccount from '../account';
 
@@ -8,6 +8,8 @@ export default abstract class SologenicTxSigner
   implements SologenicTypes.ISologenicTxSigner {
   protected rippleApi!: RippleAPI;
   protected includeSequence: boolean = false;
+  signerID: string = 'default';
+  cancelled: boolean = false;
 
   constructor(options: any) {
     if (options && options.hasOwnProperty('rippleApi')) {
@@ -24,6 +26,10 @@ export default abstract class SologenicTxSigner
     return this.includeSequence;
   }
 
+  public cancelSigning(cancel: boolean) {
+    return (this.cancelled = cancel);
+  }
+
   public async sign(
     txJson: SologenicTypes.TX,
     txId: string,
@@ -37,13 +43,8 @@ export default abstract class SologenicTxSigner
 
     throw new Error('Method not implemented.');
   }
+
+  public async requestConnection(): Promise<any> {
+    throw new Error('Method not implemented.');
+  }
 }
-
-import { OfflineSigner } from './offline';
-import { XummSigner } from './xumm';
-import { LedgerDeviceSigner } from './ledger_device';
-import { SoloWalletSigner } from './solo_signer';
-import { DcentSigner } from './dcent_signer';
-import { XummWalletSigner } from './xumm_signer';
-
-export { OfflineSigner, XummSigner };
