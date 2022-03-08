@@ -58,6 +58,7 @@
     "@types/request": "^2.48.4",
     "@types/underscore": "^1.9.4",
     "@types/uuid": "^3.4.7",
+    "axios": "^0.26.0",
     "crypto": "^1.0.1",
     "dns": "^0.2.2",
     "ioredis": "^4.14.1",
@@ -72,7 +73,8 @@
     "ts-node": "^8.8.1",
     "typedoc-plugin-markdown": "^2.2.16",
     "underscore": "^1.9.2",
-    "uuid": "^3.4.0"
+    "uuid": "^3.4.0",
+    "xrpl": "^2.1.1"
   },
   "devDependencies": {
     "@bitjson/npm-scripts-info": "^1.0.0",
