@@ -1,6 +1,6 @@
 {
   "name": "sologenic-xrpl-stream-js-app",
-  "version": "1.0.40",
+  "version": "1.0.41",
   "description": "Persistent transaction handling for the XRP Ledger",
   "main": "build/main/index.js",
   "typings": "build/main/index.d.ts",
@@ -51,6 +51,8 @@
     "node": ">=8.9"
   },
   "dependencies": {
+    "@ledgerhq/hw-app-xrp": "^5.45.0",
+    "@ledgerhq/hw-transport-webusb": "^5.45.0",
     "@types/ioredis": "^4.14.7",
     "@types/mathjs": "6.0.4",
     "@types/node": "12.11.5",
@@ -58,12 +60,15 @@
     "@types/request": "^2.48.4",
     "@types/underscore": "^1.9.4",
     "@types/uuid": "^3.4.7",
+    "axios": "0.21.1",
     "crypto": "^1.0.1",
+    "dcent-web-connector": "^0.10.1",
     "dns": "^0.2.2",
     "ioredis": "^4.14.1",
     "mathjs": "6.6.0",
+    "moment": "^2.29.1",
     "net": "^1.0.2",
-    "node-fetch": "^2.6.0",
+    "node-fetch": "^2.6.1",
     "request": "^2.88.2",
     "ripple-binary-codec": "^0.2.6",
     "sologenic-ripple-lib-1-10-0-patched": "^1.10.1",
@@ -72,7 +77,8 @@
     "ts-node": "^8.8.1",
     "typedoc-plugin-markdown": "^2.2.16",
     "underscore": "^1.9.2",
-    "uuid": "^3.4.0"
+    "uuid": "^3.4.0",
+    "xrpl": "^2.1.1"
   },
   "devDependencies": {
     "@bitjson/npm-scripts-info": "^1.0.0",

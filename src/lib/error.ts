@@ -26,8 +26,11 @@ export class SologenicError extends Error {
       { id: '1006', message: 'unable_to_validate_missed_transactions' },
       { id: '2000', message: 'invalid_xrp_address' },
       { id: '2001', message: 'invalid_xrp_secret' },
-      { id: '2002', message: 'unable_to_sign_transaction' }
-    ]
+      { id: '2002', message: 'unable_to_sign_transaction' },
+      { id: '2003', message: 'transaction_signing_rejected' },
+      { id: '2004', message: 'sign_in_rejected' },
+      { id: '2005', message: 'transaction_cancelled' }
+    ];
   }
 
   /**
@@ -36,8 +39,7 @@ export class SologenicError extends Error {
    */
 
   public static getErrorCodeById(errorId: string): string {
-    return SologenicError.getErrorCodes().find(
-      e => e.id === errorId)!.message;
+    return SologenicError.getErrorCodes().find(e => e.id === errorId)!.message;
   }
 
   /**
@@ -46,8 +48,7 @@ export class SologenicError extends Error {
    */
 
   public static getErrorCodeByMessage(message: string): string {
-    return SologenicError.getErrorCodes().find(
-      e => e.message === message)!.id;
+    return SologenicError.getErrorCodes().find(e => e.message === message)!.id;
   }
 
   /**
