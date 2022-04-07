@@ -388,7 +388,8 @@ export class SologenicTxHandler extends EventEmitter {
         typeof account.keypair !== 'undefined' &&
         typeof account.keypair.privateKey !== 'undefined'
           ? account.keypair.privateKey
-          : undefined
+          : undefined,
+        typeof account.mnemonic !== 'undefined' ? account.mnemonic : undefined
       );
 
       this.xrplAccount = xrplAccount;

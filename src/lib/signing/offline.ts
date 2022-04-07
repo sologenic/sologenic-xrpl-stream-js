@@ -31,7 +31,12 @@ export class OfflineSigner extends SologenicTxSigner
     try {
       if (!this.wallet) {
         // const { publicKey, privateKey } = account.getKeypair();
-        this.wallet = Wallet.fromSeed(account.getSecret());
+        // this.wallet = Wallet.fromSeed(account.getSecret());
+        if (account.hasMnemonic()) {
+          this.wallet = Wallet.fromMnemonic(account.getMnemonic());
+        } else {
+          this.wallet = Wallet.fromSeed(account.getSecret());
+        }
       }
 
       // txJson.SigningPubKey = this.wallet.publicKey;
