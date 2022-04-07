@@ -46,10 +46,12 @@ export default class XrplAccount {
     address: string,
     secret?: string,
     publicKey?: string,
-    privateKey?: string
+    privateKey?: string,
+    mnemonic?: string,
   ) {
     this.address = address;
     this.secret = secret;
+    this.mnemonic = undefined;
     this.keypair = undefined;
 
     if (typeof publicKey !== 'undefined' || typeof privateKey !== 'undefined') {
@@ -57,6 +59,10 @@ export default class XrplAccount {
         publicKey: publicKey!,
         privateKey: privateKey!
       };
+    }
+    
+    if (mnemonic) {
+      this.mnemonic = mnemonic
     }
 
     // Peform a validation
@@ -73,6 +79,11 @@ export default class XrplAccount {
    * XRPL Account
    */
   protected address: string;
+
+  /**
+   * XRPL Account Mnemonic
+   */
+  protected mnemonic?: string;
 
   /**
    * XRPL Account Secret
@@ -102,9 +113,10 @@ export default class XrplAccount {
     address: string,
     secret?: string,
     publicKey?: string,
-    privateKey?: string
+    privateKey?: string,
+    mnemonic?: string,
   ): XrplAccount {
-    return new XrplAccount(address, secret, publicKey, privateKey);
+    return new XrplAccount(address, secret, publicKey, privateKey, mnemonic);
   }
 
   /**
@@ -196,6 +208,10 @@ export default class XrplAccount {
     return this.address;
   }
 
+  public getMnemonic(): any {
+    return this.mnemonic;
+  }
+
   public getSecret(): any {
     return this.hasSecret() ? this.secret : undefined;
   }
@@ -206,6 +222,12 @@ export default class XrplAccount {
 
   public setAddress(address: string) {
     this.address = address;
+
+    return this;
+  }
+
+  public setMnemonic(mnemonic: string) {
+    this.mnemonic = mnemonic;
 
     return this;
   }
@@ -226,7 +248,8 @@ export default class XrplAccount {
     let account: SologenicTypes.Account = {
       address: this.getAddress(),
       secret: this.getSecret(),
-      keypair: this.getKeypair()
+      keypair: this.getKeypair(),
+      mnemonic: this.getMnemonic(),
     };
 
     return account;
@@ -255,6 +278,18 @@ export default class XrplAccount {
    */
   public hasSecret(): boolean {
     if (typeof this.secret !== 'undefined' && this.secret !== '') {
+      return true;
+    }
+
+    return false;
+  }
+
+  /**
+   * Helper method to verify the account has a secret
+   * @returns {boolean}
+   */
+  public hasMnemonic(): boolean {
+    if (typeof this.mnemonic !== 'undefined' && this.mnemonic !== '') {
       return true;
     }
 

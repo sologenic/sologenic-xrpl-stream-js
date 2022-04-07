@@ -30,8 +30,11 @@ export class OfflineSigner extends SologenicTxSigner
   ): Promise<SologenicTypes.SignedTx> {
     try {
       if (!this.wallet) {
-        // const { publicKey, privateKey } = account.getKeypair();
-        this.wallet = Wallet.fromSeed(account.getSecret());
+        if(account.hasMnemonic()) {
+            this.wallet = Wallet.fromMnemonic(account.getMnemonic());
+        } else {
+            this.wallet = Wallet.fromSeed(account.getSecret());
+        }
       }
 
       // txJson.SigningPubKey = this.wallet.publicKey;
