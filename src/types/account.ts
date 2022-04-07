@@ -7,4 +7,5 @@ export interface Account {
   address: string;
   secret?: string;
   keypair?: KeyPair;
+  mnemonic?: string;
 }

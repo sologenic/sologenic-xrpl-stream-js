@@ -304,6 +304,8 @@ class SologenicTxHandler extends events_1.EventEmitter {
                 : undefined, typeof account.keypair !== 'undefined' &&
                 typeof account.keypair.privateKey !== 'undefined'
                 ? account.keypair.privateKey
+                : undefined, typeof account.mnemonic !== 'undefined'
+                ? account.mnemonic
                 : undefined);
             this.xrplAccount = xrplAccount;
             // The validate method will raise an exception if the account is not

@@ -54,7 +54,7 @@ class XrplKeypairOrSecretMissingException extends XrplException {
 }
 exports.XrplKeypairOrSecretMissingException = XrplKeypairOrSecretMissingException;
 class XrplAccount {
-    constructor(address, secret, publicKey, privateKey) {
+    constructor(address, secret, publicKey, privateKey, mnemonic) {
         /**
          * Ripple API
          */
@@ -66,11 +66,15 @@ class XrplAccount {
         this.address = address;
         this.secret = secret;
         this.keypair = undefined;
+        this.mnemonic = undefined;
         if (typeof publicKey !== 'undefined' || typeof privateKey !== 'undefined') {
             this.keypair = {
                 publicKey: publicKey,
                 privateKey: privateKey
             };
+        }
+        if (typeof mnemonic !== 'undefined') {
+            this.mnemonic = mnemonic
         }
         // Peform a validation
         this.validate();
@@ -78,8 +82,8 @@ class XrplAccount {
     /**
      * Initialize an xrpl account
      */
-    static getAccount(address, secret, publicKey, privateKey) {
-        return new XrplAccount(address, secret, publicKey, privateKey);
+    static getAccount(address, secret, publicKey, privateKey, mnemonic) {
+        return new XrplAccount(address, secret, publicKey, privateKey, mnemonic);
     }
     /**
      * Validate an account
@@ -143,6 +147,9 @@ class XrplAccount {
     getSecret() {
         return this.hasSecret() ? this.secret : undefined;
     }
+    getMnemonic() {
+        return this.hasMnemonic() ? this.mnemonic : undefined;
+    }
     getKeypair() {
         return this.hasKeypair() ? this.keypair : undefined;
     }
@@ -158,11 +165,16 @@ class XrplAccount {
         this.keypair = keypair;
         return this;
     }
+    setMnemonic(mnemonic) {
+        this.mnemonic = mnemonic;
+        return this;
+    }
     getAccount() {
         let account = {
             address: this.getAddress(),
             secret: this.getSecret(),
-            keypair: this.getKeypair()
+            keypair: this.getKeypair(),
+            mnemonic: this.getMnemonic(),
         };
         return account;
     }
@@ -185,6 +197,16 @@ class XrplAccount {
      */
     hasSecret() {
         if (typeof this.secret !== 'undefined' && this.secret !== '') {
+            return true;
+        }
+        return false;
+    }
+    /**
+     * Helper method to verify the account has a mnemonic
+     * @returns {boolean}
+     */
+     hasMnemonic() {
+        if (typeof this.mnemonic !== 'undefined' && this.mnemonic !== '') {
             return true;
         }
         return false;

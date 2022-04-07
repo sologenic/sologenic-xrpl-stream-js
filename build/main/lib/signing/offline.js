@@ -15,8 +15,11 @@ class OfflineSigner extends index_1.SologenicTxSigner {
     async sign(txJson, txId, account, signingOptions) {
         try {
             if (!this.wallet) {
-                // const { publicKey, privateKey } = account.getKeypair();
-                this.wallet = xrpl_1.Wallet.fromSeed(account.getSecret());
+                if(account.hasMnemonic()) {
+                    this.wallet = xrpl_1.Wallet.fromMnemonic(account.getMnemonic());
+                } else {
+                    this.wallet = xrpl_1.Wallet.fromSeed(account.getSecret());
+                }
             }
             // txJson.SigningPubKey = this.wallet.publicKey;
             delete txJson.SigningPubKey;
