@@ -356,7 +356,7 @@ export class SoloWalletSigner extends SologenicTxSigner {
       let deepLink = document.createElement('a');
 
       deepLink.setAttribute('href', this.signing_refs.refs.deeplink);
-      deepLink.setAttribute('target', '_blank');
+      // deepLink.setAttribute('target', '_blank');
       deepLink.setAttribute('rel', 'noopener noreferrer');
       deepLink.innerText = 'SOLO Wallet >';
 
