@@ -1,6 +1,6 @@
 import * as SologenicTypes from '../types/';
-import { RippleAPI } from 'ripple-lib';
-import * as RippleError from 'ripple-lib/dist/npm/common/errors';
+import { RippleAPI } from 'sologenic-ripple-lib-1-10-0-patched';
+import * as RippleError from 'sologenic-ripple-lib-1-10-0-patched/dist/npm/common/errors';
 
 export class XrplException extends Error {
   /**
@@ -10,7 +10,7 @@ export class XrplException extends Error {
 
   public error?: Error;
 
-  constructor(message: string, error?: Error|undefined) {
+  constructor(message: string, error?: Error | undefined) {
     super(message);
 
     this.error = error;
@@ -18,36 +18,41 @@ export class XrplException extends Error {
 }
 
 export class XrplAddressException extends XrplException {
-  constructor(message: string, error?: Error|undefined) {
+  constructor(message: string, error?: Error | undefined) {
     super(message, error);
   }
 }
 
 export class XrplSecretException extends XrplException {
-  constructor(message: string, error?: Error|undefined) {
+  constructor(message: string, error?: Error | undefined) {
     super(message, error);
   }
 }
 
 export class XrplKeypairException extends XrplException {
-  constructor(message: string, error?: Error|undefined) {
+  constructor(message: string, error?: Error | undefined) {
     super(message, error);
   }
 }
 
 export class XrplKeypairOrSecretMissingException extends XrplException {
-  constructor(message: string, error?: Error|undefined) {
+  constructor(message: string, error?: Error | undefined) {
     super(message, error);
   }
 }
 
 export default class XrplAccount {
-  constructor(address: string, secret?: string, publicKey?: string, privateKey?: string) {
+  constructor(
+    address: string,
+    secret?: string,
+    publicKey?: string,
+    privateKey?: string
+  ) {
     this.address = address;
     this.secret = secret;
     this.keypair = undefined;
 
-    if (typeof(publicKey) !== 'undefined' || typeof(privateKey) !== 'undefined') {
+    if (typeof publicKey !== 'undefined' || typeof privateKey !== 'undefined') {
       this.keypair = {
         publicKey: publicKey!,
         privateKey: privateKey!
@@ -64,7 +69,7 @@ export default class XrplAccount {
 
   protected rippleApi: RippleAPI = new RippleAPI();
 
-   /**
+  /**
    * XRPL Account
    */
   protected address: string;
@@ -93,25 +98,45 @@ export default class XrplAccount {
   /**
    * Initialize an xrpl account
    */
-  public static getAccount(address: string, secret?: string, publicKey?: string, privateKey?: string): XrplAccount {
+  public static getAccount(
+    address: string,
+    secret?: string,
+    publicKey?: string,
+    privateKey?: string
+  ): XrplAccount {
     return new XrplAccount(address, secret, publicKey, privateKey);
   }
 
-   /**
+  /**
    * Validate an account
    */
   public validate(): void {
     if (!this.rippleApi.isValidAddress(this.address)) {
-      throw new XrplAddressException('Address is not valid', new RippleError.ValidationError());
+      throw new XrplAddressException(
+        'Address is not valid',
+        new RippleError.ValidationError()
+      );
     }
 
-    if (typeof(this.secret) !== 'undefined' && !this.rippleApi.isValidSecret(this.secret)) {
-      throw new XrplSecretException('Secret is not valid', new RippleError.ValidationError());
+    if (
+      typeof this.secret !== 'undefined' &&
+      !this.rippleApi.isValidSecret(this.secret)
+    ) {
+      throw new XrplSecretException(
+        'Secret is not valid',
+        new RippleError.ValidationError()
+      );
     }
 
-    if (typeof(this.keypair) === 'object'
-      && (typeof(this.keypair.publicKey) === 'undefined' || typeof(this.keypair.privateKey) === 'undefined')) {
-      throw new XrplKeypairException('Keypair is not valid', new RippleError.ValidationError());
+    if (
+      typeof this.keypair === 'object' &&
+      (typeof this.keypair.publicKey === 'undefined' ||
+        typeof this.keypair.privateKey === 'undefined')
+    ) {
+      throw new XrplKeypairException(
+        'Keypair is not valid',
+        new RippleError.ValidationError()
+      );
     }
 
     // Don't check if we have a keypair or secret because
@@ -130,7 +155,11 @@ export default class XrplAccount {
    * @param sequence XRPL account sequence
    * @returns {Promise.<this>}
    */
-  public setAccountSequence(currentSequence: number, previousSequence?: number, previousTxId?: string) {
+  public setAccountSequence(
+    currentSequence: number,
+    previousSequence?: number,
+    previousTxId?: string
+  ) {
     // Prevent race since the current sequence is sometimes calculate at the end of the
     // ledger, therefore once a transaction is created, it fails because the sequence
     // is already past.
@@ -208,14 +237,16 @@ export default class XrplAccount {
    * @returns {boolean}
    */
   public hasKeypair(): boolean {
-    if (typeof (this.keypair) === 'undefined')
-      return false;
+    if (typeof this.keypair === 'undefined') return false;
 
-      if ((typeof this.keypair.publicKey !== 'undefined') && (typeof this.keypair.privateKey !== 'undefined')) {
-        return true;
-      }
+    if (
+      typeof this.keypair.publicKey !== 'undefined' &&
+      typeof this.keypair.privateKey !== 'undefined'
+    ) {
+      return true;
+    }
 
-      return false;
+    return false;
   }
 
   /**
@@ -224,9 +255,9 @@ export default class XrplAccount {
    */
   public hasSecret(): boolean {
     if (typeof this.secret !== 'undefined' && this.secret !== '') {
-        return true;
-      }
+      return true;
+    }
 
-      return false;
+    return false;
   }
 }

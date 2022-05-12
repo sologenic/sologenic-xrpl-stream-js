@@ -8,19 +8,22 @@
  * https://github.com/ripple/ripple-lib/issues/1191
  */
 
-import anyTest, {TestInterface} from 'ava';
-import { RippleAPIOptions } from '../../types/xrpl';
-import { TransactionHandlerOptions, QUEUE_TYPE_STXMQ_REDIS } from '../../types/queues';
+import anyTest, { TestInterface } from 'ava';
+import { RippleAPIOptions, XRPLClientOptions } from '../../types/xrpl';
+import {
+  TransactionHandlerOptions,
+  QUEUE_TYPE_STXMQ_REDIS
+} from '../../types/queues';
 
 import { http } from '../../lib/utils';
 
 const test = anyTest as TestInterface<{
-  handler: any,
-  server: string,
-  faucet: string,
-  validAccount: any,
-  invalidAccount: any,
-  emptyAccount: any
+  handler: any;
+  server: string;
+  faucet: string;
+  validAccount: any;
+  invalidAccount: any;
+  emptyAccount: any;
 }>;
 
 import { IFaucet } from '../../types/utils';
@@ -33,7 +36,7 @@ const NETWORK_LIST = {
     wss: 'wss://s.devnet.rippletest.net:51233',
     faucet: 'https://faucet.devnet.rippletest.net/accounts',
     certificates: [
-`-----BEGIN CERTIFICATE-----
+      `-----BEGIN CERTIFICATE-----
 MIIENjCCAx6gAwIBAgIBATANBgkqhkiG9w0BAQUFADBvMQswCQYDVQQGEwJTRTEU
 MBIGA1UEChMLQWRkVHJ1c3QgQUIxJjAkBgNVBAsTHUFkZFRydXN0IEV4dGVybmFs
 IFRUUCBOZXR3b3JrMSIwIAYDVQQDExlBZGRUcnVzdCBFeHRlcm5hbCBDQSBSb290
@@ -59,7 +62,7 @@ c4g/VhsxOBi0cQ+azcgOno4uG+GMmIPLHzHxREzGBHNJdmAPx/i9F4BrLunMTA5a
 mnkPIAou1Z5jJh5VkpTYghdae9C8x49OhgQ=
 -----END CERTIFICATE-----
 `,
-`-----BEGIN CERTIFICATE-----
+      `-----BEGIN CERTIFICATE-----
 MIIFdzCCBF+gAwIBAgIQE+oocFv07O0MNmMJgGFDNjANBgkqhkiG9w0BAQwFADBv
 MQswCQYDVQQGEwJTRTEUMBIGA1UEChMLQWRkVHJ1c3QgQUIxJjAkBgNVBAsTHUFk
 ZFRydXN0IEV4dGVybmFsIFRUUCBOZXR3b3JrMSIwIAYDVQQDExlBZGRUcnVzdCBF
@@ -92,7 +95,7 @@ Jtl7GQVoP7o81DgGotPmjw7jtHFtQELFhLRAlSv0ZaBIefYdgWOWnU914Ph85I6p
 0fKtirOMxyHNwu8=
 -----END CERTIFICATE-----
 `,
-`-----BEGIN CERTIFICATE-----
+      `-----BEGIN CERTIFICATE-----
 MIIF6TCCA9GgAwIBAgIQBeTcO5Q4qzuFl8umoZhQ4zANBgkqhkiG9w0BAQwFADCB
 iDELMAkGA1UEBhMCVVMxEzARBgNVBAgTCk5ldyBKZXJzZXkxFDASBgNVBAcTC0pl
 cnNleSBDaXR5MR4wHAYDVQQKExVUaGUgVVNFUlRSVVNUIE5ldHdvcmsxLjAsBgNV
@@ -126,13 +129,15 @@ KA5R2d4On3XNDgOVyvnFqSot/kGkoUeuDcL5OWYzSlvhhChZbH2UF3bkRYKtcCD9
 m9T8bJUox04FB6b9HbwZ4ui3uRGKLXASUoWNjDNKD/yZkuBjcNqllEdjB+dYxzFf
 BT02Vf6Dsuimrdfp5gJ0iHRc2jTbkNJtUQoj1iM=
 -----END CERTIFICATE-----
-`],
+`
+    ]
   },
 
   test: {
     wss: 'wss://s.altnet.rippletest.net:51233',
     faucet: 'https://faucet.altnet.rippletest.net/accounts',
-    certificates: [`-----BEGIN CERTIFICATE-----
+    certificates: [
+      `-----BEGIN CERTIFICATE-----
 MIIGHzCCBQegAwIBAgIQZVrM7fIUFRxOEkmjVlxrYDANBgkqhkiG9w0BAQsFADBf
 MQswCQYDVQQGEwJGUjEOMAwGA1UECBMFUGFyaXMxDjAMBgNVBAcTBVBhcmlzMQ4w
 DAYDVQQKEwVHYW5kaTEgMB4GA1UEAxMXR2FuZGkgU3RhbmRhcmQgU1NMIENBIDIw
@@ -166,9 +171,10 @@ eyeAH2AVqsj7GfOWPRIQp234HW73+PGEoeq/uK0sMf8BywDkOhhAtLtUrW69w0k6
 obg/VSM4w3wR7oQpb1q7yDNbj0sCM/gVd23lgDl2mi6M+N/sINo7JtoxTv8/F9/R
 YxBvre4eabGxv2BSuEhFUdA30lDiwYOj4UnLVoCKMjsZZoY4WnkKrm4q6hITkV2c
 uiKk3SZRjGo9kHr8kBmWVY0Icm3LRF6bNMEcve6un3v7D/c=
------END CERTIFICATE-----`,]
+-----END CERTIFICATE-----`
+    ]
   }
-}
+};
 
 const NETWORK = NETWORK_LIST.dev;
 
@@ -183,11 +189,32 @@ test.before(async t => {
     http<IFaucet>(NETWORK.faucet)
   ]);
 
-  t.context.invalidAccount = new XrplAccount(accounts[0].account.address, accounts[0].account.secret, undefined, undefined);
-  t.context.validAccount = new XrplAccount(accounts[1].account.address, accounts[1].account.secret, undefined, undefined);
-  t.context.emptyAccount = new XrplAccount(accounts[2].account.address, accounts[2].account.secret, undefined, undefined);
+  t.context.invalidAccount = new XrplAccount(
+    accounts[0].account.address,
+    accounts[0].account.secret,
+    undefined,
+    undefined
+  );
+  t.context.validAccount = new XrplAccount(
+    accounts[1].account.address,
+    accounts[1].account.secret,
+    undefined,
+    undefined
+  );
+  t.context.emptyAccount = new XrplAccount(
+    accounts[2].account.address,
+    accounts[2].account.secret,
+    undefined,
+    undefined
+  );
 
   const rippleOptions: RippleAPIOptions = {
+    server: t.context.server,
+    trustedCertificates: NETWORK.certificates,
+    trace: false
+  };
+
+  const xrplOptions: XRPLClientOptions = {
     server: t.context.server,
     trustedCertificates: NETWORK.certificates,
     trace: false
@@ -199,11 +226,11 @@ test.before(async t => {
       port: 6379,
       host: 'localhost',
       password: '',
-      db: 1,
+      db: 1
     }
   };
 
-  t.context.handler = new SologenicTxHandler(rippleOptions, thOptions);
+  t.context.handler = new SologenicTxHandler(xrplOptions, thOptions);
 });
 
 test('sologenic tx redis initialization', async t => {
@@ -283,11 +310,10 @@ test('transaction to sologenic xrpl stream', async t => {
     transaction.events.removeAllListeners('validated');
     transaction.events.removeAllListeners('failed');
 
-    t.false(eventsReceived.includes('failed'))
+    t.false(eventsReceived.includes('failed'));
     t.true(eventsReceived.includes('queued'));
     t.true(eventsReceived.includes('dispatched'));
     t.true(eventsReceived.includes('validated'));
-
   } catch (error) {
     t.log(error);
     t.fail();

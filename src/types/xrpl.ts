@@ -13,6 +13,22 @@ export interface RippleAPIOptions {
   maxFeeXRP?: string;
 }
 
+export interface XRPLClientOptions {
+  authorization?: string;
+  certificate?: string;
+  connectionTimeout?: number;
+  feeCushion?: number;
+  key?: string;
+  maxFeeXRP?: string;
+  passphrase?: string;
+  proxy?: string;
+  proxyAuthorization?: string;
+  timeout?: number;
+  trace?: boolean;
+  trustedCertificates?: string[];
+  server: string;
+}
+
 export interface Ledger {
   baseFeeXRP: string;
   ledgerHash?: string;

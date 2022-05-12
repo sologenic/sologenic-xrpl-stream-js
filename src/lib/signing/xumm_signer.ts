@@ -173,7 +173,7 @@ export class XummWalletSigner extends SologenicTxSigner {
       if (txJson.TransactionMetadata) delete txJson.TransactionMetadata;
 
       if (txJson.LastLedgerSequence)
-        txJson.LastLedgerSequence = Number(txJson.LastLedgerSequence) + 100;
+        txJson.LastLedgerSequence = Number(txJson.LastLedgerSequence) + 1000;
 
       var pushToken = getToken(txJson.Account, 'xumm');
 
@@ -286,7 +286,8 @@ export class XummWalletSigner extends SologenicTxSigner {
       if (signed_tx.tx_hex) {
         return {
           id: txId,
-          signedTransaction: signed_tx.tx_hex
+          signedTransaction: signed_tx.tx_hex,
+          tx_blob: signed_tx.tx_hex
         };
       } else {
         throw new SologenicError('1000');

@@ -55,7 +55,7 @@ export class DcentSigner extends SologenicTxSigner {
     try {
       if (txJson.TransactionMetadata) delete txJson.TransactionMetadata;
       if (txJson.LastLedgerSequence)
-        txJson.LastLedgerSequence = Number(txJson.LastLedgerSequence) + 100;
+        txJson.LastLedgerSequence = Number(txJson.LastLedgerSequence) + 1000;
 
       const signedTX = await DcentWebConnector.getXrpSignedTransaction(
         txJson,
@@ -65,13 +65,17 @@ export class DcentSigner extends SologenicTxSigner {
       txJson.SigningPubKey = signedTX.body.parameter.pubkey.toUpperCase();
       txJson.TxnSignature = signedTX.body.parameter.sign.toUpperCase();
 
+      const blob = binaryCodec.encode(txJson);
+
       // Return the signed transaction
       DcentWebConnector.popupWindowClose();
       return {
         id: txId,
-        signedTransaction: binaryCodec.encode(txJson)
+        signedTransaction: blob,
+        tx_blob: blob
       };
     } catch (e) {
+      console.log(e);
       // This error is thrown if the user rejects the transaction on the D'Cent
       if (e.body.error.code === 'user_cancel') {
         DcentWebConnector.popupWindowClose();

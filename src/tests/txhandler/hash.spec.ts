@@ -8,21 +8,24 @@
  * https://github.com/ripple/ripple-lib/issues/1191
  */
 
-import anyTest, {TestInterface} from 'ava';
+import anyTest, { TestInterface } from 'ava';
 
 import { http } from '../../lib/utils';
 
 const test = anyTest as TestInterface<{
-  handler: any,
-  server: string,
-  faucet: string,
-  validAccount: any,
-  invalidAccount: any,
-  emptyAccount: any
+  handler: any;
+  server: string;
+  faucet: string;
+  validAccount: any;
+  invalidAccount: any;
+  emptyAccount: any;
 }>;
 
-import { RippleAPIOptions } from '../../types/xrpl';
-import { TransactionHandlerOptions, QUEUE_TYPE_STXMQ_HASH } from '../../types/queues';
+import { RippleAPIOptions, XRPLClientOptions } from '../../types/xrpl';
+import {
+  TransactionHandlerOptions,
+  QUEUE_TYPE_STXMQ_HASH
+} from '../../types/queues';
 import { IFaucet } from '../../types/utils';
 import * as SologenicTypes from '../../types/txhandler';
 import { SologenicTxHandler } from '../../lib/txhandler';
@@ -34,7 +37,7 @@ const NETWORK_LIST = {
     wss: 'wss://s.devnet.rippletest.net:51233',
     faucet: 'https://faucet.devnet.rippletest.net/accounts',
     certificates: [
-`-----BEGIN CERTIFICATE-----
+      `-----BEGIN CERTIFICATE-----
 MIIENjCCAx6gAwIBAgIBATANBgkqhkiG9w0BAQUFADBvMQswCQYDVQQGEwJTRTEU
 MBIGA1UEChMLQWRkVHJ1c3QgQUIxJjAkBgNVBAsTHUFkZFRydXN0IEV4dGVybmFs
 IFRUUCBOZXR3b3JrMSIwIAYDVQQDExlBZGRUcnVzdCBFeHRlcm5hbCBDQSBSb290
@@ -60,7 +63,7 @@ c4g/VhsxOBi0cQ+azcgOno4uG+GMmIPLHzHxREzGBHNJdmAPx/i9F4BrLunMTA5a
 mnkPIAou1Z5jJh5VkpTYghdae9C8x49OhgQ=
 -----END CERTIFICATE-----
 `,
-`-----BEGIN CERTIFICATE-----
+      `-----BEGIN CERTIFICATE-----
 MIIFdzCCBF+gAwIBAgIQE+oocFv07O0MNmMJgGFDNjANBgkqhkiG9w0BAQwFADBv
 MQswCQYDVQQGEwJTRTEUMBIGA1UEChMLQWRkVHJ1c3QgQUIxJjAkBgNVBAsTHUFk
 ZFRydXN0IEV4dGVybmFsIFRUUCBOZXR3b3JrMSIwIAYDVQQDExlBZGRUcnVzdCBF
@@ -93,7 +96,7 @@ Jtl7GQVoP7o81DgGotPmjw7jtHFtQELFhLRAlSv0ZaBIefYdgWOWnU914Ph85I6p
 0fKtirOMxyHNwu8=
 -----END CERTIFICATE-----
 `,
-`-----BEGIN CERTIFICATE-----
+      `-----BEGIN CERTIFICATE-----
 MIIF6TCCA9GgAwIBAgIQBeTcO5Q4qzuFl8umoZhQ4zANBgkqhkiG9w0BAQwFADCB
 iDELMAkGA1UEBhMCVVMxEzARBgNVBAgTCk5ldyBKZXJzZXkxFDASBgNVBAcTC0pl
 cnNleSBDaXR5MR4wHAYDVQQKExVUaGUgVVNFUlRSVVNUIE5ldHdvcmsxLjAsBgNV
@@ -127,13 +130,15 @@ KA5R2d4On3XNDgOVyvnFqSot/kGkoUeuDcL5OWYzSlvhhChZbH2UF3bkRYKtcCD9
 m9T8bJUox04FB6b9HbwZ4ui3uRGKLXASUoWNjDNKD/yZkuBjcNqllEdjB+dYxzFf
 BT02Vf6Dsuimrdfp5gJ0iHRc2jTbkNJtUQoj1iM=
 -----END CERTIFICATE-----
-`],
+`
+    ]
   },
 
   test: {
     wss: 'wss://s.altnet.rippletest.net:51233',
     faucet: 'https://faucet.altnet.rippletest.net/accounts',
-    certificates: [`-----BEGIN CERTIFICATE-----
+    certificates: [
+      `-----BEGIN CERTIFICATE-----
 MIIGHzCCBQegAwIBAgIQZVrM7fIUFRxOEkmjVlxrYDANBgkqhkiG9w0BAQsFADBf
 MQswCQYDVQQGEwJGUjEOMAwGA1UECBMFUGFyaXMxDjAMBgNVBAcTBVBhcmlzMQ4w
 DAYDVQQKEwVHYW5kaTEgMB4GA1UEAxMXR2FuZGkgU3RhbmRhcmQgU1NMIENBIDIw
@@ -167,9 +172,10 @@ eyeAH2AVqsj7GfOWPRIQp234HW73+PGEoeq/uK0sMf8BywDkOhhAtLtUrW69w0k6
 obg/VSM4w3wR7oQpb1q7yDNbj0sCM/gVd23lgDl2mi6M+N/sINo7JtoxTv8/F9/R
 YxBvre4eabGxv2BSuEhFUdA30lDiwYOj4UnLVoCKMjsZZoY4WnkKrm4q6hITkV2c
 uiKk3SZRjGo9kHr8kBmWVY0Icm3LRF6bNMEcve6un3v7D/c=
------END CERTIFICATE-----`,]
+-----END CERTIFICATE-----`
+    ]
   }
-}
+};
 
 const NETWORK = NETWORK_LIST.dev;
 
@@ -184,11 +190,32 @@ test.before(async t => {
     http<IFaucet>(NETWORK.faucet)
   ]);
 
-  t.context.invalidAccount = new XrplAccount(accounts[0].account.address, accounts[0].account.secret, undefined, undefined);
-  t.context.validAccount = new XrplAccount(accounts[1].account.address, accounts[1].account.secret, undefined, undefined);
-  t.context.emptyAccount = new XrplAccount(accounts[2].account.address, accounts[2].account.secret, undefined, undefined);
+  t.context.invalidAccount = new XrplAccount(
+    accounts[0].account.address,
+    accounts[0].account.secret,
+    undefined,
+    undefined
+  );
+  t.context.validAccount = new XrplAccount(
+    accounts[1].account.address,
+    accounts[1].account.secret,
+    undefined,
+    undefined
+  );
+  t.context.emptyAccount = new XrplAccount(
+    accounts[2].account.address,
+    accounts[2].account.secret,
+    undefined,
+    undefined
+  );
 
   const rippleOptions: RippleAPIOptions = {
+    server: t.context.server,
+    trustedCertificates: NETWORK.certificates,
+    trace: false
+  };
+
+  const xrplOptions: XRPLClientOptions = {
     server: t.context.server,
     trustedCertificates: NETWORK.certificates,
     trace: false
@@ -199,11 +226,13 @@ test.before(async t => {
     hash: {}
   };
 
-  t.context.handler = new SologenicTxHandler(rippleOptions, thOptions);
+  t.context.handler = new SologenicTxHandler(xrplOptions, thOptions);
 });
 
 test.serial('sologenic tx hash initialization', async t => {
-  await t.notThrowsAsync(t.context.handler.setXrplAccount(t.context.validAccount));
+  await t.notThrowsAsync(
+    t.context.handler.setXrplAccount(t.context.validAccount)
+  );
 });
 
 test.serial('transaction to sologenic xrpl stream', async t => {
@@ -256,7 +285,7 @@ test.serial('transaction to sologenic xrpl stream', async t => {
     transaction.events.removeAllListeners('validated');
     transaction.events.removeAllListeners('failed');
 
-    t.false(eventsReceived.includes('failed'))
+    t.false(eventsReceived.includes('failed'));
     t.true(eventsReceived.includes('queued'));
     t.true(eventsReceived.includes('dispatched'));
     t.true(eventsReceived.includes('validated'));
@@ -285,11 +314,10 @@ test.serial('transaction should fail immediately (invalid flags)', async t => {
       txFailed = true;
 
       // Should fail signing since -1 is not a valid flag
-      t.is(failedTx.reason, "unable_to_sign_transaction");
+      t.is(failedTx.reason, 'unable_to_sign_transaction');
     });
 
     await transaction.promise;
-
   } catch (error) {
     t.fail();
   }
@@ -362,7 +390,7 @@ test.serial('transaction send multiple transactions', async t => {
     // console.log(promises);
 
     for (const transaction in promises) {
-      if (promises[transaction].hasOwnProperty("hash")) {
+      if (promises[transaction].hasOwnProperty('hash')) {
         t.true(typeof promises[transaction] === 'object');
         t.true(typeof promises[transaction].hash === 'string');
       } else {
@@ -430,7 +458,6 @@ test.serial('transaction should fail with insufficient fee', async t => {
     t.true(txValidated);
     t.true(txWarning);
     t.false(txFailed);
-
   } catch (error) {
     t.fail(error);
   }
@@ -446,193 +473,223 @@ test.serial('transaction should return next sequence', async t => {
 
     t.not(currentSequence, sequence);
     t.true(sequence > 0);
-
   } catch (error) {
     t.fail(error);
   }
 });
 
-test.serial('transaction will fail with tefBAD_AUTH (invalid account cannot send on behalf of valid account)', async t => {
-  try {
-    const handler: SologenicTxHandler = t.context!.handler;
-    await handler.setXrplAccount(t.context.validAccount);
+test.serial(
+  'transaction will fail with tefBAD_AUTH (invalid account cannot send on behalf of valid account)',
+  async t => {
+    try {
+      const handler: SologenicTxHandler = t.context!.handler;
+      await handler.setXrplAccount(t.context.validAccount);
 
-    // The current sequence of the valid account needs to be used, otherwise we'll
-    // fail with tefPAST_SEQ because the transaction sequence is too old.
-    const currentSequence: number = t.context.validAccount.getCurrentAccountSequence();
+      // The current sequence of the valid account needs to be used, otherwise we'll
+      // fail with tefPAST_SEQ because the transaction sequence is too old.
+      const currentSequence: number = t.context.validAccount.getCurrentAccountSequence();
 
-    await handler.setXrplAccount(t.context.invalidAccount);
+      await handler.setXrplAccount(t.context.invalidAccount);
 
-    // See flags at https://xrpl.org/accountset.html
-    const tx: SologenicTypes.TX = {
-      Account: t.context.validAccount.getAddress(),
-      TransactionType: 'AccountSet',
-      SetFlag: 5,
-      Sequence: currentSequence
-    };
+      // See flags at https://xrpl.org/accountset.html
+      const tx: SologenicTypes.TX = {
+        Account: t.context.validAccount.getAddress(),
+        TransactionType: 'AccountSet',
+        SetFlag: 5,
+        Sequence: currentSequence
+      };
 
-    const transaction: SologenicTypes.TransactionObject = handler.submit(tx);
+      const transaction: SologenicTypes.TransactionObject = handler.submit(tx);
 
-    let txFailed = false;
+      let txFailed = false;
 
-    transaction.events.on('failed', (failedTx: SologenicTypes.FailedEvent) => {
-      t.is(failedTx.reason, "tefBAD_AUTH");
-      txFailed = true;
-    });
-
-    await transaction.promise;
-
-    t.true(txFailed);
-  } catch (error) {
-    t.fail(error);
-  }
-});
-
-test.serial('transaction will fail with tefPAST_SEQ (invalid account sequence is less than valid account)', async t => {
-  try {
-    const handler: SologenicTxHandler = t.context!.handler;
-
-    // Set an invalid account and set the sequence number to the valid accounts sequence.
-    await handler.setXrplAccount(t.context.validAccount);
-
-    // See flags at https://xrpl.org/accountset.html
-    const tx: SologenicTypes.TX = {
-      Account: t.context.validAccount.getAddress(),
-      TransactionType: 'AccountSet',
-      SetFlag: 5,
-      Sequence: 1
-    };
-
-    const transaction: SologenicTypes.TransactionObject = handler.submit(tx);
-
-    let txFailed = false;
-
-    transaction.events.on('failed', (failedTx: SologenicTypes.FailedEvent) => {
-      t.is(failedTx.reason, "tefPAST_SEQ");
-      txFailed = true;
-    });
-
-    await transaction.promise;
-
-    t.true(txFailed);
-  } catch (error) {
-    t.fail(error);
-  }
-});
-
-test.serial('transaction should fail because not enough funds are available', async t => {
-  try {
-    const handler: SologenicTxHandler = t.context!.handler;
-
-    await handler.setXrplAccount(t.context.emptyAccount);
-
-    // See flags at https://xrpl.org/accountset.html
-    const tx1: SologenicTypes.TX = {
-      Account: t.context.emptyAccount.getAddress(),
-      TransactionType: 'Payment',
-      Amount: handler.getRippleApi().xrpToDrops('99999'),
-      Destination: t.context.validAccount.getAddress()
-    };
-
-    // Send all funds out of this account to our validAccount, then
-    // we'll send another transaction which will not be successful
-    // because we'll be out of funds.
-
-    const transaction: SologenicTypes.TransactionObject = handler.submit(tx1);
-
-    transaction.events.on('failed', (failedTx: SologenicTypes.FailedEvent) => {
-      t.true(typeof failedTx !== 'undefined');
-      t.is(failedTx.reason, 'tecUNFUNDED_PAYMENT');
-    });
-
-    await transaction.promise;
-
-  } catch (error) {
-    t.fail(error);
-  }
-});
-
-test.serial('transaction should fail, after sending request via xumm because no user input', async t => {
-  try {
-    const handler: SologenicTxHandler = t.context!.handler;
-
-    handler.setSigningMechanism(new XummSigner({
-      xummApiKey: process.env.XUMM_API_KEY,
-      xummApiSecret: process.env.XUMM_API_SECRET,
-      // Gives us 10 seconds to react as this is a manual test, just so we can verify
-      // the push notification was received.
-      maximumExecutionTime: 5000
-    }));
-
-    await handler.setXrplAccount(t.context.emptyAccount);
-
-    // See flags at https://xrpl.org/accountset.html
-    const tx1: SologenicTypes.TX = {
-      Account: t.context.emptyAccount.getAddress(),
-      TransactionType: 'Payment',
-      Amount: handler.getRippleApi().xrpToDrops('99999'),
-      Destination: t.context.validAccount.getAddress()
-    };
-
-    // Send all funds out of this account to our validAccount, then
-    // we'll send another transaction which will not be successful
-    // because we'll be out of funds.
-
-    const transaction: SologenicTypes.TransactionObject = handler.submit(tx1);
-
-    transaction.events.on('failed', (failedTx: SologenicTypes.FailedEvent) => {
-      t.true(typeof failedTx !== 'undefined');
-      t.is(failedTx.reason, 'unable_to_sign_transaction');
-    });
-
-    await transaction.promise;
-
-  } catch (error) {
-    t.fail(error);
-  }
-});
-
-test.serial('transaction should fail, after sending push notification via xumm because no user input', async t => {
-  try {
-    const handler: SologenicTxHandler = t.context!.handler;
-
-    handler.setSigningMechanism(new XummSigner({
-      xummApiKey: process.env.XUMM_API_KEY,
-      xummApiSecret: process.env.XUMM_API_SECRET,
-      // Gives us 10 seconds to react as this is a manual test, just so we can verify
-      // the push notification was received.
-      maximumExecutionTime: 10000
-    }));
-
-    await handler.setXrplAccount(t.context.emptyAccount);
-
-    // See flags at https://xrpl.org/accountset.html
-    const tx1: SologenicTypes.TX = {
-      Account: t.context.emptyAccount.getAddress(),
-      TransactionType: 'Payment',
-      Amount: handler.getRippleApi().xrpToDrops('99999'),
-      Destination: t.context.validAccount.getAddress(),
-      TransactionMetadata: {
-        xummMeta: {
-          issued_user_token: 'ee9d788d-2de7-4d27-8afd-7829490f21bf'
+      transaction.events.on(
+        'failed',
+        (failedTx: SologenicTypes.FailedEvent) => {
+          t.is(failedTx.reason, 'tefBAD_AUTH');
+          txFailed = true;
         }
-      }
-    };
+      );
 
-    // Send all funds out of this account to our validAccount, then
-    // we'll send another transaction which will not be successful
-    // because we'll be out of funds.
+      await transaction.promise;
 
-    const transaction: SologenicTypes.TransactionObject = handler.submit(tx1);
-
-    transaction.events.on('failed', (failedTx: SologenicTypes.FailedEvent) => {
-      t.true(typeof failedTx !== 'undefined');
-      t.is(failedTx.reason, 'unable_to_sign_transaction');
-    });
-
-    await transaction.promise;
-
-  } catch (error) {
-    t.fail(error);
+      t.true(txFailed);
+    } catch (error) {
+      t.fail(error);
+    }
   }
-});
+);
+
+test.serial(
+  'transaction will fail with tefPAST_SEQ (invalid account sequence is less than valid account)',
+  async t => {
+    try {
+      const handler: SologenicTxHandler = t.context!.handler;
+
+      // Set an invalid account and set the sequence number to the valid accounts sequence.
+      await handler.setXrplAccount(t.context.validAccount);
+
+      // See flags at https://xrpl.org/accountset.html
+      const tx: SologenicTypes.TX = {
+        Account: t.context.validAccount.getAddress(),
+        TransactionType: 'AccountSet',
+        SetFlag: 5,
+        Sequence: 1
+      };
+
+      const transaction: SologenicTypes.TransactionObject = handler.submit(tx);
+
+      let txFailed = false;
+
+      transaction.events.on(
+        'failed',
+        (failedTx: SologenicTypes.FailedEvent) => {
+          t.is(failedTx.reason, 'tefPAST_SEQ');
+          txFailed = true;
+        }
+      );
+
+      await transaction.promise;
+
+      t.true(txFailed);
+    } catch (error) {
+      t.fail(error);
+    }
+  }
+);
+
+test.serial(
+  'transaction should fail because not enough funds are available',
+  async t => {
+    try {
+      const handler: SologenicTxHandler = t.context!.handler;
+
+      await handler.setXrplAccount(t.context.emptyAccount);
+
+      // See flags at https://xrpl.org/accountset.html
+      const tx1: SologenicTypes.TX = {
+        Account: t.context.emptyAccount.getAddress(),
+        TransactionType: 'Payment',
+        Amount: handler.getRippleApi().xrpToDrops('99999'),
+        Destination: t.context.validAccount.getAddress()
+      };
+
+      // Send all funds out of this account to our validAccount, then
+      // we'll send another transaction which will not be successful
+      // because we'll be out of funds.
+
+      const transaction: SologenicTypes.TransactionObject = handler.submit(tx1);
+
+      transaction.events.on(
+        'failed',
+        (failedTx: SologenicTypes.FailedEvent) => {
+          t.true(typeof failedTx !== 'undefined');
+          t.is(failedTx.reason, 'tecUNFUNDED_PAYMENT');
+        }
+      );
+
+      await transaction.promise;
+    } catch (error) {
+      t.fail(error);
+    }
+  }
+);
+
+test.serial(
+  'transaction should fail, after sending request via xumm because no user input',
+  async t => {
+    try {
+      const handler: SologenicTxHandler = t.context!.handler;
+
+      handler.setSigningMechanism(
+        new XummSigner({
+          xummApiKey: process.env.XUMM_API_KEY,
+          xummApiSecret: process.env.XUMM_API_SECRET,
+          // Gives us 10 seconds to react as this is a manual test, just so we can verify
+          // the push notification was received.
+          maximumExecutionTime: 5000
+        })
+      );
+
+      await handler.setXrplAccount(t.context.emptyAccount);
+
+      // See flags at https://xrpl.org/accountset.html
+      const tx1: SologenicTypes.TX = {
+        Account: t.context.emptyAccount.getAddress(),
+        TransactionType: 'Payment',
+        Amount: handler.getRippleApi().xrpToDrops('99999'),
+        Destination: t.context.validAccount.getAddress()
+      };
+
+      // Send all funds out of this account to our validAccount, then
+      // we'll send another transaction which will not be successful
+      // because we'll be out of funds.
+
+      const transaction: SologenicTypes.TransactionObject = handler.submit(tx1);
+
+      transaction.events.on(
+        'failed',
+        (failedTx: SologenicTypes.FailedEvent) => {
+          t.true(typeof failedTx !== 'undefined');
+          t.is(failedTx.reason, 'unable_to_sign_transaction');
+        }
+      );
+
+      await transaction.promise;
+    } catch (error) {
+      t.fail(error);
+    }
+  }
+);
+
+test.serial(
+  'transaction should fail, after sending push notification via xumm because no user input',
+  async t => {
+    try {
+      const handler: SologenicTxHandler = t.context!.handler;
+
+      handler.setSigningMechanism(
+        new XummSigner({
+          xummApiKey: process.env.XUMM_API_KEY,
+          xummApiSecret: process.env.XUMM_API_SECRET,
+          // Gives us 10 seconds to react as this is a manual test, just so we can verify
+          // the push notification was received.
+          maximumExecutionTime: 10000
+        })
+      );
+
+      await handler.setXrplAccount(t.context.emptyAccount);
+
+      // See flags at https://xrpl.org/accountset.html
+      const tx1: SologenicTypes.TX = {
+        Account: t.context.emptyAccount.getAddress(),
+        TransactionType: 'Payment',
+        Amount: handler.getRippleApi().xrpToDrops('99999'),
+        Destination: t.context.validAccount.getAddress(),
+        TransactionMetadata: {
+          xummMeta: {
+            issued_user_token: 'ee9d788d-2de7-4d27-8afd-7829490f21bf'
+          }
+        }
+      };
+
+      // Send all funds out of this account to our validAccount, then
+      // we'll send another transaction which will not be successful
+      // because we'll be out of funds.
+
+      const transaction: SologenicTypes.TransactionObject = handler.submit(tx1);
+
+      transaction.events.on(
+        'failed',
+        (failedTx: SologenicTypes.FailedEvent) => {
+          t.true(typeof failedTx !== 'undefined');
+          t.is(failedTx.reason, 'unable_to_sign_transaction');
+        }
+      );
+
+      await transaction.promise;
+    } catch (error) {
+      t.fail(error);
+    }
+  }
+);

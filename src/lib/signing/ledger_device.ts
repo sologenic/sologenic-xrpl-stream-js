@@ -3,7 +3,7 @@ import * as SologenicTypes from '../../types';
 import { SologenicTxSigner } from './index';
 import { SologenicError } from '../error';
 import { wait } from '../utils';
-import { RippleAPI } from 'ripple-lib';
+import { RippleAPI } from 'sologenic-ripple-lib-1-10-0-patched';
 const TransportWebUSB = require('@ledgerhq/hw-transport-webusb').default;
 const Xrp = require('@ledgerhq/hw-app-xrp').default;
 
@@ -141,7 +141,7 @@ export class LedgerDeviceSigner extends SologenicTxSigner {
       if (txJson.TransactionMetadata) delete txJson.TransactionMetadata;
 
       if (txJson.LastLedgerSequence)
-        txJson.LastLedgerSequence = Number(txJson.LastLedgerSequence) + 100;
+        txJson.LastLedgerSequence = Number(txJson.LastLedgerSequence) + 1000;
 
       // Add Public Key to the txJson to encode.
       txJson.SigningPubKey = this.publicKey.toUpperCase();
@@ -158,12 +158,17 @@ export class LedgerDeviceSigner extends SologenicTxSigner {
       // Add the signature to the transaction
       txJson.TxnSignature = signature.toUpperCase();
 
+      const blob = binaryCodec.encode(txJson);
+
       // Return the signed transaction
       return {
         id: txId,
-        signedTransaction: binaryCodec.encode(txJson)
+        signedTransaction: blob,
+        tx_blob: blob
       };
     } catch (e) {
+      console.log(e);
+
       // This error is thrown if the user rejects the transaction on the LedgerDevice
       if (e.statusText === 'CONDITIONS_OF_USE_NOT_SATISFIED') {
         throw new SologenicError('2003');
