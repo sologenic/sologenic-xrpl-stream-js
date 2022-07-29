@@ -9,7 +9,7 @@ import {
 /**
  * Import redis queue implementation
  */
-import RedisQueue from './redis';
+// import RedisQueue from './redis';
 
 /**
  * Import hash queue implementation
@@ -28,7 +28,7 @@ export default class TXMQƨ implements IQueue {
     try {
       switch (sologenicOptions!.queueType) {
         case QUEUE_TYPE_STXMQ_REDIS:
-          this.queue = new RedisQueue(sologenicOptions.redis!);
+          this.queue = new HashQueue(sologenicOptions.hash!);
           break;
 
         case QUEUE_TYPE_STXMQ_HASH:
@@ -179,4 +179,4 @@ export default class TXMQƨ implements IQueue {
   }
 }
 
-export { HashQueue, RedisQueue };
+export { HashQueue };
