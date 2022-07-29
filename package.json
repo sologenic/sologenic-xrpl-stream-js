@@ -1,6 +1,6 @@
 {
-  "name": "sxsj",
-  "version": "1.1.17",
+  "name": "sologenic-xrpl-stream-js-next",
+  "version": "1.1.19",
   "description": "Persistent transaction handling for the XRP Ledger",
   "main": "build/main/index.js",
   "typings": "build/main/index.d.ts",
