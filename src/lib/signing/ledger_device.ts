@@ -6,7 +6,6 @@ import { wait } from '../utils';
 import { RippleAPI } from 'sologenic-ripple-lib-1-10-0-patched';
 const TransportWebUSB = require('@ledgerhq/hw-transport-webusb').default;
 const Xrp = require('@ledgerhq/hw-app-xrp').default;
-
 const binaryCodec = require('ripple-binary-codec');
 export class LedgerDeviceSigner extends SologenicTxSigner {
   protected getAddress: any = '';
@@ -48,17 +47,7 @@ export class LedgerDeviceSigner extends SologenicTxSigner {
         publicKey: this.publicKey
       };
     } else {
-      // const { address, publicKey } = await this.getAddress(this.bip32Path);
-
-      // this.address = address;
-      // this.publicKey = publicKey;
-
-      // return {
-      //   address,
-      //   publicKey
-      // };
-
-      let accounts: Object[] = [];
+      let accounts: SologenicTypes.LedgerAccount[] = [];
       let bipIndex = 0;
 
       while (true) {
@@ -78,12 +67,15 @@ export class LedgerDeviceSigner extends SologenicTxSigner {
           index: bipIndex
         };
 
-        accounts = [...accounts, account];
-
-        if (addressInfo === null) {
+        if (
+          addressInfo === null &&
+          accounts[accounts.length - 1].info === null
+        ) {
+          accounts = [...accounts, account];
           break;
         }
 
+        accounts = [...accounts, account];
         bipIndex++;
       }
 
@@ -143,6 +135,8 @@ export class LedgerDeviceSigner extends SologenicTxSigner {
       if (txJson.LastLedgerSequence)
         txJson.LastLedgerSequence = Number(txJson.LastLedgerSequence) + 1000;
 
+      txJson.Flags = txJson.Flags ? (txJson.Flags += 2147483648) : 2147483648;
+
       // Add Public Key to the txJson to encode.
       txJson.SigningPubKey = this.publicKey.toUpperCase();
 
@@ -168,6 +162,14 @@ export class LedgerDeviceSigner extends SologenicTxSigner {
       };
     } catch (e) {
       console.log(e);
+
+      if (e.name === 'DisconnectedDeviceDuringOperation') {
+        throw new SologenicError('3001');
+      }
+
+      if (e.statusText === 'UNKNOWN_ERROR') {
+        throw new SologenicError('3000');
+      }
 
       // This error is thrown if the user rejects the transaction on the LedgerDevice
       if (e.statusText === 'CONDITIONS_OF_USE_NOT_SATISFIED') {

@@ -29,7 +29,9 @@ export class SologenicError extends Error {
       { id: '2002', message: 'unable_to_sign_transaction' },
       { id: '2003', message: 'transaction_signing_rejected' },
       { id: '2004', message: 'sign_in_rejected' },
-      { id: '2005', message: 'transaction_cancelled' }
+      { id: '2005', message: 'transaction_cancelled' },
+      { id: '3000', message: 'start_xrp_app' },
+      { id: '3001', message: 'ledger_device_disconnected' }
     ];
   }
 

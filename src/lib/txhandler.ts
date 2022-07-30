@@ -1,31 +1,20 @@
 import * as SologenicTypes from '../types';
 import * as RippleError from 'sologenic-ripple-lib-1-10-0-patched/dist/npm/common/errors';
+import TXMQƨ from './queues';
+import { OfflineSigner } from './signing';
+import { SologenicError } from './error';
+import { all as mathAll, create as mathCreate } from 'mathjs';
+import { EventEmitter } from 'events';
+import { v4 as uuid } from 'uuid';
+import { wait, formatOrderbook } from './utils';
+import { ISologenicTxSigner } from '../types';
+import { Market } from '../types/orderbook';
 import XrplAccount, {
   XrplAddressException,
   XrplSecretException,
   XrplKeypairException,
   XrplKeypairOrSecretMissingException
 } from './account';
-
-import TXMQƨ from './queues';
-
-import { OfflineSigner } from './signing';
-import { RippleAPI } from 'sologenic-ripple-lib-1-10-0-patched';
-import { SologenicError } from './error';
-
-import { all as mathAll, cos, create as mathCreate } from 'mathjs';
-import { EventEmitter } from 'events';
-
-import { v4 as uuid } from 'uuid';
-import { wait, formatOrderbook } from './utils';
-import { ISologenicTxSigner } from '../types';
-import { Ledger } from 'xrpl/dist/npm/models/ledger';
-import {
-  ParsedBookOffer,
-  FormattedOrderbook,
-  Market
-} from '../types/orderbook';
-import { BookOffer } from 'xrpl';
 
 const binaryCodec = require('ripple-binary-codec');
 const xrpl = require('xrpl');
@@ -149,7 +138,7 @@ export class SologenicTxHandler extends EventEmitter {
         ...xrplClientOptions
       });
 
-      console.log('DEV SOLOGENIC 6');
+      console.log('SXSJ: 1.1.18');
 
       /**
        * Subscribe to sologenic-ripple-lib-1-10-0-patched on("") events

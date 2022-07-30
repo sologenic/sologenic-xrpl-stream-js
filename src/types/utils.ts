@@ -9,6 +9,13 @@ export interface IFaucetAccount {
   secret: string;
 }
 
+export interface LedgerAccount {
+  address: string;
+  publicKey: string;
+  index: number;
+  info: object | null;
+}
+
 /**
  * Supporting interface for our faucet account so that we can
  * cast (deserialize) the JSON response to an object in our tests.
