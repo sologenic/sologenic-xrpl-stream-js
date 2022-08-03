@@ -62,6 +62,7 @@ export class DcentSigner extends SologenicTxSigner {
         this.bip32Path
       );
 
+      txJson.Flags = txJson.Flags ? (txJson.Flags += 2147483648) : 2147483648;
       txJson.SigningPubKey = signedTX.body.parameter.pubkey.toUpperCase();
       txJson.TxnSignature = signedTX.body.parameter.sign.toUpperCase();
 
