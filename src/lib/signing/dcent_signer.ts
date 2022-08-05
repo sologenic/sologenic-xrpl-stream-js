@@ -56,13 +56,13 @@ export class DcentSigner extends SologenicTxSigner {
       if (txJson.TransactionMetadata) delete txJson.TransactionMetadata;
       if (txJson.LastLedgerSequence)
         txJson.LastLedgerSequence = Number(txJson.LastLedgerSequence) + 1000;
+      txJson.Flags = txJson.Flags ? (txJson.Flags += 2147483648) : 2147483648;
 
       const signedTX = await DcentWebConnector.getXrpSignedTransaction(
         txJson,
         this.bip32Path
       );
 
-      txJson.Flags = txJson.Flags ? (txJson.Flags += 2147483648) : 2147483648;
       txJson.SigningPubKey = signedTX.body.parameter.pubkey.toUpperCase();
       txJson.TxnSignature = signedTX.body.parameter.sign.toUpperCase();
 
