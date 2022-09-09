@@ -69,7 +69,7 @@ export class LedgerDeviceSigner extends SologenicTxSigner {
 
         if (
           addressInfo === null &&
-          accounts[accounts.length - 1].info === null
+          accounts[accounts.length - 1]?.info === null
         ) {
           accounts = [...accounts, account];
           break;
