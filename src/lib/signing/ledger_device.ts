@@ -67,10 +67,9 @@ export class LedgerDeviceSigner extends SologenicTxSigner {
           index: bipIndex
         };
 
-        if (
-          addressInfo === null &&
-          accounts[accounts.length - 1]?.info === null
-        ) {
+        const last = accounts[accounts.length - 1];
+
+        if (addressInfo === null && last && last.info === null) {
           accounts = [...accounts, account];
           break;
         }
