@@ -78,6 +78,11 @@ export class DcentSigner extends SologenicTxSigner {
     } catch (e) {
       console.log(e);
       // This error is thrown if the user rejects the transaction on the D'Cent
+      if (e.body.error.code === 'param_error') {
+        DcentWebConnector.popupWindowClose();
+        throw new SologenicError('2002');
+      }
+
       if (e.body.error.code === 'user_cancel') {
         DcentWebConnector.popupWindowClose();
         throw new SologenicError('2003');

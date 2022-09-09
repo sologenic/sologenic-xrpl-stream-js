@@ -1,5 +1,5 @@
 {
-  "name": "sxsj",
+  "name": "sxsj-dev",
   "version": "1.1.22",
   "description": "Persistent transaction handling for the XRP Ledger",
   "main": "build/main/index.js",
