@@ -135,7 +135,7 @@ export class SologenicTxHandler extends EventEmitter {
         ...xrplClientOptions
       });
 
-      console.log('DEV SOLOGENIC 6');
+      console.log('DEV SOLOGENIC 7');
 
       /**
        * Subscribe to XRPL Client on("") events
