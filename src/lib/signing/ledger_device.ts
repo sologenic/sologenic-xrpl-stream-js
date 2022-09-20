@@ -44,7 +44,7 @@ export class LedgerDeviceSigner extends SologenicTxSigner {
         publicKey: this.publicKey
       };
     } else {
-      let accounts: Object[] = [];
+      let accounts: any[] = [];
       let bipIndex = 0;
 
       while (true) {
@@ -59,9 +59,9 @@ export class LedgerDeviceSigner extends SologenicTxSigner {
               account: address
             });
 
-            return acc;
+            return acc.result.account_data;
           } catch (e) {
-            if (e === 'Account not found.') return null;
+            if (e.message === 'Account not found.') return null;
           }
         };
 

@@ -1,5 +1,5 @@
 import * as SologenicTypes from '../types/';
-import xrpl from 'xrpl';
+const xrpl = require('xrpl');
 
 export class XrplException extends Error {
   /**
@@ -63,12 +63,6 @@ export default class XrplAccount {
   }
 
   /**
-   * Ripple API
-   */
-
-  protected rippleApi: any = xrpl;
-
-  /**
    * XRPL Account
    */
   protected address: string;
@@ -110,20 +104,20 @@ export default class XrplAccount {
    * Validate an account
    */
   public validate(): void {
-    if (!this.rippleApi.isValidAddress(this.address)) {
+    if (!xrpl.isValidAddress(this.address)) {
       throw new XrplAddressException(
         'Address is not valid',
-        new this.rippleApi.ValidationError()
+        new xrpl.ValidationError()
       );
     }
 
     if (
       typeof this.secret !== 'undefined' &&
-      !this.rippleApi.isValidSecret(this.secret)
+      !xrpl.isValidSecret(this.secret)
     ) {
       throw new XrplSecretException(
         'Secret is not valid',
-        new this.rippleApi.ValidationError()
+        new xrpl.ValidationError()
       );
     }
 
@@ -134,7 +128,7 @@ export default class XrplAccount {
     ) {
       throw new XrplKeypairException(
         'Keypair is not valid',
-        new this.rippleApi.ValidationError()
+        new xrpl.ValidationError()
       );
     }
 

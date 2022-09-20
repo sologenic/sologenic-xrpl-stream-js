@@ -132,7 +132,7 @@ export class SologenicTxHandler extends EventEmitter {
         ...xrplClientOptions
       });
 
-      console.log('SXSJ: 1.1.24');
+      console.log('SXSJ-DEV: 1.1.24');
 
       /**
        * Subscribe to XRPL Client on("") events
