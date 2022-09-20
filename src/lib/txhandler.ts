@@ -1,5 +1,4 @@
 import * as SologenicTypes from '../types';
-import * as RippleError from 'sologenic-ripple-lib-1-10-0-patched/dist/npm/common/errors';
 import XrplAccount, {
   XrplAddressException,
   XrplSecretException,
@@ -10,22 +9,15 @@ import XrplAccount, {
 import TXMQƨ from './queues';
 
 import { OfflineSigner } from './signing';
-import { RippleAPI } from 'sologenic-ripple-lib-1-10-0-patched';
 import { SologenicError } from './error';
 
-import { all as mathAll, cos, create as mathCreate } from 'mathjs';
+import { all as mathAll, create as mathCreate } from 'mathjs';
 import { EventEmitter } from 'events';
 
 import { v4 as uuid } from 'uuid';
 import { wait, formatOrderbook } from './utils';
 import { ISologenicTxSigner } from '../types';
-import { Ledger } from 'xrpl/dist/npm/models/ledger';
-import {
-  ParsedBookOffer,
-  FormattedOrderbook,
-  Market
-} from '../types/orderbook';
-import { BookOffer } from 'xrpl';
+import { Market } from '../types/orderbook';
 
 const binaryCodec = require('ripple-binary-codec');
 const xrpl = require('xrpl');
@@ -110,7 +102,7 @@ export class SologenicTxHandler extends EventEmitter {
   /**
    * Constructor for an instance of sologenic tx handler.
    *
-   * @param rippleApiOptions     This parameter is used to construct sologenic-ripple-lib-1-10-0-patched and takes in:
+   * @param rippleApiOptions     This parameter is used to construct xrpl and takes in:
    * @param server               XRPL server to connect (eg. wss://s1.ripple.com)
    * @param feeCushion?          This property is overridden by Sologenic to 1.2
    * @param maxFeeXRP?           Maximum fee that we'll use when sending a transaction to the XRPL
@@ -137,12 +129,6 @@ export class SologenicTxHandler extends EventEmitter {
       /**
        * Construct a new Ripple API instance
        */
-      // this.rippleApi = new RippleAPI({
-      //   feeCushion: 1,
-      //   timeout: 1000000,
-      //   ...rippleApiOptions
-      // });
-
       this.rippleApi = new xrpl.Client(xrplClientOptions.server, {
         feeCushion: 1,
         timeout: 1000000,
@@ -152,7 +138,7 @@ export class SologenicTxHandler extends EventEmitter {
       console.log('DEV SOLOGENIC 6');
 
       /**
-       * Subscribe to sologenic-ripple-lib-1-10-0-patched on("") events
+       * Subscribe to XRPL Client on("") events
        */
       this._subscribeWS();
 
@@ -348,7 +334,7 @@ export class SologenicTxHandler extends EventEmitter {
     } catch (error) {
       console.log('Connect', error);
       // if there is a disconnection error, keep trying until connection is made. Retry in 1000ms
-      if (error instanceof RippleError.DisconnectedError) {
+      if (error instanceof xrpl.DisconnectedError) {
         await this._connected();
         return this;
         // throw new SologenicError('1003');
@@ -605,7 +591,7 @@ export class SologenicTxHandler extends EventEmitter {
         await this.getRippleApi().connect();
       }
 
-      // Use the sologenic-ripple-lib-1-10-0-patched built in REST functions to get the ledger version and fee. Please note that these
+      // Use the RippleApi built in REST functions to get the ledger version and fee. Please note that these
       // values are updated using the WS after the first initilization, until this method is called again
       const accountInfo = await this.getRippleApi().request({
         command: 'account_info',
@@ -619,11 +605,11 @@ export class SologenicTxHandler extends EventEmitter {
       return;
     } catch (error) {
       // If there is a disconnection error, keep trying until connection is made. Retry in 1000ms
-      if (error instanceof RippleError.DisconnectedError) {
+      if (error instanceof xrpl.DisconnectedError) {
         // Try fetching the current state again
         await this._fetchCurrentState();
         // Unspecific RippleError
-      } else if (error instanceof RippleError.RippledError) {
+      } else if (error instanceof xrpl.RippledError) {
         throw new SologenicError('1004', error);
       } else {
         throw new SologenicError('1000', error);
@@ -632,7 +618,7 @@ export class SologenicTxHandler extends EventEmitter {
   }
 
   /**
-   * Subscribe to sologenic-ripple-lib-1-10-0-patched websocket events connect, disconnect, error and ledger stream updates.
+   * Subscribe to XRPL websocket events connect, disconnect, error and ledger stream updates.
    * @throws {SologenicError}
    */
   private _subscribeWS(): any {
@@ -905,21 +891,6 @@ export class SologenicTxHandler extends EventEmitter {
   ): Promise<SologenicTypes.SignedTx> {
     // Add id in the memo common field for tracking
     var tx = { ...this._addMemo(unsignedTx) };
-    // const tx = unsignedTx;
-
-    // if (typeof tx.Flags === 'undefined') {
-    //   // Transaction Specific Settings
-    //   switch (tx.TransactionType) {
-    //     case 'AccountSet':
-    //       tx.Flags =
-    //       // tx.Flags = this.getRippleApi().txFlags.Universal.FullyCanonicalSig;
-    //       // JavaScript converts operands to 32-bit signed ints before doing bitwise
-    //       // operations. We need to convert it back to an unsigned int.
-    //       tx.Flags = tx.Flags >>> 0;
-    //       break;
-    //   }
-    // } else {
-    // }
 
     if (typeof tx.Flags !== 'undefined') tx.Flags = tx.Flags >>> 0;
 
@@ -945,7 +916,6 @@ export class SologenicTxHandler extends EventEmitter {
       // this is for our test cases so we can manually specify our
       // sequence.
 
-      // console.log('Queue', dispatchedTxs);
       tx.Sequence = this.getAccount().getCurrentAccountSequence();
     }
 
@@ -958,7 +928,6 @@ export class SologenicTxHandler extends EventEmitter {
 
     // Use the signing mechanism and then run the callback once the request has been signed, we
     // could use a promise here too...
-
     return this.signingMechanism
       .sign(tx, unsignedTx.id, this.getAccount(), {})
       .then((signedTx: SologenicTypes.SignedTx) => {
@@ -996,11 +965,6 @@ export class SologenicTxHandler extends EventEmitter {
       const submitResult: SologenicTypes.FormattedSubmitResponse = await this.getRippleApi().submit(
         signedTx.tx_blob
       );
-
-      // const submitResult: any = await this.getRippleApi().request({
-      //   command: 'submit',
-      //   tx_blob: signedTx.signedTransaction
-      // });
 
       /*
         If the result code is NOT tesSUCCESS, emit to object listner and globally warning the error.
@@ -1171,7 +1135,7 @@ export class SologenicTxHandler extends EventEmitter {
         firstLedgerSequence
       );
     } catch (error) {
-      if (error instanceof RippleError.RippledError) {
+      if (error instanceof xrpl.RippledError) {
         if (error.data.error === 'invalidTransaction') {
           return this._txFailed(
             unsignedTx,
@@ -1395,26 +1359,7 @@ export class SologenicTxHandler extends EventEmitter {
     dispatchedTx: SologenicTypes.DispatchedTx
   ): Promise<void> {
     try {
-      /*
-      const currentTime = Math.floor(new Date().getTime());
-
-      console.log(`_validateTxOnLedger [${currentTime}]: Validating TX on XRPL (${id})`);
-      console.log(dispatchedTx);
-      */
-
-      // Check and see if the dispatched transaction's ledger is passed or we are in the current ledger
-
       // Get the transaction details from the ledger
-
-      // const validatedTx = await this.getRippleApi().getTransaction(
-      //   dispatchedTx.result.hash,
-      //   {
-      //     includeRawTransaction: false,
-      //     maxLedgerVersion: dispatchedTx.result.lastLedger,
-      //     minLedgerVersion: dispatchedTx.result.firstLedger
-      //   }
-      // );
-
       const validatedTx = await this.getRippleApi().request({
         command: 'tx',
         transaction: dispatchedTx.result.hash

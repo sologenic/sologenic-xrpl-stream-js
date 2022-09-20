@@ -1,6 +1,5 @@
 import * as SologenicTypes from '../types/';
-import { RippleAPI } from 'sologenic-ripple-lib-1-10-0-patched';
-import * as RippleError from 'sologenic-ripple-lib-1-10-0-patched/dist/npm/common/errors';
+import xrpl from 'xrpl';
 
 export class XrplException extends Error {
   /**
@@ -67,7 +66,7 @@ export default class XrplAccount {
    * Ripple API
    */
 
-  protected rippleApi: RippleAPI = new RippleAPI();
+  protected rippleApi: any = xrpl;
 
   /**
    * XRPL Account
@@ -114,7 +113,7 @@ export default class XrplAccount {
     if (!this.rippleApi.isValidAddress(this.address)) {
       throw new XrplAddressException(
         'Address is not valid',
-        new RippleError.ValidationError()
+        new this.rippleApi.ValidationError()
       );
     }
 
@@ -124,7 +123,7 @@ export default class XrplAccount {
     ) {
       throw new XrplSecretException(
         'Secret is not valid',
-        new RippleError.ValidationError()
+        new this.rippleApi.ValidationError()
       );
     }
 
@@ -135,7 +134,7 @@ export default class XrplAccount {
     ) {
       throw new XrplKeypairException(
         'Keypair is not valid',
-        new RippleError.ValidationError()
+        new this.rippleApi.ValidationError()
       );
     }
 

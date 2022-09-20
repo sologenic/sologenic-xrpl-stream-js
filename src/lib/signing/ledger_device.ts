@@ -1,9 +1,9 @@
 import XrplAccount from '../account';
+import xrpl from 'xrpl';
 import * as SologenicTypes from '../../types';
 import { SologenicTxSigner } from './index';
 import { SologenicError } from '../error';
 import { wait } from '../utils';
-import { RippleAPI } from 'sologenic-ripple-lib-1-10-0-patched';
 const TransportWebUSB = require('@ledgerhq/hw-transport-webusb').default;
 const Xrp = require('@ledgerhq/hw-app-xrp').default;
 
@@ -16,7 +16,7 @@ export class LedgerDeviceSigner extends SologenicTxSigner {
   protected bip32Path: string = ''; // "44'/144'/i'/0/0";
   protected address: string = '';
   protected publicKey: string = '';
-  protected api: RippleAPI;
+  protected api: xrpl.Client;
   private _signAttempts: number = 0;
   signerID: string = 'ledger';
 
@@ -24,13 +24,9 @@ export class LedgerDeviceSigner extends SologenicTxSigner {
     super(options);
 
     if (options.hasOwnProperty('ripple_server')) {
-      // this.ripple_server = options['ripple_server'];
-      console.log(options['ripple_server']);
-
-      this.api = new RippleAPI({
-        server: options['ripple_server'],
+      this.api = new xrpl.Client(options['ripple_server'], {
         feeCushion: 1,
-        timeout: 1000000
+        timeout: 100000
       });
 
       this.api.connect();
@@ -66,10 +62,10 @@ export class LedgerDeviceSigner extends SologenicTxSigner {
           `44'/144'/${bipIndex}'/0/0`
         );
 
-        const addressInfo = await this.api
-          .getAccountInfo(address)
-          .then(r => r)
-          .catch(() => null);
+        const addressInfo = await this.api.request({
+          command: 'account_info',
+          account: address
+        });
 
         const account = {
           address: address,
