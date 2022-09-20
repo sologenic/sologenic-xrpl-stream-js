@@ -1,23 +1,14 @@
-import { RippleAPI } from 'sologenic-ripple-lib-1-10-0-patched';
-
 import XrplAccount from '../account';
 
 import * as SologenicTypes from '../../types/';
 
 export default abstract class SologenicTxSigner
   implements SologenicTypes.ISologenicTxSigner {
-  protected rippleApi!: RippleAPI;
   protected includeSequence: boolean = false;
   signerID: string = 'default';
   cancelled: boolean = false;
 
-  constructor(options: any) {
-    if (options && options.hasOwnProperty('rippleApi')) {
-      this.rippleApi = options.rippleApi;
-    } else {
-      this.rippleApi = new RippleAPI({});
-    }
-  }
+  constructor(options: any) {}
 
   /**
    * Should we include a sequence number (for xumm, let xumm decide)
