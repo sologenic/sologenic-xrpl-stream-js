@@ -1,11 +1,11 @@
 import XrplAccount from '../account';
-import xrpl from 'xrpl';
 import * as SologenicTypes from '../../types';
 import { SologenicTxSigner } from './index';
 import { SologenicError } from '../error';
 import { wait } from '../utils';
 const TransportWebUSB = require('@ledgerhq/hw-transport-webusb').default;
 const Xrp = require('@ledgerhq/hw-app-xrp').default;
+const xrpl = require('xrpl');
 
 const binaryCodec = require('ripple-binary-codec');
 export class LedgerDeviceSigner extends SologenicTxSigner {
@@ -16,7 +16,7 @@ export class LedgerDeviceSigner extends SologenicTxSigner {
   protected bip32Path: string = ''; // "44'/144'/i'/0/0";
   protected address: string = '';
   protected publicKey: string = '';
-  protected api: xrpl.Client;
+  protected api: any;
   private _signAttempts: number = 0;
   signerID: string = 'ledger';
 
