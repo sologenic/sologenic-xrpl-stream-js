@@ -44,16 +44,6 @@ export class LedgerDeviceSigner extends SologenicTxSigner {
         publicKey: this.publicKey
       };
     } else {
-      // const { address, publicKey } = await this.getAddress(this.bip32Path);
-
-      // this.address = address;
-      // this.publicKey = publicKey;
-
-      // return {
-      //   address,
-      //   publicKey
-      // };
-
       let accounts: Object[] = [];
       let bipIndex = 0;
 
@@ -62,10 +52,20 @@ export class LedgerDeviceSigner extends SologenicTxSigner {
           `44'/144'/${bipIndex}'/0/0`
         );
 
-        const addressInfo = await this.api.request({
-          command: 'account_info',
-          account: address
-        });
+        const getAddressInfo = async (address: string) => {
+          try {
+            const acc = await this.api.request({
+              command: 'account_info',
+              account: address
+            });
+
+            return acc;
+          } catch (e) {
+            if (e === 'Account not found.') return null;
+          }
+        };
+
+        const addressInfo = await getAddressInfo(address);
 
         const account = {
           address: address,
@@ -76,9 +76,7 @@ export class LedgerDeviceSigner extends SologenicTxSigner {
 
         accounts = [...accounts, account];
 
-        if (addressInfo === null) {
-          break;
-        }
+        if (addressInfo === null) break;
 
         bipIndex++;
       }
