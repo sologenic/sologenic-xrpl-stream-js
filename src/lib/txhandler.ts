@@ -1446,7 +1446,7 @@ export class SologenicTxHandler extends EventEmitter {
       return;
     } catch (error) {
       // Transaction not found on the ledger, It means this transaction was ignore for whatever reason. Re-queue and re-process
-      if (error instanceof RippleError.NotFoundError) {
+      if (error instanceof xrpl.NotFoundError) {
         const warningEvent: SologenicTypes.WarningEvent = {
           id: id,
           state: 'validation',
