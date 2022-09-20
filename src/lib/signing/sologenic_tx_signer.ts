@@ -7,8 +7,11 @@ export default abstract class SologenicTxSigner
   protected includeSequence: boolean = false;
   signerID: string = 'default';
   cancelled: boolean = false;
+  options: any;
 
-  constructor(options: any) {}
+  constructor(options: any) {
+    this.options = options;
+  }
 
   /**
    * Should we include a sequence number (for xumm, let xumm decide)
