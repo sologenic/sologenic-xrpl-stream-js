@@ -302,21 +302,26 @@ export class XummWalletSigner extends SologenicTxSigner {
   }
 
   showSigningQRcode() {
-    let qrCode = document.createElement('img');
-    qrCode.setAttribute('src', this.signing_refs.qr);
-    qrCode.setAttribute('alt', 'QR Code');
+    const qr = document.getElementById('qr-code-img');
 
-    let container: any = document.getElementById(this.fallback_container_id);
-    container.appendChild(qrCode);
+    if (!qr) {
+      let qrCode = document.createElement('img');
+      qrCode.setAttribute('src', this.signing_refs.qr);
+      qrCode.setAttribute('alt', 'QR Code');
+      qrCode.setAttribute('id', 'qr-code-img');
 
-    if (this.is_mobile) {
-      let deepLink = document.createElement('a');
-      deepLink.setAttribute('href', this.signing_refs.deeplink);
-      deepLink.setAttribute('target', '_blank');
-      deepLink.setAttribute('rel', 'noopener noreferrer');
-      deepLink.innerText = 'XUMM Wallet >';
+      let container: any = document.getElementById(this.fallback_container_id);
+      container.appendChild(qrCode);
 
-      container.appendChild(deepLink);
+      if (this.is_mobile) {
+        let deepLink = document.createElement('a');
+        deepLink.setAttribute('href', this.signing_refs.deeplink);
+        deepLink.setAttribute('target', '_blank');
+        deepLink.setAttribute('rel', 'noopener noreferrer');
+        deepLink.innerText = 'XUMM Wallet >';
+
+        container.appendChild(deepLink);
+      }
     }
   }
 

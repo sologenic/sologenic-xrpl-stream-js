@@ -345,23 +345,31 @@ export class SoloWalletSigner extends SologenicTxSigner {
   }
 
   showSigningQRcode() {
-    let qrCode = document.createElement('img');
+    const qr = document.getElementById('qr-code-img');
 
-    qrCode.setAttribute('src', this.signing_refs.refs.qr);
-    qrCode.setAttribute('alt', 'QR Code');
+    if (!qr) {
+      let qrCode = document.createElement('img');
 
-    let container: any = document.getElementById(this.fallback_container_id);
-    container.appendChild(qrCode);
+      qrCode.setAttribute('src', this.signing_refs.refs.qr);
+      qrCode.setAttribute('alt', 'QR Code');
+      qrCode.setAttribute('id', 'qr-code-img');
 
-    if (this.is_mobile && this.deeplink_url) {
-      let deepLink = document.createElement('a');
+      let container: any = document.getElementById(this.fallback_container_id);
+      container.appendChild(qrCode);
 
-      deepLink.setAttribute('href', this.signing_refs.refs.deeplink);
-      // deepLink.setAttribute('target', '_blank');
-      deepLink.setAttribute('rel', 'noopener noreferrer');
-      deepLink.innerText = 'SOLO Wallet >';
+      if (this.is_mobile && this.deeplink_url) {
+        let deepLink = document.createElement('a');
 
-      container.appendChild(deepLink);
+        const link = `https://solodex.page.link/?link=${this.signing_refs.refs.deeplink}&apn=com.sologenicwallet&isi=1497396455&ibi=org.reactjs.native.example.SologenicWallet`;
+
+        // deepLink.setAttribute('href', this.signing_refs.refs.deeplink);
+        deepLink.setAttribute('href', link);
+        // deepLink.setAttribute('target', '_blank');
+        deepLink.setAttribute('rel', 'noopener noreferrer');
+        deepLink.innerText = 'SOLO Wallet >';
+
+        container.appendChild(deepLink);
+      }
     }
   }
 }
