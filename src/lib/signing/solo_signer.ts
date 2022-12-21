@@ -83,7 +83,9 @@ export class SoloWalletSigner extends SologenicTxSigner {
       if (this.is_mobile && this.deeplink_url) {
         let deepLink = document.createElement('a');
 
-        deepLink.setAttribute('href', connectionRefs.refs.deeplink);
+        const link = `https://solodex.page.link/?link=${connectionRefs.refs.deeplink}&apn=com.sologenicwallet&isi=1497396455&ibi=org.reactjs.native.example.SologenicWallet`;
+
+        deepLink.setAttribute('href', link);
         deepLink.setAttribute('target', '_blank');
         deepLink.setAttribute('rel', 'noopener noreferrer');
         deepLink.innerText = 'SOLO Wallet >';
