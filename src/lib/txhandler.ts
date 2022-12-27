@@ -132,7 +132,7 @@ export class SologenicTxHandler extends EventEmitter {
         ...xrplClientOptions
       });
 
-      console.log('SXSJ: 1.1.27');
+      console.log('SXSJ: 1.1.30');
 
       /**
        * Subscribe to XRPL Client on("") events
@@ -190,7 +190,7 @@ export class SologenicTxHandler extends EventEmitter {
       if (typeof sologenicOptions.signingMechanism !== 'undefined')
         this.signingMechanism = sologenicOptions.signingMechanism;
     } catch (error) {
-      console.log(error);
+      console.log('Constructor error => ', error);
 
       throw new SologenicError('1001', error);
     }
@@ -618,30 +618,32 @@ export class SologenicTxHandler extends EventEmitter {
    * Subscribe to XRPL websocket events connect, disconnect, error and ledger stream updates.
    * @throws {SologenicError}
    */
-  private _subscribeWS(): any {
+  private async _subscribeWS(): Promise<any> {
     try {
-      this.getRippleApi().on('connect', () => {
-        // On connection, get the current ledger version
-        this.getRippleApi()
-          .getLedger()
-          .then((ledger: any) => {
-            this.setLedgerVersion(ledger.ledgerVersion);
-          });
+      const ledgerClient = this.getRippleApi();
+
+      ledgerClient.on('connected', async () => {
+        ledgerClient.getLedgerIndex().then((ledger: any) => {
+          this.setLedgerVersion(ledger);
+        });
+
+        await ledgerClient.request({
+          command: 'subscribe',
+          streams: ['ledger']
+        });
       });
 
-      this.getRippleApi().on('disconnect', () => {
-        // Reconnect
-        this.getRippleApi().connect();
+      ledgerClient.on('disconnected', () => {
+        console.log('Disconnected');
+        this.connect();
       });
 
-      this.getRippleApi().on('error', () => {
-        // Reconnect
-        this.getRippleApi().connect();
+      ledgerClient.on('error', () => {
+        this.connect();
       });
 
-      this.getRippleApi().on('ledger', (ledger: SologenicTypes.Ledger) => {
-        // Update the ledger version
-        this.ledger = ledger;
+      ledgerClient.on('ledgerClosed', (ledgerRes: any) => {
+        this.setLedgerVersion(ledgerRes.ledger_index);
       });
     } catch (error) {
       throw new SologenicError('1005', error);
