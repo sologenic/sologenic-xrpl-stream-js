@@ -1,7 +1,7 @@
 import {
   MQTX,
   IQueue,
-  QUEUE_TYPE_STXMQ_REDIS,
+  // QUEUE_TYPE_STXMQ_REDIS,
   QUEUE_TYPE_STXMQ_HASH,
   TransactionHandlerOptions
 } from '../../types/queues';
@@ -9,7 +9,7 @@ import {
 /**
  * Import redis queue implementation
  */
-import RedisQueue from './redis';
+// import RedisQueue from './redis';
 
 /**
  * Import hash queue implementation
@@ -27,9 +27,9 @@ export default class TXMQƨ implements IQueue {
   constructor(sologenicOptions: TransactionHandlerOptions) {
     try {
       switch (sologenicOptions!.queueType) {
-        case QUEUE_TYPE_STXMQ_REDIS:
-          this.queue = new RedisQueue(sologenicOptions.redis!);
-          break;
+        // case QUEUE_TYPE_STXMQ_REDIS:
+        //   this.queue = new RedisQueue(sologenicOptions.redis!);
+        //   break;
 
         case QUEUE_TYPE_STXMQ_HASH:
           this.queue = new HashQueue(sologenicOptions.hash!);
@@ -179,4 +179,4 @@ export default class TXMQƨ implements IQueue {
   }
 }
 
-export { HashQueue, RedisQueue };
+export { HashQueue };
