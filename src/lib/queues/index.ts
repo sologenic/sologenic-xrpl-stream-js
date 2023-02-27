@@ -1,15 +1,9 @@
 import {
   MQTX,
   IQueue,
-  // QUEUE_TYPE_STXMQ_REDIS,
   QUEUE_TYPE_STXMQ_HASH,
   TransactionHandlerOptions
 } from '../../types/queues';
-
-/**
- * Import redis queue implementation
- */
-// import RedisQueue from './redis';
 
 /**
  * Import hash queue implementation

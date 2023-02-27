@@ -76,7 +76,7 @@
     "ts-node": "^8.8.1",
     "underscore": "^1.9.2",
     "uuid": "^3.4.0",
-    "xrpl": "^2.1.1"
+    "xrpl": "^2.8.0-beta.0"
   },
   "devDependencies": {
     "@bitjson/npm-scripts-info": "^1.0.0",
