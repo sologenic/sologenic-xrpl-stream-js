@@ -1,6 +1,6 @@
 {
   "name": "sxsj-test",
-  "version": "1.1.16",
+  "version": "1.1.17",
   "description": "Persistent transaction handling for the XRP Ledger",
   "main": "build/main/index.js",
   "module": "build/main/index.js",
