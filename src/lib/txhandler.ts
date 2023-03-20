@@ -132,7 +132,7 @@ export class SologenicTxHandler extends EventEmitter {
         ...xrplClientOptions
       });
 
-      console.log('SXSJ: 1.1.30');
+      console.log('SXSJ: 1.1.24');
 
       /**
        * Subscribe to XRPL Client on("") events
@@ -563,8 +563,6 @@ export class SologenicTxHandler extends EventEmitter {
         id
       );
 
-      // console.log(`Failed TX (${id}): ${failed}`);
-
       if (typeof failed !== 'undefined') {
         return failed.data;
       }
@@ -779,7 +777,6 @@ export class SologenicTxHandler extends EventEmitter {
           if (typeof signingTransaction === 'undefined') {
             await this._dispatchHandler(tx);
           } else {
-            // console.log(`Transaction [${tx.id}] has already been dispatched`);
             continue;
           }
         }
@@ -790,8 +787,6 @@ export class SologenicTxHandler extends EventEmitter {
 
       return await this._dispatch();
     } catch (error) {
-      // console.log("Caught exception: ", error);
-
       // Ignore errors and re-try the queue, wait 500ms and re-fetch the queue.
       await wait(1000);
 
@@ -875,7 +870,6 @@ export class SologenicTxHandler extends EventEmitter {
           );
         });
     } catch (error) {
-      // console.log('Caught signing exception in _dispatchHandler!');
       throw new SologenicError('1000', error);
     }
   }
@@ -1174,7 +1168,8 @@ export class SologenicTxHandler extends EventEmitter {
   ): Promise<boolean> {
     try {
       // Decode the signed transaction to get our last ledger sequence
-      const decodedTransaction = binaryCodec.decode(signedTx.tx_blob);
+      // const decodedTransaction = binaryCodec.decode(signedTx.tx_blob);
+      const decodedTransaction = this.getXrplUtils().decode(signedTx.tx_blob);
 
       // Construct the dispatched object
       const dispatchedTx: SologenicTypes.DispatchedTx = {
@@ -1209,11 +1204,10 @@ export class SologenicTxHandler extends EventEmitter {
       }
 
       // Emit globally
-      // console.log('Emitting globally the dispatched event');
       this.emit('dispatched', dispatchedEvent);
-
       return dispatched ? true : false;
     } catch (error) {
+      console.log('ERROR txDispatched =>', error);
       return false;
     }
   }
@@ -1334,8 +1328,6 @@ export class SologenicTxHandler extends EventEmitter {
    * @description Validate transaction that are added to the dispatched queue once they have been emitted
    */
   private _validateOnLedger(): void {
-    // console.log(`_validateOnLedger: Validating dispatched TX on ledger`);
-
     this.on(
       'dispatched',
       async (dispatchedEvent: SologenicTypes.DispatchedEvent) => {
