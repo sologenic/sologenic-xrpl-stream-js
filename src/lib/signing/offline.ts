@@ -29,7 +29,7 @@ export class OfflineSigner extends SologenicTxSigner
     signingOptions?: any
   ): Promise<SologenicTypes.SignedTx> {
     try {
-      if (!this.wallet) {
+      if (!this.wallet || this.wallet.classicAddress !== account.getAddress()) {
         // const { publicKey, privateKey } = account.getKeypair();
         // this.wallet = Wallet.fromSeed(account.getSecret());
         if (account.hasMnemonic()) {
