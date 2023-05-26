@@ -26,7 +26,8 @@ export interface XRPLClientOptions {
   timeout?: number;
   trace?: boolean;
   trustedCertificates?: string[];
-  server: string;
+  custom_server?: string;
+  mode?: string;
 }
 
 export interface Ledger {
