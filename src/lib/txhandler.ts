@@ -17,14 +17,10 @@ import { all as mathAll, cos, create as mathCreate } from 'mathjs';
 import { EventEmitter } from 'events';
 
 import { v4 as uuid } from 'uuid';
-import { wait, formatOrderbook } from './utils';
+import { wait, formatOrderbook, default_nodes } from './utils';
 import { ISologenicTxSigner } from '../types';
 import { Ledger } from 'xrpl/dist/npm/models/ledger';
-import {
-  ParsedBookOffer,
-  FormattedOrderbook,
-  Market
-} from '../types/orderbook';
+import { ParsedBookOffer, Market } from '../types/orderbook';
 import { BookOffer } from 'xrpl';
 
 const binaryCodec = require('ripple-binary-codec');
@@ -56,6 +52,14 @@ export class SologenicTxHandler extends EventEmitter {
    */
   protected rippleApi!: any;
   // protected rippleApi!: RippleAPI;
+
+  /**
+   * Ripple node
+   */
+  protected rippleNode: string;
+  protected attempts = 0;
+  protected networkMode = 'mainnet';
+  protected attemptedNodes = [];
 
   /**
    * Dispatch listener boolean flag for Sologenic TX Handler.  This is to ensure we're only
@@ -137,19 +141,22 @@ export class SologenicTxHandler extends EventEmitter {
       /**
        * Construct a new Ripple API instance
        */
-      // this.rippleApi = new RippleAPI({
-      //   feeCushion: 1,
-      //   timeout: 1000000,
-      //   ...rippleApiOptions
-      // });
+      this.networkMode = xrplClientOptions.mode || this.networkMode;
 
-      this.rippleApi = new xrpl.Client(xrplClientOptions.server, {
-        feeCushion: 1,
-        timeout: 1000000,
-        ...xrplClientOptions
-      });
+      this.rippleApi = new xrpl.Client(
+        xrplClientOptions.custom_server ||
+          default_nodes[xrplClientOptions.mode || 'mainnet'][0],
+        {
+          feeCushion: 1,
+          timeout: 1000000
+        }
+      );
 
-      console.log('sxsj-app: 1.0.42');
+      this.rippleNode =
+        xrplClientOptions.custom_server ||
+        default_nodes[xrplClientOptions.mode || 'mainnet'][0];
+
+      console.log('SXSJ: 1.1.31');
 
       /**
        * Subscribe to sologenic-ripple-lib-1-10-0-patched on("") events
@@ -322,38 +329,64 @@ export class SologenicTxHandler extends EventEmitter {
    */
   public async connect(): Promise<this> {
     try {
-      if (!this.getRippleApi().isConnected()) {
-        await this.getRippleApi().connect();
-        await this._connected();
+      this.attempts += 1;
 
-        const currentLedger = await this.getRippleApi().request({
-          command: 'ledger',
-          ledger_index: 'validated'
+      if (this.attempts > 5) {
+        throw new Error('Switch Nodes');
+      } else {
+        this.rippleApi = new xrpl.Client(this.rippleNode, {
+          feeCushion: 1,
+          timeout: 1000000
         });
 
-        this.setLedgerVersion(currentLedger.result.ledger_index);
+        if (!this.getRippleApi().isConnected()) {
+          await this.getRippleApi().connect();
+          await this._connected();
 
-        // Start the dispatcher listener
-        if (!this.dispatchListener) {
-          this._dispatch();
-          this.dispatchListener = true;
+          const currentLedger = await this.getRippleApi().request({
+            command: 'ledger',
+            ledger_index: 'validated'
+          });
+
+          this.setLedgerVersion(currentLedger.result.ledger_index);
+
+          // Start the dispatcher listener
+          if (!this.dispatchListener) {
+            this._dispatch();
+            this.dispatchListener = true;
+          }
+
+          // Start the validator listener
+          this._validateOnLedger();
         }
 
-        // Start the validator listener
-        this._validateOnLedger();
+        return this;
       }
 
       // Return this
-      return this;
     } catch (error) {
       console.log('Connect', error);
       // if there is a disconnection error, keep trying until connection is made. Retry in 1000ms
-      if (error instanceof RippleError.DisconnectedError) {
-        await this._connected();
-        return this;
-        // throw new SologenicError('1003');
+      // if (error instanceof xrpl.DisconnectedError) {
+      //   await this._connected();
+      //   return this;
+      //   // throw new SologenicError('1003');
+      // }
+
+      if (error.message === 'Switch Nodes') {
+        this.attempts = 0;
+        this.attemptedNodes.push(this.rippleNode);
+        this.rippleNode = default_nodes[this.networkMode].find(
+          (node: string) => !this.attemptedNodes.includes(node)
+        );
+
+        if (!this.rippleNode) {
+          throw new Error('Unable to establish connection to the XRP Ledger');
+        }
       }
-      return this;
+
+      await wait(300);
+      return await this.connect();
     }
   }
 
