@@ -29,6 +29,13 @@ export declare class SologenicTxHandler extends EventEmitter {
      */
     protected rippleApi: any;
     /**
+     * Ripple node
+     */
+    protected rippleNode: string;
+    protected attempts: number;
+    protected networkMode: string;
+    protected attemptedNodes: any[];
+    /**
      * Dispatch listener boolean flag for Sologenic TX Handler.  This is to ensure we're only
      * running a single dispatcher thread at a time.
      */

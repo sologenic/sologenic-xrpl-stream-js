@@ -17,7 +17,7 @@ import { all as mathAll, cos, create as mathCreate } from 'mathjs';
 import { EventEmitter } from 'events';
 
 import { v4 as uuid } from 'uuid';
-import { wait, formatOrderbook, default_nodes } from './utils';
+import { wait, formatOrderbook, default_nodes, NodesCatalog } from './utils';
 import { ISologenicTxSigner } from '../types';
 import { Ledger } from 'xrpl/dist/npm/models/ledger';
 import { ParsedBookOffer, Market } from '../types/orderbook';
@@ -56,7 +56,7 @@ export class SologenicTxHandler extends EventEmitter {
   /**
    * Ripple node
    */
-  protected rippleNode: string;
+  protected rippleNode = '';
   protected attempts = 0;
   protected networkMode = 'mainnet';
   protected attemptedNodes = [];
@@ -145,7 +145,9 @@ export class SologenicTxHandler extends EventEmitter {
 
       this.rippleApi = new xrpl.Client(
         xrplClientOptions.custom_server ||
-          default_nodes[xrplClientOptions.mode || 'mainnet'][0],
+          default_nodes[
+            (xrplClientOptions.mode || 'mainnet') as keyof NodesCatalog
+          ][0],
         {
           feeCushion: 1,
           timeout: 1000000
@@ -154,7 +156,9 @@ export class SologenicTxHandler extends EventEmitter {
 
       this.rippleNode =
         xrplClientOptions.custom_server ||
-        default_nodes[xrplClientOptions.mode || 'mainnet'][0];
+        default_nodes[
+          (xrplClientOptions.mode || 'mainnet') as keyof NodesCatalog
+        ][0];
 
       console.log('SXSJ: 1.1.31');
 

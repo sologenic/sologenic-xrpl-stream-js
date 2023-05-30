@@ -173,7 +173,13 @@ export const formatOrderbook = (offers: BookOffer[], market: Market) => {
   return { bids, asks };
 };
 
-export const default_nodes = {
+export interface NodesCatalog {
+  mainnet: string[];
+  testnet: string[];
+  devnet: string[];
+}
+
+export const default_nodes: NodesCatalog = {
   mainnet: [
     'wss://s2.ripple.com',
     'wss://s1.ripple.com',

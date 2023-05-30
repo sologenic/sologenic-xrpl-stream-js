@@ -24,3 +24,9 @@ export declare const formatOrderbook: (offers: BookOffer[], market: Market) => {
     bids: unknown[];
     asks: unknown[];
 };
+export interface NodesCatalog {
+    mainnet: string[];
+    testnet: string[];
+    devnet: string[];
+}
+export declare const default_nodes: NodesCatalog;

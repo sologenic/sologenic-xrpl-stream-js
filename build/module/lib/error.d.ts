@@ -1,11 +1,11 @@
 export declare class SologenicError extends Error {
     status: string;
-    rippleError?: Error | undefined;
+    rippleError?: Error;
     /**
      * @param status       Status code for error
      * @param rippleError  Inner error
      */
-    constructor(status: string, rippleError?: Error | undefined);
+    constructor(status: string, rippleError?: Error);
     /**
      * @returns  An array of error codes
      */
