@@ -160,7 +160,7 @@ export class SologenicTxHandler extends EventEmitter {
           (xrplClientOptions.mode || 'mainnet') as keyof NodesCatalog
         ][0];
 
-      console.log('SXSJ: 1.1.31');
+      console.log('SXSJ: 1.1.43');
 
       /**
        * Subscribe to sologenic-ripple-lib-1-10-0-patched on("") events
