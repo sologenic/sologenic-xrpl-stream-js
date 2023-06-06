@@ -149,7 +149,7 @@ export class SologenicTxHandler extends EventEmitter {
         ...xrplClientOptions
       });
 
-      console.log('sxsj-app: 1.0.42');
+      console.log('sxsj-app: 1.0.43');
 
       /**
        * Subscribe to sologenic-ripple-lib-1-10-0-patched on("") events
@@ -285,7 +285,7 @@ export class SologenicTxHandler extends EventEmitter {
       command: 'book_offers',
       taker_gets: market.base,
       taker_pays: market.counter,
-      ledger_index: 'validated',
+      ledger_index: 'current',
       limit: 200
     });
 
@@ -293,7 +293,7 @@ export class SologenicTxHandler extends EventEmitter {
       command: 'book_offers',
       taker_gets: market.counter,
       taker_pays: market.base,
-      ledger_index: 'validated',
+      ledger_index: 'current',
       limit: 200
     });
 
