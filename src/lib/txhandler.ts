@@ -132,7 +132,7 @@ export class SologenicTxHandler extends EventEmitter {
         ...xrplClientOptions
       });
 
-      console.log('SXSJ: 1.1.30');
+      console.log('SXSJ: 1.1.31');
 
       /**
        * Subscribe to XRPL Client on("") events
@@ -268,7 +268,7 @@ export class SologenicTxHandler extends EventEmitter {
       command: 'book_offers',
       taker_gets: market.base,
       taker_pays: market.counter,
-      ledger_index: 'validated',
+      ledger_index: 'current',
       limit: 200
     });
 
@@ -276,7 +276,7 @@ export class SologenicTxHandler extends EventEmitter {
       command: 'book_offers',
       taker_gets: market.counter,
       taker_pays: market.base,
-      ledger_index: 'validated',
+      ledger_index: 'current',
       limit: 200
     });
 
