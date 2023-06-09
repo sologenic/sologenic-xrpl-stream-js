@@ -296,7 +296,7 @@ export class SologenicTxHandler extends EventEmitter {
       command: 'book_offers',
       taker_gets: market.base,
       taker_pays: market.counter,
-      ledger_index: 'validated',
+      ledger_index: 'current',
       limit: 200
     });
 
@@ -304,7 +304,7 @@ export class SologenicTxHandler extends EventEmitter {
       command: 'book_offers',
       taker_gets: market.counter,
       taker_pays: market.base,
-      ledger_index: 'validated',
+      ledger_index: 'current',
       limit: 200
     });
 
@@ -1146,6 +1146,15 @@ export class SologenicTxHandler extends EventEmitter {
         // These codes indicate that the transaction failed and was not included in a ledger, but the transaction could have succeeded in some theoretical ledger. Typically this means that the transaction can no longer succeed in any future ledger. They have numerical values in the range -199 to -100. The exact code for any given error is subject to change, so don't rely on it.
         if (submitResult.result.engine_result.startsWith('tef')) {
           if (submitResult.result.engine_result === 'tefBAD_AUTH_MASTER') {
+            this.getAccount().incrementAccountSequenceBy(-1);
+            return await this._txFailed(
+              unsignedTx,
+              submitResult.result.engine_result,
+              submitResult
+            );
+          }
+
+          if (submitResult.result.engine_result === 'tefNO_AUTH_REQUIRED') {
             this.getAccount().incrementAccountSequenceBy(-1);
             return await this._txFailed(
               unsignedTx,
