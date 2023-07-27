@@ -172,3 +172,23 @@ export const formatOrderbook = (offers: BookOffer[], market: Market) => {
   const asks = alignedOrders.filter(_.partial(directionFilter, 'sell'));
   return { bids, asks };
 };
+
+export interface NodesCatalog {
+  mainnet: string[];
+  testnet: string[];
+  devnet: string[];
+}
+
+export const default_nodes: NodesCatalog = {
+  mainnet: [
+    'wss://s2.ripple.com',
+    'wss://s1.ripple.com',
+    'wss://xrpl.link',
+    'wss://xrplcluster.com'
+  ],
+  testnet: ['wss://s.altnet.rippletest.net:51233'],
+  devnet: [
+    'wss://s.devnet.rippletest.net:51233',
+    'wss://amm.devnet.rippletest.net:51233'
+  ]
+};
