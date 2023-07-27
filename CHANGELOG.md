@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.0.46](https://github.com/sologenic/sologenic-xrpl-stream-js/compare/v1.0.44...v1.0.46) (2023-07-27)
+
+
+### Bug Fixes
+
+* building ([969831d](https://github.com/sologenic/sologenic-xrpl-stream-js/commit/969831d))
+* removing build from gitignore ([dc225b4](https://github.com/sologenic/sologenic-xrpl-stream-js/commit/dc225b4))
+
+
+
 ### [1.0.44](https://github.com/sologenic/sologenic-xrpl-stream-js/compare/v1.0.42...v1.0.44) (2023-07-27)
 
 
