@@ -955,6 +955,9 @@ export class SologenicTxHandler extends EventEmitter {
       ? tx.LastLedgerSequence
       : this.getLedgerVersion();
 
+    // Set the Ripple Metrics id
+    tx.SourceTag = 110100111;
+
     delete tx.submit;
 
     // Use the signing mechanism and then run the callback once the request has been signed, we
