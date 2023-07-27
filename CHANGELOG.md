@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.0.44](https://github.com/sologenic/sologenic-xrpl-stream-js/compare/v1.0.42...v1.0.44) (2023-07-27)
+
+
+### Bug Fixes
+
+* orderbook command request ([44fd587](https://github.com/sologenic/sologenic-xrpl-stream-js/commit/44fd587))
+
+
+
 ### [1.0.42](https://github.com/sologenic/sologenic-xrpl-stream-js/compare/v1.0.36...v1.0.42) (2023-05-10)
 
 
