@@ -1,0 +1,286 @@
+import { SologenicTxSigner } from './index';
+import { SologenicError } from '../error';
+import { httpRequest, wait, getToken } from '../utils';
+import moment from 'moment';
+export class SoloWalletSigner extends SologenicTxSigner {
+    server_url = '';
+    container_id = '';
+    address = '';
+    signing_refs;
+    fallback_container_id = '';
+    is_mobile = false;
+    deeplink_url = '';
+    signerID = 'solo_wallet';
+    constructor(options) {
+        super(options);
+        if (options.hasOwnProperty('server')) {
+            this.server_url = options['server'];
+        }
+        else {
+            throw new Error('Server url missing.');
+        }
+        if (options.hasOwnProperty('container_id')) {
+            this.container_id = options['container_id'];
+        }
+        else {
+            throw new Error('Container ID missing.');
+        }
+        if (options.hasOwnProperty('fallback_container_id')) {
+            this.fallback_container_id = options['fallback_container_id'];
+        }
+        else {
+            throw new Error('Fallback container ID missing.');
+        }
+        if (options.hasOwnProperty('is_mobile')) {
+            this.is_mobile = options['is_mobile'];
+        }
+        if (options.hasOwnProperty('deeplink_url')) {
+            this.deeplink_url = options['deeplink_url'];
+        }
+        this.includeSequence = true;
+    }
+    async requestConnection() {
+        const tx_json = {
+            TransactionType: 'NickNameSet',
+            TransactionKind: 'SignIn'
+        };
+        const connectionRefs = await httpRequest(this.server_url + 'issuer/transactions', 'post', {}, JSON.stringify({
+            tx_json: tx_json,
+            options: {
+                expires_at: moment()
+                    .add(10, 'm')
+                    .toISOString()
+            }
+        }));
+        var signed_tx;
+        if (connectionRefs.refs) {
+            let qrCode = document.createElement('img');
+            qrCode.setAttribute('src', connectionRefs.refs.qr);
+            qrCode.setAttribute('alt', 'QR Code');
+            let container = document.getElementById(this.container_id);
+            container.appendChild(qrCode);
+            if (this.is_mobile && this.deeplink_url) {
+                let deepLink = document.createElement('a');
+                const link = `https://solodex.page.link/?link=${connectionRefs.refs.deeplink}&apn=com.sologenicwallet&isi=1497396455&ibi=org.reactjs.native.example.SologenicWallet`;
+                deepLink.setAttribute('href', link);
+                deepLink.setAttribute('target', '_blank');
+                deepLink.setAttribute('rel', 'noopener noreferrer');
+                deepLink.innerText = 'SOLO Wallet >';
+                container.appendChild(deepLink);
+            }
+            const socket = new WebSocket(connectionRefs.refs.ws);
+            var isSocketOpen = false;
+            const expires_at = moment()
+                .add(10, 'm')
+                .valueOf();
+            var socket_interval = null;
+            var socketResponse = {
+                updated: false,
+                data: null
+            };
+            socket.addEventListener('open', () => {
+                isSocketOpen = true;
+                socket_interval = setInterval(() => {
+                    socket.send('ping');
+                }, 5000);
+            });
+            socket.addEventListener('message', message => {
+                if (message.data !== 'pong') {
+                    const { data } = message;
+                    if (JSON.parse(data).hasOwnProperty('meta') &&
+                        (JSON.parse(data).meta.hasOwnProperty('signed') ||
+                            JSON.parse(data).meta.hasOwnProperty('cancelled'))) {
+                        socketResponse = {
+                            updated: true,
+                            data: JSON.parse(message.data)
+                        };
+                    }
+                }
+            });
+            socket.onerror = event => {
+                throw new Error('WebSocket error: ' + event);
+            };
+            while (true) {
+                if (moment().valueOf() > expires_at) {
+                    if (isSocketOpen) {
+                        socket.close();
+                        clearInterval(socket_interval);
+                        throw new Error('Timed out. No response from server.');
+                    }
+                    else {
+                        throw new Error('Unable to establish connection with the server.');
+                    }
+                }
+                if (socketResponse.updated) {
+                    socket.close();
+                    clearInterval(socket_interval);
+                    break;
+                }
+                await wait(1000);
+            }
+            if (socketResponse.updated) {
+                let data = socketResponse.data;
+                let meta = data.meta;
+                if (meta.hasOwnProperty('cancelled') && meta.cancelled) {
+                    throw new SologenicError('2004');
+                }
+                signed_tx = await httpRequest(this.server_url +
+                    'issuer/transactions/' +
+                    connectionRefs.meta.identifier, 'get', {}, '');
+                if (sessionStorage.mode && sessionStorage.mode === '_testnet') {
+                    localStorage.swToken_testnet = JSON.stringify({
+                        push_token: meta.push_token,
+                        signer: signed_tx.signer
+                    });
+                }
+                else {
+                    localStorage.swToken = JSON.stringify({
+                        push_token: meta.push_token,
+                        signer: signed_tx.signer
+                    });
+                }
+            }
+        }
+        this.address = signed_tx.signer ? signed_tx.signer : '';
+        return {
+            address: signed_tx.signer ? signed_tx.signer : null
+        };
+    }
+    async sign(txJson, txId, _account, _signingOptions = {}) {
+        try {
+            // Delete the transaction metadata if it exists since the signing will fail
+            // as this TransactionMetadata is not known to the schema.
+            if (txJson.TransactionMetadata)
+                delete txJson.TransactionMetadata;
+            if (txJson.LastLedgerSequence)
+                txJson.LastLedgerSequence = Number(txJson.LastLedgerSequence) + 1000;
+            var pushToken = getToken(txJson.Account, 'solo');
+            const tx_init = await httpRequest(this.server_url + 'issuer/transactions', 'post', {}, JSON.stringify({
+                tx_json: txJson,
+                options: {
+                    ...(pushToken ? { push_token: pushToken } : {}),
+                    expires_at: moment()
+                        .add(10, 'm')
+                        .toISOString()
+                }
+            }));
+            var signed_tx;
+            if (tx_init.refs) {
+                this.signing_refs = tx_init;
+                const socket = new WebSocket(tx_init.refs.ws);
+                var isSocketOpen = false;
+                const expires_at = moment()
+                    .add(10, 'm')
+                    .valueOf();
+                var socket_interval = null;
+                var socketResponse = {
+                    updated: false,
+                    data: null
+                };
+                socket.addEventListener('open', () => {
+                    isSocketOpen = true;
+                    socket_interval = setInterval(() => {
+                        socket.send('ping');
+                    }, 5000);
+                });
+                socket.addEventListener('message', message => {
+                    if (message.data !== 'pong') {
+                        const { data } = message;
+                        if (JSON.parse(data).hasOwnProperty('meta') &&
+                            (JSON.parse(data).meta.hasOwnProperty('signed') ||
+                                JSON.parse(data).meta.hasOwnProperty('cancelled'))) {
+                            socketResponse = {
+                                updated: true,
+                                data: JSON.parse(message.data)
+                            };
+                        }
+                    }
+                });
+                socket.onerror = event => {
+                    throw new Error('WebSocket error: ' + event);
+                };
+                while (true) {
+                    if (moment().valueOf() > expires_at) {
+                        if (isSocketOpen) {
+                            socket.close();
+                            clearInterval(socket_interval);
+                            throw new Error('Timed out. No response from server.');
+                        }
+                        else {
+                            throw new Error('Unable to establish connection with the server.');
+                        }
+                    }
+                    if (this.cancelled) {
+                        if (isSocketOpen) {
+                            socket.close();
+                            clearInterval(socket_interval);
+                        }
+                        this.cancelled = false;
+                        throw new SologenicError('2005');
+                    }
+                    if (socketResponse.updated) {
+                        socket.close();
+                        clearInterval(socket_interval);
+                        break;
+                    }
+                    await wait(1000);
+                }
+                if (socketResponse.updated) {
+                    let data = socketResponse.data;
+                    let meta = data.meta;
+                    if (meta.hasOwnProperty('cancelled') && meta.cancelled === true) {
+                        throw new SologenicError('2003');
+                    }
+                    signed_tx = await httpRequest(this.server_url + 'issuer/transactions/' + tx_init.meta.identifier, 'get', {}, '');
+                    if (sessionStorage.mode && sessionStorage.mode === '_testnet') {
+                        localStorage.swToken_testnet = JSON.stringify({
+                            push_token: meta.push_token,
+                            signer: signed_tx.signer
+                        });
+                    }
+                    else {
+                        localStorage.swToken = JSON.stringify({
+                            push_token: meta.push_token,
+                            signer: signed_tx.signer
+                        });
+                    }
+                }
+            }
+            this.signing_refs = '';
+            if (signed_tx.tx_hex) {
+                return {
+                    id: txId,
+                    signedTransaction: signed_tx.tx_hex,
+                    tx_blob: signed_tx.tx_hex
+                };
+            }
+            else {
+                throw new SologenicError('1000');
+            }
+        }
+        catch (e) {
+            throw new Error(e.message);
+        }
+    }
+    showSigningQRcode() {
+        const qr = document.getElementById('qr-code-img');
+        if (!qr) {
+            let qrCode = document.createElement('img');
+            qrCode.setAttribute('src', this.signing_refs.refs.qr);
+            qrCode.setAttribute('alt', 'QR Code');
+            qrCode.setAttribute('id', 'qr-code-img');
+            let container = document.getElementById(this.fallback_container_id);
+            container.appendChild(qrCode);
+            if (this.is_mobile && this.deeplink_url) {
+                let deepLink = document.createElement('a');
+                const link = `https://solodex.page.link/?link=${this.signing_refs.refs.deeplink}&apn=com.sologenicwallet&isi=1497396455&ibi=org.reactjs.native.example.SologenicWallet`;
+                // deepLink.setAttribute('href', this.signing_refs.refs.deeplink);
+                deepLink.setAttribute('href', link);
+                // deepLink.setAttribute('target', '_blank');
+                deepLink.setAttribute('rel', 'noopener noreferrer');
+                deepLink.innerText = 'SOLO Wallet >';
+                container.appendChild(deepLink);
+            }
+        }
+    }
+}
