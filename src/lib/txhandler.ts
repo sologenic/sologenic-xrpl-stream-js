@@ -1,27 +1,27 @@
-import * as SologenicTypes from '../types';
-import * as RippleError from 'sologenic-ripple-lib-1-10-0-patched/dist/npm/common/errors';
+import * as SologenicTypes from "../types";
 import XrplAccount, {
   XrplAddressException,
   XrplSecretException,
   XrplKeypairException,
   XrplKeypairOrSecretMissingException
-} from './account';
+} from "./account";
 
-import TXMQƨ from './queues';
+import TXMQƨ from "./queues";
 
-import { OfflineSigner } from './signing';
-import { SologenicError } from './error';
+import { OfflineSigner } from "./signing";
+import { SologenicError } from "./error";
 
-import { all as mathAll, create as mathCreate } from 'mathjs';
-import { EventEmitter } from 'events';
+import { all as mathAll, create as mathCreate } from "mathjs";
+import { EventEmitter } from "events";
 
-import { v4 as uuid } from 'uuid';
-import { wait, formatOrderbook, default_nodes, NodesCatalog } from './utils';
-import { ISologenicTxSigner } from '../types';
-import { Market } from '../types/orderbook';
+import { v4 as uuid } from "uuid";
+import { wait, formatOrderbook, default_nodes, NodesCatalog } from "./utils";
+import { ISologenicTxSigner } from "../types";
+import { Market } from "../types/orderbook";
+import * as xrpl from "xrpl";
 
-const binaryCodec = require('ripple-binary-codec');
-const xrpl = require('xrpl');
+// const binaryCodec = require('ripple-binary-codec');
+// const xrpl = require('xrpl');
 
 /**
  * The [[SologenicTxHandler]] maintains state of a transaction from
@@ -53,9 +53,9 @@ export class SologenicTxHandler extends EventEmitter {
   /**
    * Ripple node
    */
-  protected rippleNode = '';
+  protected rippleNode = "";
   protected attempts = 0;
-  protected networkMode = 'mainnet';
+  protected networkMode = "mainnet";
   protected attemptedNodes = [];
 
   /**
@@ -104,14 +104,12 @@ export class SologenicTxHandler extends EventEmitter {
   /**
    * Signing mechanism
    */
-  protected signingMechanism: SologenicTypes.ISologenicTxSigner = new OfflineSigner(
-    {}
-  );
+  protected signingMechanism: SologenicTypes.ISologenicTxSigner = new OfflineSigner();
 
   /**
    * Constructor for an instance of sologenic tx handler.
    *
-   * @param rippleApiOptions     This parameter is used to construct sologenic-ripple-lib-1-10-0-patched and takes in:
+   * @param rippleApiOptions     This parameter is used to construct XRPL Client and takes in:
    * @param server               XRPL server to connect (eg. wss://s1.ripple.com)
    * @param feeCushion?          This property is overridden by Sologenic to 1.2
    * @param maxFeeXRP?           Maximum fee that we'll use when sending a transaction to the XRPL
@@ -143,7 +141,7 @@ export class SologenicTxHandler extends EventEmitter {
       this.rippleApi = new xrpl.Client(
         xrplClientOptions.custom_server ||
           default_nodes[
-            (xrplClientOptions.mode || 'mainnet') as keyof NodesCatalog
+            (xrplClientOptions.mode || "mainnet") as keyof NodesCatalog
           ][0],
         {
           feeCushion: 1,
@@ -154,13 +152,13 @@ export class SologenicTxHandler extends EventEmitter {
       this.rippleNode =
         xrplClientOptions.custom_server ||
         default_nodes[
-          (xrplClientOptions.mode || 'mainnet') as keyof NodesCatalog
+          (xrplClientOptions.mode || "mainnet") as keyof NodesCatalog
         ][0];
 
-      console.log('SXSJ: 1.1.43');
+      console.log("SXSJ: 1.1.43");
 
       /**
-       * Subscribe to sologenic-ripple-lib-1-10-0-patched on("") events
+       * Subscribe to XRPL Client on("") events
        */
       this._subscribeWS();
 
@@ -168,8 +166,8 @@ export class SologenicTxHandler extends EventEmitter {
        * Initialize ledger object
        */
       this.ledger = {
-        baseFeeXRP: '0.00001',
-        ledgerTimestamp: '0',
+        baseFeeXRP: "0.00001",
+        ledgerTimestamp: "0",
         ledgerVersion: 0
       };
 
@@ -186,14 +184,14 @@ export class SologenicTxHandler extends EventEmitter {
       try {
         this.txmq = new TXMQƨ(sologenicOptions); // Pass on the queue connection details
       } catch (error) {
-        throw new SologenicError('1002', error);
+        throw new SologenicError("1002", error);
       }
 
       /**
        * Set clearCache to true if the client needs to ignore and clean the queue before starting
        */
       if (
-        typeof sologenicOptions.clearCache !== 'undefined' &&
+        typeof sologenicOptions.clearCache !== "undefined" &&
         sologenicOptions.clearCache
       ) {
         this.clearCache = true;
@@ -204,7 +202,7 @@ export class SologenicTxHandler extends EventEmitter {
        */
       this.math = mathCreate(mathAll, {
         epsilon: 1e-12,
-        number: 'BigNumber',
+        number: "BigNumber",
         precision: 64
       });
 
@@ -212,12 +210,12 @@ export class SologenicTxHandler extends EventEmitter {
        * Initialize signing mechanism
        */
 
-      if (typeof sologenicOptions.signingMechanism !== 'undefined')
+      if (typeof sologenicOptions.signingMechanism !== "undefined")
         this.signingMechanism = sologenicOptions.signingMechanism;
     } catch (error) {
       console.log(error);
 
-      throw new SologenicError('1001', error);
+      throw new SologenicError("1001", error);
     }
   }
 
@@ -290,18 +288,18 @@ export class SologenicTxHandler extends EventEmitter {
 
   public async getFormattedOrderbook(market: Market) {
     const offers = await this.rippleApi.request({
-      command: 'book_offers',
+      command: "book_offers",
       taker_gets: market.base,
       taker_pays: market.counter,
-      ledger_index: 'current',
+      ledger_index: "current",
       limit: 200
     });
 
     const revOffers = await this.rippleApi.request({
-      command: 'book_offers',
+      command: "book_offers",
       taker_gets: market.counter,
       taker_pays: market.base,
-      ledger_index: 'current',
+      ledger_index: "current",
       limit: 200
     });
 
@@ -333,7 +331,7 @@ export class SologenicTxHandler extends EventEmitter {
       this.attempts += 1;
 
       if (this.attempts > 5) {
-        throw new Error('Switch Nodes');
+        throw new Error("Switch Nodes");
       } else {
         this.rippleApi = new xrpl.Client(this.rippleNode, {
           feeCushion: 1,
@@ -345,8 +343,8 @@ export class SologenicTxHandler extends EventEmitter {
           await this._connected();
 
           const currentLedger = await this.getRippleApi().request({
-            command: 'ledger',
-            ledger_index: 'validated'
+            command: "ledger",
+            ledger_index: "validated"
           });
 
           this.setLedgerVersion(currentLedger.result.ledger_index);
@@ -366,7 +364,7 @@ export class SologenicTxHandler extends EventEmitter {
 
       // Return this
     } catch (error) {
-      console.log('Connect', error);
+      console.log("Connect", error);
       // if there is a disconnection error, keep trying until connection is made. Retry in 1000ms
       // if (error instanceof xrpl.DisconnectedError) {
       //   await this._connected();
@@ -374,7 +372,7 @@ export class SologenicTxHandler extends EventEmitter {
       //   // throw new SologenicError('1003');
       // }
 
-      if (error.message === 'Switch Nodes') {
+      if (error.message === "Switch Nodes") {
         this.attempts = 0;
         this.attemptedNodes.push(this.rippleNode);
         this.rippleNode = default_nodes[this.networkMode].find(
@@ -382,7 +380,7 @@ export class SologenicTxHandler extends EventEmitter {
         );
 
         if (!this.rippleNode) {
-          throw new Error('Unable to establish connection to the XRP Ledger');
+          throw new Error("Unable to establish connection to the XRP Ledger");
         }
       }
 
@@ -396,7 +394,7 @@ export class SologenicTxHandler extends EventEmitter {
    *
    */
   public async connectSigner(): Promise<any> {
-    if (this.signingMechanism.signerID !== 'offline') {
+    if (this.signingMechanism.signerID !== "offline") {
       const connection_ref = await this.signingMechanism.requestConnection();
 
       return connection_ref;
@@ -415,15 +413,15 @@ export class SologenicTxHandler extends EventEmitter {
       let xrplAccount = new XrplAccount(
         account.address,
         account.secret!,
-        typeof account.keypair !== 'undefined' &&
-        typeof account.keypair.publicKey !== 'undefined'
+        typeof account.keypair !== "undefined" &&
+        typeof account.keypair.publicKey !== "undefined"
           ? account.keypair.publicKey
           : undefined,
-        typeof account.keypair !== 'undefined' &&
-        typeof account.keypair.privateKey !== 'undefined'
+        typeof account.keypair !== "undefined" &&
+        typeof account.keypair.privateKey !== "undefined"
           ? account.keypair.privateKey
           : undefined,
-        typeof account.mnemonic !== 'undefined' ? account.mnemonic : undefined
+        typeof account.mnemonic !== "undefined" ? account.mnemonic : undefined
       );
 
       this.xrplAccount = xrplAccount;
@@ -444,13 +442,13 @@ export class SologenicTxHandler extends EventEmitter {
       await this._validateMissedTransactions();
     } catch (error) {
       if (error instanceof XrplAddressException) {
-        throw new SologenicError('2000', error);
+        throw new SologenicError("2000", error);
       } else if (error instanceof XrplSecretException) {
-        throw new SologenicError('2001', error);
+        throw new SologenicError("2001", error);
       } else if (error instanceof XrplKeypairException) {
-        throw new SologenicError('2001', error);
+        throw new SologenicError("2001", error);
       } else if (error instanceof XrplKeypairOrSecretMissingException) {
-        throw new SologenicError('2001', error);
+        throw new SologenicError("2001", error);
       } else {
         throw error;
       }
@@ -492,13 +490,13 @@ export class SologenicTxHandler extends EventEmitter {
       await this._validateMissedTransactions();
     } catch (error) {
       if (error instanceof XrplAddressException) {
-        throw new SologenicError('2000', error);
+        throw new SologenicError("2000", error);
       } else if (error instanceof XrplSecretException) {
-        throw new SologenicError('2001', error);
+        throw new SologenicError("2001", error);
       } else if (error instanceof XrplKeypairException) {
-        throw new SologenicError('2001', error);
+        throw new SologenicError("2001", error);
       } else if (error instanceof XrplKeypairOrSecretMissingException) {
-        throw new SologenicError('2001', error);
+        throw new SologenicError("2001", error);
       } else {
         throw error;
       }
@@ -521,7 +519,7 @@ export class SologenicTxHandler extends EventEmitter {
     this.signingMechanism.cancelSigning(true);
 
     await this.txmq.add(
-      'txmq:cancelled:' + this.getAccount().getAddress(),
+      "txmq:cancelled:" + this.getAccount().getAddress(),
       unsignedTx.data,
       unsignedTx.id
     );
@@ -603,21 +601,21 @@ export class SologenicTxHandler extends EventEmitter {
    */
   private async _resolve(id: string): Promise<SologenicTypes.ResolvedTx> {
     const validated = await this.txmq.get(
-      'txmq:validated:' + this.getAccount().getAddress(),
+      "txmq:validated:" + this.getAccount().getAddress(),
       id
     );
 
-    if (typeof validated !== 'undefined') {
+    if (typeof validated !== "undefined") {
       return validated.data;
     } else {
       const failed = await this.txmq.get(
-        'txmq:failed:' + this.getAccount().getAddress(),
+        "txmq:failed:" + this.getAccount().getAddress(),
         id
       );
 
       // console.log(`Failed TX (${id}): ${failed}`);
 
-      if (typeof failed !== 'undefined') {
+      if (typeof failed !== "undefined") {
         return failed.data;
       }
 
@@ -640,10 +638,10 @@ export class SologenicTxHandler extends EventEmitter {
         await this.getRippleApi().connect();
       }
 
-      // Use the sologenic-ripple-lib-1-10-0-patched built in REST functions to get the ledger version and fee. Please note that these
+      // Use the XRPL Client built in REST functions to get the ledger version and fee. Please note that these
       // values are updated using the WS after the first initilization, until this method is called again
       const accountInfo = await this.getRippleApi().request({
-        command: 'account_info',
+        command: "account_info",
         account: this.getAccount().getAddress()
       });
 
@@ -654,25 +652,25 @@ export class SologenicTxHandler extends EventEmitter {
       return;
     } catch (error) {
       // If there is a disconnection error, keep trying until connection is made. Retry in 1000ms
-      if (error instanceof RippleError.DisconnectedError) {
+      if (error instanceof xrpl.DisconnectedError) {
         // Try fetching the current state again
         await this._fetchCurrentState();
         // Unspecific RippleError
-      } else if (error instanceof RippleError.RippledError) {
-        throw new SologenicError('1004', error);
+      } else if (error instanceof xrpl.RippledError) {
+        throw new SologenicError("1004", error);
       } else {
-        throw new SologenicError('1000', error);
+        throw new SologenicError("1000", error);
       }
     }
   }
 
   /**
-   * Subscribe to sologenic-ripple-lib-1-10-0-patched websocket events connect, disconnect, error and ledger stream updates.
+   * Subscribe to XRPL Client websocket events connect, disconnect, error and ledger stream updates.
    * @throws {SologenicError}
    */
   private _subscribeWS(): any {
     try {
-      this.getRippleApi().on('connect', () => {
+      this.getRippleApi().on("connect", () => {
         // On connection, get the current ledger version
         this.getRippleApi()
           .getLedger()
@@ -681,22 +679,22 @@ export class SologenicTxHandler extends EventEmitter {
           });
       });
 
-      this.getRippleApi().on('disconnect', () => {
+      this.getRippleApi().on("disconnect", () => {
         // Reconnect
         this.getRippleApi().connect();
       });
 
-      this.getRippleApi().on('error', () => {
+      this.getRippleApi().on("error", () => {
         // Reconnect
         this.getRippleApi().connect();
       });
 
-      this.getRippleApi().on('ledger', (ledger: SologenicTypes.Ledger) => {
+      this.getRippleApi().on("ledger", (ledger: SologenicTypes.Ledger) => {
         // Update the ledger version
         this.ledger = ledger;
       });
     } catch (error) {
-      throw new SologenicError('1005', error);
+      throw new SologenicError("1005", error);
     }
   }
 
@@ -717,7 +715,7 @@ export class SologenicTxHandler extends EventEmitter {
         id
       );
     } catch (error) {
-      throw new SologenicError('1000', error);
+      throw new SologenicError("1000", error);
     }
   }
 
@@ -732,11 +730,11 @@ export class SologenicTxHandler extends EventEmitter {
   ): Promise<void> {
     try {
       const rawTx = await this.txmq.get(
-        'txmq:raw:' + this.getAccount().getAddress(),
+        "txmq:raw:" + this.getAccount().getAddress(),
         id
       );
 
-      if (typeof rawTx !== 'undefined') {
+      if (typeof rawTx !== "undefined") {
         console.log(
           `TX ID txmq:raw:${this.getAccount().getAddress()}, ${id} already exists on the queue; delete it first!`
         );
@@ -744,7 +742,7 @@ export class SologenicTxHandler extends EventEmitter {
       }
 
       const item = await this.txmq.add(
-        'txmq:raw:' + this.getAccount().getAddress(),
+        "txmq:raw:" + this.getAccount().getAddress(),
         txJson,
         id
       );
@@ -755,14 +753,14 @@ export class SologenicTxHandler extends EventEmitter {
       };
 
       // Emit on object specific listener
-      if (typeof this.txEvents![item.id] !== 'undefined') {
-        this.txEvents![item.id].emit('queued', queuedEvent);
+      if (typeof this.txEvents![item.id] !== "undefined") {
+        this.txEvents![item.id].emit("queued", queuedEvent);
       }
 
       // Emit globally
-      this.emit('queued', queuedEvent);
+      this.emit("queued", queuedEvent);
     } catch (error) {
-      throw new SologenicError('1000', error);
+      throw new SologenicError("1000", error);
     }
   }
 
@@ -782,11 +780,11 @@ export class SologenicTxHandler extends EventEmitter {
           {
             Memo: {
               MemoData: unescape(encodeURIComponent(tx.id))
-                .split('')
+                .split("")
                 .map(v => {
                   return v.charCodeAt(0).toString(16);
                 })
-                .join('')
+                .join("")
                 .toUpperCase()
             }
           }
@@ -795,7 +793,7 @@ export class SologenicTxHandler extends EventEmitter {
 
       return constructedTx;
     } catch (error) {
-      throw new SologenicError('1000', error);
+      throw new SologenicError("1000", error);
     }
   }
 
@@ -815,18 +813,18 @@ export class SologenicTxHandler extends EventEmitter {
         `txmq:raw:${this.getAccount().getAddress()}`
       );
 
-      if (typeof txList !== 'undefined') {
+      if (typeof txList !== "undefined") {
         // Loop through each, FIFO order, and dispatch the transaction
         // maybe set a limit here on the maximum number of promises
         // that can run at a time.
 
         for (var tx of txList) {
           const signingTransaction = await this.txmq.get(
-            'txmq:signing:' + this.getAccount().getAddress(),
+            "txmq:signing:" + this.getAccount().getAddress(),
             tx.id
           );
 
-          if (typeof signingTransaction === 'undefined') {
+          if (typeof signingTransaction === "undefined") {
             await this._dispatchHandler(tx);
           } else {
             // console.log(`Transaction [${tx.id}] has already been dispatched`);
@@ -860,7 +858,7 @@ export class SologenicTxHandler extends EventEmitter {
   ): Promise<void> {
     try {
       await this.txmq.add(
-        'txmq:signing:' + this.getAccount().getAddress(),
+        "txmq:signing:" + this.getAccount().getAddress(),
         unsignedTx,
         unsignedTx.id
       );
@@ -870,7 +868,7 @@ export class SologenicTxHandler extends EventEmitter {
         txJson: unsignedTx.data
       };
 
-      this.emit('signing', signingEvent);
+      this.emit("signing", signingEvent);
 
       return this._signTransaction(unsignedTx)
         .then(async signedTx => {
@@ -884,11 +882,11 @@ export class SologenicTxHandler extends EventEmitter {
               `txmq:cancelled:${this.getAccount().getAddress()}`,
               unsignedTx.id
             );
-            throw new Error('TRANSACTION_HAS_BEEN_CANCELLED');
+            throw new Error("TRANSACTION_HAS_BEEN_CANCELLED");
           }
 
           if (unsignedTx.data.txJSON.submit === false) {
-            this.emit('signed', { signedTx, unsignedTx });
+            this.emit("signed", { signedTx, unsignedTx });
             await this.txmq.del(
               `txmq:raw:${this.getAccount().getAddress()}`,
               unsignedTx.id
@@ -920,13 +918,13 @@ export class SologenicTxHandler extends EventEmitter {
         .finally(async () => {
           // Finally delete the signing message
           await this.txmq.del(
-            'txmq:signing:' + this.getAccount().getAddress(),
+            "txmq:signing:" + this.getAccount().getAddress(),
             unsignedTx.id
           );
         });
     } catch (error) {
       // console.log('Caught signing exception in _dispatchHandler!');
-      throw new SologenicError('1000', error);
+      throw new SologenicError("1000", error);
     }
   }
 
@@ -956,7 +954,7 @@ export class SologenicTxHandler extends EventEmitter {
     // } else {
     // }
 
-    if (typeof tx.Flags !== 'undefined') tx.Flags = tx.Flags >>> 0;
+    if (typeof tx.Flags !== "undefined") tx.Flags = tx.Flags >>> 0;
 
     // multiply the fee by 1.2 to make sure the tx goes through
     // Suggestion. In cases of surge in network fee, this value can be dynamically increased.
@@ -974,7 +972,7 @@ export class SologenicTxHandler extends EventEmitter {
     // Set the sequence of this tx to the latest sequence obtained from account_info
     if (
       this.signingMechanism.getIncludeSequence() &&
-      typeof tx.Sequence === 'undefined'
+      typeof tx.Sequence === "undefined"
     ) {
       // Set the sequence number if it was not already provided,
       // this is for our test cases so we can manually specify our
@@ -1000,7 +998,7 @@ export class SologenicTxHandler extends EventEmitter {
     return this.signingMechanism
       .sign(tx, unsignedTx.id, this.getAccount(), {})
       .then((signedTx: SologenicTypes.SignedTx) => {
-        this.txEvents![signedTx.id].emit('signed', signedTx);
+        this.txEvents![signedTx.id].emit("signed", signedTx);
 
         return signedTx;
       })
@@ -1052,89 +1050,89 @@ export class SologenicTxHandler extends EventEmitter {
         https://xrpl.org/tes-success.html
       */
 
-      if (submitResult.result.engine_result !== 'tesSUCCESS') {
+      if (submitResult.result.engine_result !== "tesSUCCESS") {
         const warningEvent: SologenicTypes.WarningEvent = {
           id: signedTx.id,
-          state: 'dispatch',
+          state: "dispatch",
           reason: `${submitResult.result.engine_result}: ${submitResult.result.engine_result_message}`
         };
 
-        this.emit('warning', warningEvent, unsignedTx);
+        this.emit("warning", warningEvent, unsignedTx);
 
-        if (typeof this.txEvents![signedTx.id] !== 'undefined') {
-          this.txEvents![signedTx.id].emit('warning', warningEvent);
+        if (typeof this.txEvents![signedTx.id] !== "undefined") {
+          this.txEvents![signedTx.id].emit("warning", warningEvent);
         }
 
         // Specific actions based on different errors
         // The account sending the transaction does not have enough XRP to pay the Fee specified in the transaction.
-        if (submitResult.result.engine_result === 'terINSUF_FEE_B') {
+        if (submitResult.result.engine_result === "terINSUF_FEE_B") {
           await wait(100);
         }
 
         // The network fee has increased due to load
         // The Fee from the transaction is not high enough to meet the server's current
         // transaction cost requirement, which is derived from its load level.
-        if (submitResult.result.engine_result === 'telINSUF_FEE_P') {
+        if (submitResult.result.engine_result === "telINSUF_FEE_P") {
           await wait(100);
         }
 
         // The transaction did not meet the open ledger cost and also was not added to the transaction queue. This code occurs when a transaction with the same sender and sequence number already exists in the queue and the new one does not pay a large enough transaction cost to replace the existing transaction. To replace a transaction in the queue, the new transaction must have a Fee value that is at least 25% more, as measured in fee levels. You can increase the Fee and try again, send this with a higher Sequence number so it doesn't replace an existing transaction, or try sending to another server. New in: rippled 0.70.2
-        if (submitResult.result.engine_result === 'telCAN_NOT_QUEUE_FEE') {
+        if (submitResult.result.engine_result === "telCAN_NOT_QUEUE_FEE") {
           await wait(100);
         }
 
         // The transaction did not meet the open ledger cost and also was not added to the transaction queue because a transaction queued ahead of it from the same sender blocks it. (This includes all SetRegularKey and SignerListSet transactions, as well as AccountSet transactions that change the RequireAuth/OptionalAuth, DisableMaster, or AccountTxnID flags.) You can try again later, or try submitting to a different server.
-        if (submitResult.result.engine_result === 'telCAN_NOT_QUEUE_BLOCKED') {
+        if (submitResult.result.engine_result === "telCAN_NOT_QUEUE_BLOCKED") {
           await wait(100);
         }
 
         // 	The address sending the transaction is not funded in the ledger (yet).
-        if (submitResult.result.engine_result === 'terNOaccount') {
+        if (submitResult.result.engine_result === "terNOaccount") {
           this.getAccount().incrementAccountSequenceBy(-1);
           return await this._txFailed(
             unsignedTx,
-            'terNOaccount',
+            "terNOaccount",
             submitResult.result
           );
         }
 
         // 	The transaction would involve adding currency issued by an account with lsfRequireAuth enabled to a trust line that is not authorized. For example, you placed an offer to buy a currency you aren't authorized to hold.
-        if (submitResult.result.engine_result === 'terNO_AUTH') {
+        if (submitResult.result.engine_result === "terNO_AUTH") {
           await wait(100);
         }
 
         // 	The transaction requires that account sending it has a nonzero "owners count", so the transaction cannot succeed. For example, an account cannot enable the lsfRequireAuth flag if it has any trust lines or available offers.
-        if (submitResult.result.engine_result === 'terOWNERS') {
+        if (submitResult.result.engine_result === "terOWNERS") {
           await wait(100);
         }
 
         // The sequence number of the transaction is lower than the current sequence number of the account sending the transaction.
         // Wait 1000ms and get the current sequence so the next transaction has the correct sequence
-        if (submitResult.result.engine_result === 'tefPAST_SEQ') {
+        if (submitResult.result.engine_result === "tefPAST_SEQ") {
           await this._fetchCurrentState();
           await wait(1000);
         }
 
         // The Sequence number of the current transaction is higher than the current sequence number of the account sending the transaction.
         // Wait 1000ms and get the current sequence so the next transaction has the correct sequence
-        if (submitResult.result.engine_result === 'terPRE_SEQ') {
+        if (submitResult.result.engine_result === "terPRE_SEQ") {
           await this._fetchCurrentState();
           await wait(1000);
         }
 
         // Unspecified retriable error.
-        if (submitResult.result.engine_result === 'terRETRY') {
+        if (submitResult.result.engine_result === "terRETRY") {
           await wait(100);
         }
 
         //	The transaction met the load-scaled transaction cost but did not meet the open ledger requirement, so the transaction has been queued for a future ledger.
-        if (submitResult.result.engine_result === 'terQUEUED') {
+        if (submitResult.result.engine_result === "terQUEUED") {
           // Wait 4000ms and continue, possibly too many transactions were submitted to the same rippled server
           await wait(4000);
         }
 
         // These codes indicate that the transaction was malformed, and cannot succeed according to the XRP Ledger protocol.
-        if (submitResult.result.engine_result.startsWith('tem')) {
+        if (submitResult.result.engine_result.startsWith("tem")) {
           return await this._txFailed(
             unsignedTx,
             submitResult.result.engine_result,
@@ -1143,13 +1141,13 @@ export class SologenicTxHandler extends EventEmitter {
         }
 
         // These codes indicate an error in the local server processing the transaction; it is possible that another server with a different configuration or load level could process the transaction successfully. They have numerical values in the range -399 to -300. The exact code for any given error is subject to change, so don't rely on it.
-        if (submitResult.result.engine_result.startsWith('tel')) {
+        if (submitResult.result.engine_result.startsWith("tel")) {
           await wait(100);
         }
 
         // These codes indicate that the transaction failed and was not included in a ledger, but the transaction could have succeeded in some theoretical ledger. Typically this means that the transaction can no longer succeed in any future ledger. They have numerical values in the range -199 to -100. The exact code for any given error is subject to change, so don't rely on it.
-        if (submitResult.result.engine_result.startsWith('tef')) {
-          if (submitResult.result.engine_result === 'tefBAD_AUTH_MASTER') {
+        if (submitResult.result.engine_result.startsWith("tef")) {
+          if (submitResult.result.engine_result === "tefBAD_AUTH_MASTER") {
             this.getAccount().incrementAccountSequenceBy(-1);
             return await this._txFailed(
               unsignedTx,
@@ -1158,7 +1156,7 @@ export class SologenicTxHandler extends EventEmitter {
             );
           }
 
-          if (submitResult.result.engine_result === 'tefNO_AUTH_REQUIRED') {
+          if (submitResult.result.engine_result === "tefNO_AUTH_REQUIRED") {
             this.getAccount().incrementAccountSequenceBy(-1);
             return await this._txFailed(
               unsignedTx,
@@ -1167,7 +1165,7 @@ export class SologenicTxHandler extends EventEmitter {
             );
           }
 
-          if (submitResult.result.engine_result === 'tefBAD_AUTH') {
+          if (submitResult.result.engine_result === "tefBAD_AUTH") {
             this.getAccount().incrementAccountSequenceBy(-1);
             return await this._txFailed(
               unsignedTx,
@@ -1176,7 +1174,7 @@ export class SologenicTxHandler extends EventEmitter {
             );
           }
 
-          if (submitResult.result.engine_result === 'tefALREADY') {
+          if (submitResult.result.engine_result === "tefALREADY") {
             this.getAccount().incrementAccountSequenceBy(-1);
             return await this._txFailed(
               unsignedTx,
@@ -1185,7 +1183,7 @@ export class SologenicTxHandler extends EventEmitter {
             );
           }
 
-          if (submitResult.result.engine_result === 'tefPAST_SEQ') {
+          if (submitResult.result.engine_result === "tefPAST_SEQ") {
             // Past account sequence
             return await this._txFailed(
               unsignedTx,
@@ -1194,7 +1192,7 @@ export class SologenicTxHandler extends EventEmitter {
             );
           }
 
-          if (submitResult.result.engine_result === 'tefMAX_LEDGER') {
+          if (submitResult.result.engine_result === "tefMAX_LEDGER") {
             return await this._txFailed(
               unsignedTx,
               submitResult.result.engine_result,
@@ -1204,7 +1202,7 @@ export class SologenicTxHandler extends EventEmitter {
         }
 
         // These codes indicate that the transaction failed, but it was applied to a ledger to apply the transaction cost. They have numerical values in the range 100 to 199. Ripple recommends using the text code, not the numeric value.
-        if (submitResult.result.engine_result.startsWith('tec')) {
+        if (submitResult.result.engine_result.startsWith("tec")) {
           return await this._txFailed(
             unsignedTx,
             submitResult.result.engine_result,
@@ -1222,17 +1220,21 @@ export class SologenicTxHandler extends EventEmitter {
         firstLedgerSequence
       );
     } catch (error) {
-      if (error instanceof RippleError.RippledError) {
-        if (error.data.error === 'invalidTransaction') {
+      if (error instanceof xrpl.RippledError) {
+        if ((error.data as any).error === "invalidTransaction") {
           return this._txFailed(
             unsignedTx,
-            `${error.data.error}: ${error.data.error_exception}`,
+            `${(error.data as any).error}: ${
+              (error.data as any).error_exception
+            }`,
             undefined
           );
-        } else if (error.data.result.engine_result.startsWith('tem')) {
+        } else if ((error.data as any).result.engine_result.startsWith("tem")) {
           return this._txFailed(
             unsignedTx,
-            `${error.data.error}: ${error.data.error_exception} (${error.data.result.engine_result})`,
+            `${(error.data as any).error}: ${
+              (error.data as any).error_exception
+            } (${(error.data as any).result.engine_result})`,
             undefined
           );
         }
@@ -1262,7 +1264,7 @@ export class SologenicTxHandler extends EventEmitter {
   ): Promise<boolean> {
     try {
       // Decode the signed transaction to get our last ledger sequence
-      const decodedTransaction = binaryCodec.decode(signedTx.tx_blob);
+      const decodedTransaction = xrpl.decode(signedTx.tx_blob);
 
       // Construct the dispatched object
       const dispatchedTx: SologenicTypes.DispatchedTx = {
@@ -1280,7 +1282,7 @@ export class SologenicTxHandler extends EventEmitter {
 
       // Add to dispatched queue
       const dispatched: SologenicTypes.DispatchedTx = await this.txmq.add(
-        'txmq:dispatched:' + this.getAccount().getAddress(),
+        "txmq:dispatched:" + this.getAccount().getAddress(),
         dispatchedTx,
         unsignedTx.id
       );
@@ -1292,13 +1294,13 @@ export class SologenicTxHandler extends EventEmitter {
       };
 
       // Emit on object specific listener
-      if (typeof this.txEvents![signedTx.id] !== 'undefined') {
-        this.txEvents![signedTx.id].emit('dispatched', dispatchedEvent);
+      if (typeof this.txEvents![signedTx.id] !== "undefined") {
+        this.txEvents![signedTx.id].emit("dispatched", dispatchedEvent);
       }
 
       // Emit globally
       // console.log('Emitting globally the dispatched event');
-      this.emit('dispatched', dispatchedEvent);
+      this.emit("dispatched", dispatchedEvent);
 
       return dispatched ? true : false;
     } catch (error) {
@@ -1328,7 +1330,7 @@ export class SologenicTxHandler extends EventEmitter {
         result: result,
         ...{
           cause: {
-            ...{ status: 'failed', reason }
+            ...{ status: "failed", reason }
           }
         }
       };
@@ -1336,21 +1338,21 @@ export class SologenicTxHandler extends EventEmitter {
       // Delete the raw transaction too
       await Promise.all([
         this.txmq.del(
-          'txmq:raw:' + this.getAccount().getAddress(),
+          "txmq:raw:" + this.getAccount().getAddress(),
           unsignedTx.id
         ),
         this.txmq.del(
-          'txmq:dispatched:' + this.getAccount().getAddress(),
+          "txmq:dispatched:" + this.getAccount().getAddress(),
           unsignedTx.id
         ),
 
         this.txmq.del(
-          'txmq:signing:' + this.getAccount().getAddress(),
+          "txmq:signing:" + this.getAccount().getAddress(),
           unsignedTx.id
         ),
 
         this.txmq.add(
-          'txmq:failed:' + this.getAccount().getAddress(),
+          "txmq:failed:" + this.getAccount().getAddress(),
           failedTx,
           failedTx.unsignedTx!.id
         )
@@ -1383,11 +1385,11 @@ export class SologenicTxHandler extends EventEmitter {
       };
 
       // Emit globally
-      this.emit('failed', failedEvent);
+      this.emit("failed", failedEvent);
 
       // Emit on object specific listener channel
-      if (typeof this.txEvents![unsignedTx.id] !== 'undefined') {
-        this.txEvents![unsignedTx.id].emit('failed', failedEvent);
+      if (typeof this.txEvents![unsignedTx.id] !== "undefined") {
+        this.txEvents![unsignedTx.id].emit("failed", failedEvent);
       }
 
       return true;
@@ -1404,7 +1406,7 @@ export class SologenicTxHandler extends EventEmitter {
   private async _validateMissedTransactions(): Promise<void> {
     try {
       const dispatchedTxs = await this.txmq.getAll(
-        'txmq:dispatched:' + this.getAccount().getAddress()
+        "txmq:dispatched:" + this.getAccount().getAddress()
       );
 
       for (const dispatchedTx of dispatchedTxs!) {
@@ -1413,7 +1415,7 @@ export class SologenicTxHandler extends EventEmitter {
 
       return;
     } catch (error) {
-      throw new SologenicError('1006');
+      throw new SologenicError("1006");
     }
   }
 
@@ -1425,7 +1427,7 @@ export class SologenicTxHandler extends EventEmitter {
     // console.log(`_validateOnLedger: Validating dispatched TX on ledger`);
 
     this.on(
-      'dispatched',
+      "dispatched",
       async (dispatchedEvent: SologenicTypes.DispatchedEvent) => {
         await this._validateTxOnLedger(
           dispatchedEvent.id,
@@ -1467,7 +1469,7 @@ export class SologenicTxHandler extends EventEmitter {
       // );
 
       const validatedTx = await this.getRippleApi().request({
-        command: 'tx',
+        command: "tx",
         transaction: dispatchedTx.result.hash
       });
 
@@ -1482,13 +1484,13 @@ export class SologenicTxHandler extends EventEmitter {
             */
 
         const hasBeenDeleted = await this.txmq.get(
-          'txmq:dispatched:' + this.getAccount().getAddress(),
+          "txmq:dispatched:" + this.getAccount().getAddress(),
           id
         );
 
         // Remove the transaction from the dispatched queue
         await this.txmq.del(
-          'txmq:dispatched:' + this.getAccount().getAddress(),
+          "txmq:dispatched:" + this.getAccount().getAddress(),
           id
         );
 
@@ -1503,22 +1505,22 @@ export class SologenicTxHandler extends EventEmitter {
             ledgerVersion: validatedTx!.result.LastLedgerSequence
             // timestamp: validatedTx!.outcome.timestamp!
           },
-          reason: validatedTx!.result.validated ? 'success' : 'Failed'
+          reason: validatedTx!.result.validated ? "success" : "Failed"
         };
 
         await this.txmq.add(
-          'txmq:validated:' + this.getAccount().getAddress(),
+          "txmq:validated:" + this.getAccount().getAddress(),
           validatedEvent.resolvedTx,
           id
         );
 
-        if (typeof this.txEvents![id] !== 'undefined') {
-          this.txEvents![id].emit('validated', validatedEvent);
+        if (typeof this.txEvents![id] !== "undefined") {
+          this.txEvents![id].emit("validated", validatedEvent);
         }
 
         // Emit on object specific listener
         if (hasBeenDeleted) {
-          this.emit('validated', validatedEvent);
+          this.emit("validated", validatedEvent);
         }
 
         // At this stage, it is safe to delete the object specific listner's EventEmitter object since validation is
@@ -1555,32 +1557,32 @@ export class SologenicTxHandler extends EventEmitter {
       return;
     } catch (error) {
       // Transaction not found on the ledger, It means this transaction was ignore for whatever reason. Re-queue and re-process
-      if (error instanceof RippleError.NotFoundError) {
+      if (error instanceof xrpl.NotFoundError) {
         const warningEvent: SologenicTypes.WarningEvent = {
           id: id,
-          state: 'validation',
-          reason: 'not_validated',
+          state: "validation",
+          reason: "not_validated",
           dispatchedTx: dispatchedTx
         };
 
         const requeueEvent: SologenicTypes.RequeuedEvent = {
           id: id,
-          reason: 'requeue',
+          reason: "requeue",
           dispatchedTx: dispatchedTx
         };
 
-        this.emit('warning', warningEvent);
-        this.emit('requeued', requeueEvent);
+        this.emit("warning", warningEvent);
+        this.emit("requeued", requeueEvent);
 
         // emit on object specific listener channel warning and requeued. Letting the client know that this transaction is being re-processed
-        if (typeof this.txEvents![id] !== 'undefined') {
-          this.txEvents![id].emit('warning', warningEvent);
-          this.txEvents![id].emit('requeued', requeueEvent);
+        if (typeof this.txEvents![id] !== "undefined") {
+          this.txEvents![id].emit("warning", warningEvent);
+          this.txEvents![id].emit("requeued", requeueEvent);
         }
 
         // Remove transaction from the dispatched queue
         await this.txmq.del(
-          'txmq:dispatched:' + this.getAccount().getAddress(),
+          "txmq:dispatched:" + this.getAccount().getAddress(),
           id
         );
 

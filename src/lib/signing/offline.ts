@@ -1,19 +1,15 @@
-import { RippleAPI } from 'sologenic-ripple-lib-1-10-0-patched';
-import { SologenicError } from '../error';
-import * as SologenicTypes from '../../types';
-
-import XrplAccount from '../account';
-import { SologenicTxSigner } from './index';
-import { Wallet } from 'xrpl';
+import * as SologenicTypes from "../../types";
+import XrplAccount from "../account";
+import { SologenicTxSigner } from "./index";
+import { Wallet } from "xrpl";
 
 export class OfflineSigner extends SologenicTxSigner
   implements SologenicTypes.ISologenicTxSigner {
-  protected rippleApi!: RippleAPI;
   protected wallet: any;
-  signerID: string = 'offline';
+  signerID: string = "offline";
 
-  constructor(options: any) {
-    super(options);
+  constructor() {
+    super();
 
     this.includeSequence = true;
   }
@@ -63,18 +59,11 @@ export class OfflineSigner extends SologenicTxSigner
         JSON.parse(JSON.stringify(txJson))
       );
 
-      // const signedTx: SologenicTypes.SignedTx = this.rippleApi.sign(
-      //   JSON.stringify(txJson),
-      //   account.getSecret(),
-      //   signingOptions,
-      //   account.getKeypair()
-      // );
-
       signedTx.id = txId;
 
       return signedTx;
     } catch (error) {
-      console.log('EROEROEROEORERER', error);
+      console.log("EROEROEROEORERER", error);
 
       throw error;
     }

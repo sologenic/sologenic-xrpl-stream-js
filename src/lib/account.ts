@@ -1,6 +1,5 @@
-import * as SologenicTypes from '../types/';
-import { RippleAPI } from 'sologenic-ripple-lib-1-10-0-patched';
-import * as RippleError from 'sologenic-ripple-lib-1-10-0-patched/dist/npm/common/errors';
+import * as SologenicTypes from "../types/";
+import { isValidAddress, isValidSecret, ValidationError } from "xrpl";
 
 export class XrplException extends Error {
   /**
@@ -54,7 +53,7 @@ export default class XrplAccount {
     this.keypair = undefined;
     this.mnemonic = undefined;
 
-    if (typeof publicKey !== 'undefined' || typeof privateKey !== 'undefined') {
+    if (typeof publicKey !== "undefined" || typeof privateKey !== "undefined") {
       this.keypair = {
         publicKey: publicKey!,
         privateKey: privateKey!
@@ -68,12 +67,6 @@ export default class XrplAccount {
     // Peform a validation
     this.validate();
   }
-
-  /**
-   * Ripple API
-   */
-
-  protected rippleApi: RippleAPI = new RippleAPI();
 
   /**
    * XRPL Account
@@ -123,31 +116,28 @@ export default class XrplAccount {
    * Validate an account
    */
   public validate(): void {
-    if (!this.rippleApi.isValidAddress(this.address)) {
+    if (!isValidAddress(this.address)) {
       throw new XrplAddressException(
-        'Address is not valid',
-        new RippleError.ValidationError()
+        "Address is not valid",
+        new ValidationError()
       );
     }
 
-    if (
-      typeof this.secret !== 'undefined' &&
-      !this.rippleApi.isValidSecret(this.secret)
-    ) {
+    if (typeof this.secret !== "undefined" && !isValidSecret(this.secret)) {
       throw new XrplSecretException(
-        'Secret is not valid',
-        new RippleError.ValidationError()
+        "Secret is not valid",
+        new ValidationError()
       );
     }
 
     if (
-      typeof this.keypair === 'object' &&
-      (typeof this.keypair.publicKey === 'undefined' ||
-        typeof this.keypair.privateKey === 'undefined')
+      typeof this.keypair === "object" &&
+      (typeof this.keypair.publicKey === "undefined" ||
+        typeof this.keypair.privateKey === "undefined")
     ) {
       throw new XrplKeypairException(
-        'Keypair is not valid',
-        new RippleError.ValidationError()
+        "Keypair is not valid",
+        new ValidationError()
       );
     }
 
@@ -260,11 +250,11 @@ export default class XrplAccount {
    * @returns {boolean}
    */
   public hasKeypair(): boolean {
-    if (typeof this.keypair === 'undefined') return false;
+    if (typeof this.keypair === "undefined") return false;
 
     if (
-      typeof this.keypair.publicKey !== 'undefined' &&
-      typeof this.keypair.privateKey !== 'undefined'
+      typeof this.keypair.publicKey !== "undefined" &&
+      typeof this.keypair.privateKey !== "undefined"
     ) {
       return true;
     }
@@ -277,7 +267,7 @@ export default class XrplAccount {
    * @returns {boolean}
    */
   public hasSecret(): boolean {
-    if (typeof this.secret !== 'undefined' && this.secret !== '') {
+    if (typeof this.secret !== "undefined" && this.secret !== "") {
       return true;
     }
 
@@ -289,7 +279,7 @@ export default class XrplAccount {
    * @returns {boolean}
    */
   public hasMnemonic(): boolean {
-    if (typeof this.mnemonic !== 'undefined' && this.mnemonic !== '') {
+    if (typeof this.mnemonic !== "undefined" && this.mnemonic !== "") {
       return true;
     }
 
