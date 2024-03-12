@@ -37,4 +37,4 @@ export interface MQTX {
   created: number;
 }
 
-export declare const QUEUE_TYPE_STXMQ_HASH = "hash";
+export const QUEUE_TYPE_STXMQ_HASH = "hash";
