@@ -1,9 +1,4 @@
-import {
-  MQTX,
-  IQueue,
-  QUEUE_TYPE_STXMQ_HASH,
-  TransactionHandlerOptions,
-} from "../../types/queues";
+import { MQTX, IQueue, TransactionHandlerOptions } from "../../types/queues";
 
 /**
  * Import redis queue implementation
@@ -24,15 +19,16 @@ export default class TXMQƨ implements IQueue {
 
   constructor(sologenicOptions: TransactionHandlerOptions) {
     try {
-      switch (sologenicOptions!.queueType) {
-        case QUEUE_TYPE_STXMQ_HASH:
-          this.queue = new HashQueue(sologenicOptions.hash!);
-          break;
+      // switch (sologenicOptions!.queueType) {
+      //   case QUEUE_TYPE_STXMQ_HASH:
+      //     break;
 
-        default:
-          this.queue = new HashQueue(sologenicOptions.hash!);
-          break;
-      }
+      //   default:
+      //     this.queue = new HashQueue(sologenicOptions.hash!);
+      //     break;
+      // }
+
+      this.queue = new HashQueue(sologenicOptions.hash!);
     } catch (error) {
       throw new Error("Unable to initialize TXMQ");
     }

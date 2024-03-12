@@ -1,4 +1,3 @@
-import { QUEUE_TYPE_STXMQ_HASH, } from "../../types/queues";
 /**
  * Import redis queue implementation
  */
@@ -15,14 +14,14 @@ export default class TXMQƨ {
     queue;
     constructor(sologenicOptions) {
         try {
-            switch (sologenicOptions.queueType) {
-                case QUEUE_TYPE_STXMQ_HASH:
-                    this.queue = new HashQueue(sologenicOptions.hash);
-                    break;
-                default:
-                    this.queue = new HashQueue(sologenicOptions.hash);
-                    break;
-            }
+            // switch (sologenicOptions!.queueType) {
+            //   case QUEUE_TYPE_STXMQ_HASH:
+            //     break;
+            //   default:
+            //     this.queue = new HashQueue(sologenicOptions.hash!);
+            //     break;
+            // }
+            this.queue = new HashQueue(sologenicOptions.hash);
         }
         catch (error) {
             throw new Error("Unable to initialize TXMQ");

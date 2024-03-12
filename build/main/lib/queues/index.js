@@ -4,7 +4,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.HashQueue = void 0;
-const queues_1 = require("../../types/queues");
 /**
  * Import redis queue implementation
  */
@@ -21,14 +20,14 @@ exports.HashQueue = hash_1.default;
 class TXMQƨ {
     constructor(sologenicOptions) {
         try {
-            switch (sologenicOptions.queueType) {
-                case queues_1.QUEUE_TYPE_STXMQ_HASH:
-                    this.queue = new hash_1.default(sologenicOptions.hash);
-                    break;
-                default:
-                    this.queue = new hash_1.default(sologenicOptions.hash);
-                    break;
-            }
+            // switch (sologenicOptions!.queueType) {
+            //   case QUEUE_TYPE_STXMQ_HASH:
+            //     break;
+            //   default:
+            //     this.queue = new HashQueue(sologenicOptions.hash!);
+            //     break;
+            // }
+            this.queue = new hash_1.default(sologenicOptions.hash);
         }
         catch (error) {
             throw new Error("Unable to initialize TXMQ");
