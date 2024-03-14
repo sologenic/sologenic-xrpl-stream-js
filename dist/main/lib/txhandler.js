@@ -31,11 +31,11 @@ const account_1 = __importStar(require("./account"));
 const queues_1 = __importDefault(require("./queues"));
 const signing_1 = require("./signing");
 const error_1 = require("./error");
-const mathjs_1 = require("mathjs");
 const events_1 = require("events");
 const uuid_1 = require("uuid");
 const utils_1 = require("./utils");
 const xrpl = __importStar(require("xrpl"));
+const bignumber_js_1 = __importDefault(require("bignumber.js"));
 // const binaryCodec = require('ripple-binary-codec');
 // const xrpl = require('xrpl');
 /**
@@ -117,7 +117,7 @@ class SologenicTxHandler extends events_1.EventEmitter {
             this.rippleApi = new xrpl.Client(xrplClientOptions.custom_server ||
                 utils_1.default_nodes[(xrplClientOptions.mode || "mainnet")][0], {
                 feeCushion: 1,
-                timeout: 1000000
+                timeout: 1000000,
             });
             this.rippleNode =
                 xrplClientOptions.custom_server ||
@@ -133,7 +133,7 @@ class SologenicTxHandler extends events_1.EventEmitter {
             this.ledger = {
                 baseFeeXRP: "0.00001",
                 ledgerTimestamp: "0",
-                ledgerVersion: 0
+                ledgerVersion: 0,
             };
             /**
              * Maximum time to live, if this is 0, then we'll not perform any cleanup
@@ -160,11 +160,6 @@ class SologenicTxHandler extends events_1.EventEmitter {
             /**
              * Initialize BigNumber
              */
-            this.math = (0, mathjs_1.create)(mathjs_1.all, {
-                epsilon: 1e-12,
-                number: "BigNumber",
-                precision: 64
-            });
             /**
              * Initialize signing mechanism
              */
@@ -239,21 +234,19 @@ class SologenicTxHandler extends events_1.EventEmitter {
             taker_gets: market.base,
             taker_pays: market.counter,
             ledger_index: "current",
-            limit: 200
+            limit: 200,
         });
         const revOffers = await this.rippleApi.request({
             command: "book_offers",
             taker_gets: market.counter,
             taker_pays: market.base,
             ledger_index: "current",
-            limit: 200
+            limit: 200,
         });
         const directOffers = (offers.result ? offers.result.offers : []).reduce((acc, res) => {
             return acc.concat(res);
         }, []);
-        const reversedOffers = (revOffers.result
-            ? revOffers.result.offers
-            : []).reduce((acc, res) => acc.concat(res), []);
+        const reversedOffers = (revOffers.result ? revOffers.result.offers : []).reduce((acc, res) => acc.concat(res), []);
         const formattedOrderbook = (0, utils_1.formatOrderbook)([...directOffers, ...reversedOffers], market);
         return formattedOrderbook;
     }
@@ -270,14 +263,14 @@ class SologenicTxHandler extends events_1.EventEmitter {
             else {
                 this.rippleApi = new xrpl.Client(this.rippleNode, {
                     feeCushion: 1,
-                    timeout: 1000000
+                    timeout: 1000000,
                 });
                 if (!this.getRippleApi().isConnected()) {
                     await this.getRippleApi().connect();
                     await this._connected();
                     const currentLedger = await this.getRippleApi().request({
                         command: "ledger",
-                        ledger_index: "validated"
+                        ledger_index: "validated",
                     });
                     this.setLedgerVersion(currentLedger.result.ledger_index);
                     // Start the dispatcher listener
@@ -471,7 +464,7 @@ class SologenicTxHandler extends events_1.EventEmitter {
                 id,
                 promise: (() => {
                     return this._resolve(id);
-                })()
+                })(),
             };
         }
         catch (error) {
@@ -528,7 +521,7 @@ class SologenicTxHandler extends events_1.EventEmitter {
             // values are updated using the WS after the first initilization, until this method is called again
             const accountInfo = await this.getRippleApi().request({
                 command: "account_info",
-                account: this.getAccount().getAddress()
+                account: this.getAccount().getAddress(),
             });
             this.getAccount().setAccountSequence(accountInfo.result.account_data.Sequence);
             return;
@@ -590,7 +583,7 @@ class SologenicTxHandler extends events_1.EventEmitter {
     async _initiateTx(id, tx) {
         try {
             await this._addRawTxToQueue({
-                txJSON: tx
+                txJSON: tx,
             }, id);
         }
         catch (error) {
@@ -612,7 +605,7 @@ class SologenicTxHandler extends events_1.EventEmitter {
             const item = await this.txmq.add("txmq:raw:" + this.getAccount().getAddress(), txJson, id);
             const queuedEvent = {
                 id: id,
-                txJson: txJson
+                txJson: txJson,
             };
             // Emit on object specific listener
             if (typeof this.txEvents[item.id] !== "undefined") {
@@ -639,13 +632,13 @@ class SologenicTxHandler extends events_1.EventEmitter {
                         Memo: {
                             MemoData: unescape(encodeURIComponent(tx.id))
                                 .split("")
-                                .map(v => {
+                                .map((v) => {
                                 return v.charCodeAt(0).toString(16);
                             })
                                 .join("")
-                                .toUpperCase()
-                        }
-                    }
+                                .toUpperCase(),
+                        },
+                    },
                 ] });
             return constructedTx;
         }
@@ -702,7 +695,7 @@ class SologenicTxHandler extends events_1.EventEmitter {
             await this.txmq.add("txmq:signing:" + this.getAccount().getAddress(), unsignedTx, unsignedTx.id);
             const signingEvent = {
                 id: unsignedTx.id,
-                txJson: unsignedTx.data
+                txJson: unsignedTx.data,
             };
             this.emit("signing", signingEvent);
             return this._signTransaction(unsignedTx)
@@ -770,8 +763,8 @@ class SologenicTxHandler extends events_1.EventEmitter {
         // Suggestion. In cases of surge in network fee, this value can be dynamically increased.
         tx.Fee = tx.Fee
             ? tx.Fee
-            : this.getXrplUtils().xrpToDrops(this.math
-                .multiply(this.getLedgerBaseFeeXRP(), this.feeCushion)
+            : this.getXrplUtils().xrpToDrops(new bignumber_js_1.default(this.getLedgerBaseFeeXRP())
+                .multipliedBy(this.feeCushion)
                 .toFixed(6));
         // Update the current state of the ledger
         await this._fetchCurrentState();
@@ -799,7 +792,7 @@ class SologenicTxHandler extends events_1.EventEmitter {
             this.txEvents[signedTx.id].emit("signed", signedTx);
             return signedTx;
         })
-            .catch(e => {
+            .catch((e) => {
             throw new Error(e.message);
         });
     }
@@ -841,7 +834,7 @@ class SologenicTxHandler extends events_1.EventEmitter {
                 const warningEvent = {
                     id: signedTx.id,
                     state: "dispatch",
-                    reason: `${submitResult.result.engine_result}: ${submitResult.result.engine_result_message}`
+                    reason: `${submitResult.result.engine_result}: ${submitResult.result.engine_result_message}`,
                 };
                 this.emit("warning", warningEvent, unsignedTx);
                 if (typeof this.txEvents[signedTx.id] !== "undefined") {
@@ -973,14 +966,14 @@ class SologenicTxHandler extends events_1.EventEmitter {
             const decodedTransaction = xrpl.decode(signedTx.tx_blob);
             // Construct the dispatched object
             const dispatchedTx = Object.assign({ unsignedTx: unsignedTx }, {
-                result: Object.assign({ status: result.result.engine_result }, { firstLedger: firstLedgerSequence, hash: result.result.tx_json.hash, lastLedger: decodedTransaction.LastLedgerSequence, sequence: decodedTransaction.Sequence })
+                result: Object.assign({ status: result.result.engine_result }, { firstLedger: firstLedgerSequence, hash: result.result.tx_json.hash, lastLedger: decodedTransaction.LastLedgerSequence, sequence: decodedTransaction.Sequence }),
             });
             // Add to dispatched queue
             const dispatched = await this.txmq.add("txmq:dispatched:" + this.getAccount().getAddress(), dispatchedTx, unsignedTx.id);
             const dispatchedEvent = {
                 id: unsignedTx.id,
                 unsignedTx: unsignedTx,
-                dispatchedTx: dispatchedTx
+                dispatchedTx: dispatchedTx,
             };
             // Emit on object specific listener
             if (typeof this.txEvents[signedTx.id] !== "undefined") {
@@ -1009,14 +1002,14 @@ class SologenicTxHandler extends events_1.EventEmitter {
         try {
             // construct the dispatched object
             const failedTx = Object.assign({ unsignedTx: unsignedTx, result: result }, {
-                cause: Object.assign({ status: "failed", reason })
+                cause: Object.assign({ status: "failed", reason }),
             });
             // Delete the raw transaction too
             await Promise.all([
                 this.txmq.del("txmq:raw:" + this.getAccount().getAddress(), unsignedTx.id),
                 this.txmq.del("txmq:dispatched:" + this.getAccount().getAddress(), unsignedTx.id),
                 this.txmq.del("txmq:signing:" + this.getAccount().getAddress(), unsignedTx.id),
-                this.txmq.add("txmq:failed:" + this.getAccount().getAddress(), failedTx, failedTx.unsignedTx.id)
+                this.txmq.add("txmq:failed:" + this.getAccount().getAddress(), failedTx, failedTx.unsignedTx.id),
             ]);
             /*
             await this.txmq.del(
@@ -1040,7 +1033,7 @@ class SologenicTxHandler extends events_1.EventEmitter {
                 id: unsignedTx.id,
                 failedTx: failedTx,
                 result: result,
-                reason: reason
+                reason: reason,
             };
             // Emit globally
             this.emit("failed", failedEvent);
@@ -1107,7 +1100,7 @@ class SologenicTxHandler extends events_1.EventEmitter {
             // );
             const validatedTx = await this.getRippleApi().request({
                 command: "tx",
-                transaction: dispatchedTx.result.hash
+                transaction: dispatchedTx.result.hash,
             });
             // Make sure this transaction existed in the queue
             // only if the result from the closed ledger is tesSUCCESS, consider this transaction to be final
@@ -1129,10 +1122,10 @@ class SologenicTxHandler extends events_1.EventEmitter {
                         sequence: dispatchedTx.result.sequence,
                         fee: validatedTx.result.Fee,
                         hash: dispatchedTx.result.hash,
-                        ledgerVersion: validatedTx.result.LastLedgerSequence
+                        ledgerVersion: validatedTx.result.LastLedgerSequence,
                         // timestamp: validatedTx!.outcome.timestamp!
                     },
-                    reason: validatedTx.result.validated ? "success" : "Failed"
+                    reason: validatedTx.result.validated ? "success" : "Failed",
                 };
                 await this.txmq.add("txmq:validated:" + this.getAccount().getAddress(), validatedEvent.resolvedTx, id);
                 if (typeof this.txEvents[id] !== "undefined") {
@@ -1181,12 +1174,12 @@ class SologenicTxHandler extends events_1.EventEmitter {
                     id: id,
                     state: "validation",
                     reason: "not_validated",
-                    dispatchedTx: dispatchedTx
+                    dispatchedTx: dispatchedTx,
                 };
                 const requeueEvent = {
                     id: id,
                     reason: "requeue",
-                    dispatchedTx: dispatchedTx
+                    dispatchedTx: dispatchedTx,
                 };
                 this.emit("warning", warningEvent);
                 this.emit("requeued", requeueEvent);
