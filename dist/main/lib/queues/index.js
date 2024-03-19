@@ -3,13 +3,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.RedisQueue = exports.HashQueue = void 0;
+exports.HashQueue = void 0;
 const queues_1 = require("../../types/queues");
 /**
  * Import redis queue implementation
  */
-const redis_1 = __importDefault(require("./redis"));
-exports.RedisQueue = redis_1.default;
+// import RedisQueue from './redis';
 /**
  * Import hash queue implementation
  */
@@ -19,14 +18,14 @@ exports.HashQueue = hash_1.default;
  * The TXMQƨ class is an implementation that calls the methods against the queue
  * instances.  When constructing the [[SologenicTxHandler]] the `sologenicOptions`
  * parameter is passed to this classes constructor.
-*/
+ */
 class TXMQƨ {
     constructor(sologenicOptions) {
         try {
             switch (sologenicOptions.queueType) {
-                case queues_1.QUEUE_TYPE_STXMQ_REDIS:
-                    this.queue = new redis_1.default(sologenicOptions.redis);
-                    break;
+                // case QUEUE_TYPE_STXMQ_REDIS:
+                //   this.queue = new RedisQueue(sologenicOptions.redis!);
+                //   break;
                 case queues_1.QUEUE_TYPE_STXMQ_HASH:
                     this.queue = new hash_1.default(sologenicOptions.hash);
                     break;
@@ -36,7 +35,7 @@ class TXMQƨ {
             }
         }
         catch (error) {
-            throw new Error('Unable to initialize TXMQ');
+            throw new Error("Unable to initialize TXMQ");
         }
     }
     deleteQueue(queue) {
@@ -121,7 +120,7 @@ class TXMQƨ {
     }
     /**
      * Delete entries older than maximumTimeToLive (seconds)
-    */
+     */
     async deleteOlderThan(maximumTimeToLive, queue) {
         let counter = 0;
         const currentTime = Math.floor(new Date().getTime() / 1000);

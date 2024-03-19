@@ -1,35 +1,35 @@
 import {
   MQTX,
   IQueue,
-  QUEUE_TYPE_STXMQ_REDIS,
+  // QUEUE_TYPE_STXMQ_REDIS,
   QUEUE_TYPE_STXMQ_HASH,
-  TransactionHandlerOptions
-} from '../../types/queues';
+  TransactionHandlerOptions,
+} from "../../types/queues";
 
 /**
  * Import redis queue implementation
  */
-import RedisQueue from './redis';
+// import RedisQueue from './redis';
 
 /**
  * Import hash queue implementation
  */
-import HashQueue from './hash';
+import HashQueue from "./hash";
 
 /**
  * The TXMQƨ class is an implementation that calls the methods against the queue
  * instances.  When constructing the [[SologenicTxHandler]] the `sologenicOptions`
  * parameter is passed to this classes constructor.
-*/
+ */
 export default class TXMQƨ implements IQueue {
   private queue: IQueue;
 
   constructor(sologenicOptions: TransactionHandlerOptions) {
     try {
       switch (sologenicOptions!.queueType) {
-        case QUEUE_TYPE_STXMQ_REDIS:
-          this.queue = new RedisQueue(sologenicOptions.redis!);
-          break;
+        // case QUEUE_TYPE_STXMQ_REDIS:
+        //   this.queue = new RedisQueue(sologenicOptions.redis!);
+        //   break;
 
         case QUEUE_TYPE_STXMQ_HASH:
           this.queue = new HashQueue(sologenicOptions.hash!);
@@ -40,7 +40,7 @@ export default class TXMQƨ implements IQueue {
           break;
       }
     } catch (error) {
-      throw new Error('Unable to initialize TXMQ');
+      throw new Error("Unable to initialize TXMQ");
     }
   }
 
@@ -144,8 +144,11 @@ export default class TXMQƨ implements IQueue {
 
   /**
    * Delete entries older than maximumTimeToLive (seconds)
-  */
-  public async deleteOlderThan(maximumTimeToLive: number, queue?: string): Promise<number> {
+   */
+  public async deleteOlderThan(
+    maximumTimeToLive: number,
+    queue?: string
+  ): Promise<number> {
     let counter = 0;
 
     const currentTime = Math.floor(new Date().getTime() / 1000);
@@ -178,5 +181,5 @@ export default class TXMQƨ implements IQueue {
 
 export {
   HashQueue,
-  RedisQueue
+  // RedisQueue
 };

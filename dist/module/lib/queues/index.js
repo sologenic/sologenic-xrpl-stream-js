@@ -1,25 +1,27 @@
-import { QUEUE_TYPE_STXMQ_REDIS, QUEUE_TYPE_STXMQ_HASH } from '../../types/queues';
+import { 
+// QUEUE_TYPE_STXMQ_REDIS,
+QUEUE_TYPE_STXMQ_HASH, } from "../../types/queues";
 /**
  * Import redis queue implementation
  */
-import RedisQueue from './redis';
+// import RedisQueue from './redis';
 /**
  * Import hash queue implementation
  */
-import HashQueue from './hash';
+import HashQueue from "./hash";
 /**
  * The TXMQƨ class is an implementation that calls the methods against the queue
  * instances.  When constructing the [[SologenicTxHandler]] the `sologenicOptions`
  * parameter is passed to this classes constructor.
-*/
+ */
 export default class TXMQƨ {
     queue;
     constructor(sologenicOptions) {
         try {
             switch (sologenicOptions.queueType) {
-                case QUEUE_TYPE_STXMQ_REDIS:
-                    this.queue = new RedisQueue(sologenicOptions.redis);
-                    break;
+                // case QUEUE_TYPE_STXMQ_REDIS:
+                //   this.queue = new RedisQueue(sologenicOptions.redis!);
+                //   break;
                 case QUEUE_TYPE_STXMQ_HASH:
                     this.queue = new HashQueue(sologenicOptions.hash);
                     break;
@@ -29,7 +31,7 @@ export default class TXMQƨ {
             }
         }
         catch (error) {
-            throw new Error('Unable to initialize TXMQ');
+            throw new Error("Unable to initialize TXMQ");
         }
     }
     deleteQueue(queue) {
@@ -114,7 +116,7 @@ export default class TXMQƨ {
     }
     /**
      * Delete entries older than maximumTimeToLive (seconds)
-    */
+     */
     async deleteOlderThan(maximumTimeToLive, queue) {
         let counter = 0;
         const currentTime = Math.floor(new Date().getTime() / 1000);
@@ -138,4 +140,6 @@ export default class TXMQƨ {
         return counter;
     }
 }
-export { HashQueue, RedisQueue };
+export { HashQueue,
+// RedisQueue
+ };

@@ -14,19 +14,19 @@ export interface IQueue {
 
 export interface HashTransactionHandlerOptions {}
 
-export interface RedisTransactionHandlerOptions {
-  port?: number;
-  host?: string;
-  family?: number;
-  password?: string;
-  db?: number;
-}
+// export interface RedisTransactionHandlerOptions {
+//   port?: number;
+//   host?: string;
+//   family?: number;
+//   password?: string;
+//   db?: number;
+// }
 
 export interface TransactionHandlerOptions {
   queueType?: string;
   clearCache?: boolean;
-  redis?: RedisTransactionHandlerOptions
-  hash?: HashTransactionHandlerOptions
+  // redis?: RedisTransactionHandlerOptions
+  hash?: HashTransactionHandlerOptions;
   maximumTimeToLive?: number;
   signingMechanism?: ISologenicTxSigner;
 }
@@ -37,5 +37,5 @@ export interface MQTX {
   created: number;
 }
 
-export declare const QUEUE_TYPE_STXMQ_REDIS = 'redis';
-export declare const QUEUE_TYPE_STXMQ_HASH = 'hash';
+// export declare const QUEUE_TYPE_STXMQ_REDIS = 'redis';
+export declare const QUEUE_TYPE_STXMQ_HASH = "hash";
