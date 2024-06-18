@@ -5,7 +5,7 @@
     "rootDir": "src",
     "moduleResolution": "node",
     "module": "commonjs",
-    "declaration": false,
+    "declaration": true,
     "inlineSourceMap": false,
     "skipDefaultLibCheck": true,
     "skipLibCheck": true,
