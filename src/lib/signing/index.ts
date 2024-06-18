@@ -5,6 +5,7 @@ import { LedgerDeviceSigner } from './ledger_device';
 import { SoloWalletSigner } from './solo_signer';
 import { DcentSigner } from './dcent_signer';
 import { XummWalletSigner } from './xumm_signer';
+import { CrossmarkSigner } from './crossmark';
 
 export {
   SologenicTxSigner,
@@ -13,5 +14,6 @@ export {
   LedgerDeviceSigner,
   SoloWalletSigner,
   XummWalletSigner,
-  DcentSigner
+  DcentSigner,
+  CrossmarkSigner
 };

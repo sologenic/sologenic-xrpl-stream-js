@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CrossmarkSigner = void 0;
 const sdk_1 = __importDefault(require("@crossmarkio/sdk"));
+const error_1 = require("../error");
 class CrossmarkSigner {
     get address() {
         return this._address;
@@ -23,33 +24,37 @@ class CrossmarkSigner {
                 return { address: this._address };
             }
             if (response.data.meta.isRejected) {
-                throw 'connection rejected';
+                throw new error_1.SologenicError('2003');
             }
-            throw response;
+            throw new error_1.SologenicError('1000');
         }
         catch (e) {
-            throw {
-                thrower: 'Crossmark.requestConnection',
-                error: e
-            };
+            throw new Error(e.message);
         }
     }
-    async sign(tx) {
+    async sign(tx, txId) {
         try {
             const { response } = await sdk_1.default.methods.signAndWait(tx);
             if (response.data.meta.isSigned && response.data.meta.isSuccess) {
-                return { tx_blob: response.data.txBlob, tx: tx, signer: this._address };
+                return {
+                    id: txId,
+                    tx_blob: response.data.txBlob,
+                    signedTransaction: response.data.txBlob,
+                    tx: tx,
+                    signer: this._address
+                };
             }
             if (response.data.meta.isRejected) {
-                throw 'tx_rejected';
+                throw new error_1.SologenicError('2003');
             }
-            throw response;
+            throw new error_1.SologenicError('1000');
         }
         catch (e) {
-            throw {
-                thrower: 'Crossmark.sign',
-                error: e
-            };
+            throw new Error(e.message);
+            //   throw {
+            //     thrower: 'Crossmark.sign',
+            //     error: e
+            //   };
         }
     }
 }

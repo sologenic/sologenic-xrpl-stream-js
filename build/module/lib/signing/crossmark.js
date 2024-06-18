@@ -1,4 +1,5 @@
 import Crossmark from '@crossmarkio/sdk';
+import { SologenicError } from '../error';
 export class CrossmarkSigner {
     _address;
     get address() {
@@ -18,33 +19,37 @@ export class CrossmarkSigner {
                 return { address: this._address };
             }
             if (response.data.meta.isRejected) {
-                throw 'connection rejected';
+                throw new SologenicError('2003');
             }
-            throw response;
+            throw new SologenicError('1000');
         }
         catch (e) {
-            throw {
-                thrower: 'Crossmark.requestConnection',
-                error: e
-            };
+            throw new Error(e.message);
         }
     }
-    async sign(tx) {
+    async sign(tx, txId) {
         try {
             const { response } = await Crossmark.methods.signAndWait(tx);
             if (response.data.meta.isSigned && response.data.meta.isSuccess) {
-                return { tx_blob: response.data.txBlob, tx: tx, signer: this._address };
+                return {
+                    id: txId,
+                    tx_blob: response.data.txBlob,
+                    signedTransaction: response.data.txBlob,
+                    tx: tx,
+                    signer: this._address
+                };
             }
             if (response.data.meta.isRejected) {
-                throw 'tx_rejected';
+                throw new SologenicError('2003');
             }
-            throw response;
+            throw new SologenicError('1000');
         }
         catch (e) {
-            throw {
-                thrower: 'Crossmark.sign',
-                error: e
-            };
+            throw new Error(e.message);
+            //   throw {
+            //     thrower: 'Crossmark.sign',
+            //     error: e
+            //   };
         }
     }
 }

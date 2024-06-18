@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.DcentSigner = exports.XummWalletSigner = exports.SoloWalletSigner = exports.LedgerDeviceSigner = exports.XummSigner = exports.OfflineSigner = exports.SologenicTxSigner = void 0;
+exports.CrossmarkSigner = exports.DcentSigner = exports.XummWalletSigner = exports.SoloWalletSigner = exports.LedgerDeviceSigner = exports.XummSigner = exports.OfflineSigner = exports.SologenicTxSigner = void 0;
 const sologenic_tx_signer_1 = __importDefault(require("./sologenic_tx_signer"));
 exports.SologenicTxSigner = sologenic_tx_signer_1.default;
 const offline_1 = require("./offline");
@@ -18,3 +18,5 @@ const dcent_signer_1 = require("./dcent_signer");
 Object.defineProperty(exports, "DcentSigner", { enumerable: true, get: function () { return dcent_signer_1.DcentSigner; } });
 const xumm_signer_1 = require("./xumm_signer");
 Object.defineProperty(exports, "XummWalletSigner", { enumerable: true, get: function () { return xumm_signer_1.XummWalletSigner; } });
+const crossmark_1 = require("./crossmark");
+Object.defineProperty(exports, "CrossmarkSigner", { enumerable: true, get: function () { return crossmark_1.CrossmarkSigner; } });
