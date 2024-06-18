@@ -1,6 +1,7 @@
 import Crossmark from '@crossmarkio/sdk';
 import { SologenicError } from '../error';
-export class CrossmarkSigner {
+import SologenicTxSigner from './sologenic_tx_signer';
+export class CrossmarkSigner extends SologenicTxSigner {
     _address;
     get address() {
         return this._address;
@@ -9,6 +10,7 @@ export class CrossmarkSigner {
         return undefined;
     }
     constructor(props) {
+        super(props);
         this._address = props?.address;
     }
     async requestConnection() {
@@ -27,16 +29,16 @@ export class CrossmarkSigner {
             throw new Error(e.message);
         }
     }
-    async sign(tx, txId) {
+    async sign(txJson, txId) {
         try {
-            const { response } = await Crossmark.methods.signAndWait(tx);
+            const { response } = await Crossmark.methods.signAndWait(txJson);
             if (response.data.meta.isSigned && response.data.meta.isSuccess) {
                 return {
                     id: txId,
                     tx_blob: response.data.txBlob,
-                    signedTransaction: response.data.txBlob,
-                    tx: tx,
-                    signer: this._address
+                    signedTransaction: response.data.txBlob
+                    //   tx: tx,
+                    //   signer: this._address
                 };
             }
             if (response.data.meta.isRejected) {

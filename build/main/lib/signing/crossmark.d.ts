@@ -1,4 +1,6 @@
 import { Transaction } from 'xrpl';
+import SologenicTxSigner from './sologenic_tx_signer';
+import * as SologenicTypes from '../../types';
 export type ISignInTX = Transaction & {
     TransactionKind: string;
 };
@@ -16,7 +18,7 @@ export interface ISignedTx {
 interface ICrossmarkSignerProps {
     address?: string;
 }
-export declare class CrossmarkSigner {
+export declare class CrossmarkSigner extends SologenicTxSigner {
     private _address;
     get address(): string;
     get currentTxRefs(): any;
@@ -24,12 +26,6 @@ export declare class CrossmarkSigner {
     requestConnection(): Promise<{
         address: string;
     }>;
-    sign(tx: Transaction, txId: string): Promise<{
-        id: string;
-        tx_blob: string;
-        signedTransaction: string;
-        tx: Transaction;
-        signer: string;
-    }>;
+    sign(txJson: SologenicTypes.TX, txId: string): Promise<SologenicTypes.SignedTx>;
 }
 export {};

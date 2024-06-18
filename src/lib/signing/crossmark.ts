@@ -1,6 +1,9 @@
 import { Transaction } from 'xrpl';
 import Crossmark from '@crossmarkio/sdk';
 import { SologenicError } from '../error';
+import SologenicTxSigner from './sologenic_tx_signer';
+import * as SologenicTypes from '../../types';
+import XrplAccount from '../account';
 
 export type ISignInTX = Transaction & {
   TransactionKind: string;
@@ -22,7 +25,7 @@ interface ICrossmarkSignerProps {
   address?: string;
 }
 
-export class CrossmarkSigner {
+export class CrossmarkSigner extends SologenicTxSigner {
   private _address: string;
 
   get address() {
@@ -34,6 +37,7 @@ export class CrossmarkSigner {
   }
 
   constructor(props?: ICrossmarkSignerProps) {
+    super(props);
     this._address = props?.address;
   }
 
@@ -56,17 +60,20 @@ export class CrossmarkSigner {
     }
   }
 
-  async sign(tx: Transaction, txId: string) {
+  async sign(
+    txJson: SologenicTypes.TX,
+    txId: string
+  ): Promise<SologenicTypes.SignedTx> {
     try {
-      const { response } = await Crossmark.methods.signAndWait(tx as any);
+      const { response } = await Crossmark.methods.signAndWait(txJson as any);
 
       if (response.data.meta.isSigned && response.data.meta.isSuccess) {
         return {
           id: txId,
           tx_blob: response.data.txBlob,
-          signedTransaction: response.data.txBlob,
-          tx: tx,
-          signer: this._address
+          signedTransaction: response.data.txBlob
+          //   tx: tx,
+          //   signer: this._address
         };
       }
 

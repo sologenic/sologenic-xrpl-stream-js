@@ -6,7 +6,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.CrossmarkSigner = void 0;
 const sdk_1 = __importDefault(require("@crossmarkio/sdk"));
 const error_1 = require("../error");
-class CrossmarkSigner {
+const sologenic_tx_signer_1 = __importDefault(require("./sologenic_tx_signer"));
+class CrossmarkSigner extends sologenic_tx_signer_1.default {
     get address() {
         return this._address;
     }
@@ -14,6 +15,7 @@ class CrossmarkSigner {
         return undefined;
     }
     constructor(props) {
+        super(props);
         this._address = props === null || props === void 0 ? void 0 : props.address;
     }
     async requestConnection() {
@@ -32,16 +34,16 @@ class CrossmarkSigner {
             throw new Error(e.message);
         }
     }
-    async sign(tx, txId) {
+    async sign(txJson, txId) {
         try {
-            const { response } = await sdk_1.default.methods.signAndWait(tx);
+            const { response } = await sdk_1.default.methods.signAndWait(txJson);
             if (response.data.meta.isSigned && response.data.meta.isSuccess) {
                 return {
                     id: txId,
                     tx_blob: response.data.txBlob,
-                    signedTransaction: response.data.txBlob,
-                    tx: tx,
-                    signer: this._address
+                    signedTransaction: response.data.txBlob
+                    //   tx: tx,
+                    //   signer: this._address
                 };
             }
             if (response.data.meta.isRejected) {
