@@ -106,7 +106,7 @@ class SologenicTxHandler extends events_1.EventEmitter {
              * Construct a new Ripple API instance
              */
             this.rippleApi = new xrpl.Client(xrplClientOptions.server, Object.assign({ feeCushion: 1, timeout: 1000000 }, xrplClientOptions));
-            console.log('SXSJ: 1.1.31');
+            console.log('SXSJ: 1.1.4');
             /**
              * Subscribe to XRPL Client on("") events
              */
