@@ -643,6 +643,7 @@ export class SologenicTxHandler extends EventEmitter {
       });
 
       ledgerClient.on('ledgerClosed', (ledgerRes: any) => {
+        console.log('New version: ', ledgerRes?.ledger_index);
         this.setLedgerVersion(ledgerRes.ledger_index);
       });
     } catch (error) {

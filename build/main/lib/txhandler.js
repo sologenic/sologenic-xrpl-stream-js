@@ -537,6 +537,7 @@ class SologenicTxHandler extends events_1.EventEmitter {
                 this.connect();
             });
             ledgerClient.on('ledgerClosed', (ledgerRes) => {
+                console.log('New version: ', ledgerRes === null || ledgerRes === void 0 ? void 0 : ledgerRes.ledger_index);
                 this.setLedgerVersion(ledgerRes.ledger_index);
             });
         }
