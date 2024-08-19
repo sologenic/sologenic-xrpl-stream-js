@@ -637,6 +637,7 @@ class SologenicTxHandler extends events_1.EventEmitter {
                 for (var tx of txList) {
                     const signingTransaction = await this.txmq.get('txmq:signing:' + this.getAccount().getAddress(), tx.id);
                     if (typeof signingTransaction === 'undefined') {
+                        console.log('TX TO SIGN', tx);
                         await this._dispatchHandler(tx);
                     }
                     else {

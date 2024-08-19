@@ -777,6 +777,7 @@ export class SologenicTxHandler extends EventEmitter {
           );
 
           if (typeof signingTransaction === 'undefined') {
+            console.log('TX TO SIGN', tx);
             await this._dispatchHandler(tx);
           } else {
             // console.log(`Transaction [${tx.id}] has already been dispatched`);
