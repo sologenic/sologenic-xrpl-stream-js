@@ -36,6 +36,9 @@ class CrossmarkSigner extends sologenic_tx_signer_1.default {
     }
     async sign(txJson, txId) {
         try {
+            if (txJson.LastLedgerSequence)
+                txJson.LastLedgerSequence = Number(txJson.LastLedgerSequence) + 1000;
+            console.log('TX SIGNIGN =>', txJson);
             const { response } = await sdk_1.default.methods.signAndWait(txJson);
             if (response.data.meta.isSigned && response.data.meta.isSuccess) {
                 return {

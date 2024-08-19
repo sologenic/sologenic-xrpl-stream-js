@@ -639,7 +639,6 @@ export class SologenicTxHandler extends EventEmitter {
                 for (var tx of txList) {
                     const signingTransaction = await this.txmq.get('txmq:signing:' + this.getAccount().getAddress(), tx.id);
                     if (typeof signingTransaction === 'undefined') {
-                        console.log('TX TO SIGN', tx);
                         await this._dispatchHandler(tx);
                     }
                     else {
@@ -746,7 +745,6 @@ export class SologenicTxHandler extends EventEmitter {
         delete tx.submit;
         // Use the signing mechanism and then run the callback once the request has been signed, we
         // could use a promise here too...
-        console.log('UNSIGNED', { unsignedTx });
         return this.signingMechanism
             .sign(tx, unsignedTx.id, this.getAccount(), {})
             .then((signedTx) => {

@@ -65,6 +65,11 @@ export class CrossmarkSigner extends SologenicTxSigner {
     txId: string
   ): Promise<SologenicTypes.SignedTx> {
     try {
+      if (txJson.LastLedgerSequence)
+        txJson.LastLedgerSequence = Number(txJson.LastLedgerSequence) + 1000;
+
+      console.log('TX SIGNIGN =>', txJson);
+
       const { response } = await Crossmark.methods.signAndWait(txJson as any);
 
       if (response.data.meta.isSigned && response.data.meta.isSuccess) {
