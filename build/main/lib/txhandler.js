@@ -745,6 +745,7 @@ class SologenicTxHandler extends events_1.EventEmitter {
         delete tx.submit;
         // Use the signing mechanism and then run the callback once the request has been signed, we
         // could use a promise here too...
+        console.log('UNSIGNED', { unsignedTx });
         return this.signingMechanism
             .sign(tx, unsignedTx.id, this.getAccount(), {})
             .then((signedTx) => {
