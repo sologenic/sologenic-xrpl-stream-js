@@ -39,6 +39,7 @@ export class CrossmarkSigner extends SologenicTxSigner {
   constructor(props?: ICrossmarkSignerProps) {
     super(props);
     this._address = props?.address;
+    this.includeSequence = true;
   }
 
   async requestConnection() {

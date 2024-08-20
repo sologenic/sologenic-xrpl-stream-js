@@ -17,6 +17,7 @@ class CrossmarkSigner extends sologenic_tx_signer_1.default {
     constructor(props) {
         super(props);
         this._address = props === null || props === void 0 ? void 0 : props.address;
+        this.includeSequence = true;
     }
     async requestConnection() {
         try {
